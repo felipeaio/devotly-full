@@ -1,0 +1,417 @@
+/* Variáveis específicas para a página de edição */
+:root {
+    --edit-bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --form-border: #e0e4e8;
+    --accent-blue: #4a90e2;
+    --accent-gold: #f7c948;
+    --text-dark: #2d3748;
+    --text-light: #718096;
+    --error-red: #e53e3e;
+    --success-green: #38a169;
+    --gradient: linear-gradient(135deg, var(--accent-blue), #7f9cf5);
+}
+
+/* Estilos gerais da página */
+.edit-page {
+    background-color: var(--edit-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+
+/* Container principal */
+.container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Seção de edição */
+.edit-section {
+    text-align: center;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-light);
+}
+
+/* Cartão (formulários e listas) */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Formulário de busca */
+.search-form .form-group {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group--icon {
+    position: relative;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-size: 1.25rem;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid var(--form-border);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-hint {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+}
+
+.textarea-counter {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.textarea-counter.warning {
+    color: #d69e2e;
+}
+
+.textarea-counter.error {
+    color: var(--error-red);
+}
+
+/* Botões */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn--primary {
+    background: var(--gradient);
+    color: #ffffff;
+}
+
+.btn--primary:hover {
+    background: linear-gradient(135deg, #357abd, #6b86d6);
+    transform: translateY(-2px);
+}
+
+.btn--outline {
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.btn--outline:hover {
+    background: rgba(74, 144, 226, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn--secondary {
+    background: var(--text-light);
+    color: #ffffff;
+}
+
+.btn--secondary:hover {
+    background: #5a7184;
+    transform: translateY(-2px);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.form-actions--search {
+    justify-content: space-between;
+}
+
+/* Lista de cartões */
+.cards-list {
+    margin-top: 2rem;
+}
+
+.grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.card-item {
+    background: var(--card-bg);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+.card-item h3 {
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.card-item p {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Formulário de edição */
+.edit-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Grupo de versículos */
+.verse-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.verse-group select,
+.verse-group input {
+    flex: 1;
+    min-width: 100px;
+}
+
+.verse-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f1f5f9;
+    border-radius: 0.5rem;
+    font-style: italic;
+    color: var(--text-dark);
+}
+
+.verse-preview .reference {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+/* Upload de imagens */
+.upload-label {
+    display: block;
+    padding: 1rem;
+    border: 2px dashed var(--accent-gold);
+    border-radius: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-label.dragover {
+    border-color: var(--accent-blue);
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-image {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-image {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    background: var(--error-red);
+    color: #ffffff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+/* Opções de mídia */
+.media-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.media-option {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--form-border);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--text-dark);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.media-option.active,
+.media-option:hover {
+    border-color: var(--accent-blue);
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.media-option i {
+    margin-right: 0.5rem;
+}
+
+/* Alertas */
+.form-alert {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-alert.error {
+    background: var(--error-red);
+}
+
+.form-alert.success {
+    background: var(--success-green);
+}
+
+.form-alert.show {
+    opacity: 1;
+}
+
+.alert-icon {
+    font-size: 1.25rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .edit-page {
+        padding: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions--search {
+        flex-direction: row;
+    }
+
+    .verse-group {
+        flex-direction: column;
+    }
+
+    .verse-group select,
+    .verse-group input,
+    .verse-group button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .media-options {
+        flex-direction: column;
+    }
+}

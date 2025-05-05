@@ -1,0 +1,251 @@
+/* Reset e Variáveis */
+
+/* Adicione no início do arquivo */
+html {
+    font-size: 14px;
+    /* Tamanho base menor para mobile */
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+        /* Tamanho normal para desktop */
+    }
+}
+
+/* Garantir que inputs não zoomem em iOS */
+input,
+textarea,
+select {
+    font-size: 1rem;
+}
+
+:root {
+    /* Cores principais */
+    --color-primary: #1a1a1a;
+    /* Preto escuro para o fundo */
+    --color-secondary: #242424;
+    /* Cinza muito escuro para elementos */
+    --color-accent: #d4af37;
+    /* Dourado */
+    --color-accent-hover: #f4c440;
+    /* Dourado mais claro para hover */
+
+    /* Variações de dourado */
+    --gold-light: #ffd700;
+    /* Dourado mais claro para destaques */
+    --gold-dark: #996515;
+    /* Dourado escuro para elementos secundários */
+
+    /* Cores de texto */
+    --color-text: #b3b3b3;
+    /* Cinza claro para texto normal */
+    --color-light: #e6e6e6;
+    /* Quase branco para títulos */
+    --color-dark: #0d0d0d;
+    /* Preto profundo */
+
+    /* Gradientes */
+    --gradient-dark: linear-gradient(135deg, #1a1a1a, #242424);
+    --gradient-gold: linear-gradient(135deg, #d4af37, #996515);
+
+    /* Cores de estado */
+    --color-success: #4a9e5c;
+    /* Verde escuro */
+    --color-error: #a83232;
+    /* Vermelho escuro */
+    --color-warning: #cf9b3f;
+    /* Laranja dourado */
+
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-decorative: 'Clash Display', 'Cabinet Grotesk', sans-serif;
+    /* Nova fonte para títulos */
+    --font-accent: 'Manrope', sans-serif;
+
+    --border-radius: 12px;
+    --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Tipografia */
+h1,
+h2,
+h3,
+.verse {
+    font-family: var(--font-decorative);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-decorative);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    /* Ajustado para a nova fonte */
+    line-height: 1.1;
+    color: var(--color-light);
+}
+
+.verse {
+    font-family: var(--font-accent);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.02em;
+}
+
+h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+h3 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+}
+
+/* Links e Botões */
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    opacity: 0.9;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    border: none;
+    font-family: var(--font-main);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--color-light);
+    color: var(--color-light);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Formulários */
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-light);
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
+    font-family: var(--font-main);
+    transition: var(--transition);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(58, 54, 224, 0.2);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Utilidades */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+

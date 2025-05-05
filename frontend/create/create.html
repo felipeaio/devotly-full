@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devotly | Criar Cartão de Fé</title>
+    <meta name="description" content="Crie lindos cartões digitais com mensagens de fé e versículos bíblicos">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/create.css">
+    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-cross"></i>
+                    <span>Devotly</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    <main class="creation-flow">
+        <div class="container creation-layout">
+            <section class="form-container">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 20%;"></div>
+                    </div>
+                    <div class="step-indicators">
+                        <div class="step active" data-step="1" role="button" aria-label="Etapa 1: Nome">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Nome</div>
+                        </div>
+                        <div class="step" data-step="2" role="button" aria-label="Etapa 2: Mensagem">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Mensagem</div>
+                        </div>
+                        <div class="step" data-step="3" role="button" aria-label="Etapa 3: Versículo">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Versículo</div>
+                        </div>
+                        <div class="step" data-step="4" role="button" aria-label="Etapa 4: Mídia">
+                            <div class="step-number">4</div>
+                            <div class="step-label">Mídia</div>
+                        </div>
+                        <div class="step" data-step="5" role="button" aria-label="Etapa 5: Pagamento">
+                            <div class="step-number">5</div>
+                            <div class="step-label">Pagamento</div>
+                        </div>
+                    </div>
+                </div>
+                <form id="cardForm" class="creation-form">
+                    <div class="form-step active" data-step="1">
+                        <div class="step-header">
+                            <h2>Comece com um nome</h2>
+                            <p>Escolha um nome único para seu cartão</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="input-group">
+                                <label for="cardName">Nome do Cartão</label>
+                                <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem-de-fe"
+                                    required pattern="[a-z0-9-]+"
+                                    title="Use apenas letras minúsculas, números e hífens">
+                                <div class="input-hint">
+                                    <i class="fas fa-link"></i>
+                                    <span>Seu cartão estará em: <strong>devotly.com/<span
+                                                id="urlPreview">seunome</span></strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-primary btn-next" data-next="2">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-step" data-step="2">
+                        <div class="step-header">
+                            <h2>Crie sua mensagem</h2>
+                            <p>Escreva uma mensagem de fé, esperança ou amor</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="input-group">
+                                <label for="cardTitle">Título do Cartão</label>
+                                <input type="text" id="cardTitle" name="cardTitle"
+                                    placeholder="ex: Mensagem de Fé para Você" maxlength="60" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="cardMessage">Mensagem Principal</label>
+                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
+                                    maxlength="500" required></textarea>
+                                <div class="input-footer">
+                                    <div class="char-counter">
+                                        <span id="messageCounter">0</span>/500 caracteres
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="1">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="3">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-step" data-step="3">
+                        <div class="step-header">
+                            <h2>Selecione um versículo</h2>
+                            <p>Escolha uma passagem bíblica para incluir</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="bible-selector">
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label for="bibleBook">Livro</label>
+                                        <select id="bibleBook" name="bibleBook" required>
+                                            <option value="">Selecione um livro</option>
+                                            <option value="genesis">Gênesis</option>
+                                            <option value="psalms">Salmos</option>
+                                            <option value="john">João</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="bibleChapter">Capítulo</label>
+                                        <input type="number" id="bibleChapter" name="bibleChapter" min="1"
+                                            placeholder="ex: 23" required>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="bibleVerse">Versículo</label>
+                                        <input type="number" id="bibleVerse" name="bibleVerse" min="1"
+                                            placeholder="ex: 1" required>
+                                    </div>
+                                </div>
+                                <button type="button" id="fetchVerse" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Buscar Versículo
+                                </button>
+                                <div class="verse-preview">
+                                    <div class="verse-content">
+                                        <div class="verse-quote">
+                                            <i class="fas fa-quote-left"></i>
+                                            <p class="verse-text">"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."</p>
+                                            <small class="verse-reference">João 3:16</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="2">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="4">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-step" data-step="4">
+                        <div class="step-header">
+                            <h2>Adicione mídia</h2>
+                            <p>Enriqueça seu cartão com imagens e música</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="media-section">
+                                <h3><i class="fas fa-images"></i> Imagens</h3>
+                                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp" multiple style="display: none;">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Arraste imagens aqui ou clique para selecionar</span>
+                                    <small>Máximo de 7 imagens (2MB cada)</small>
+                                </div>
+                                <div class="image-preview-container" id="imagePreviewContainer"></div>
+                            </div>
+                            <div class="media-section">
+                                <h3><i class="fas fa-music"></i> Música (Opcional)</h3>
+                                <div class="input-group">
+                                    <label for="musicLink">Link do YouTube ou Spotify</label>
+                                    <input type="url" id="musicLink" name="musicLink"
+                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
+                                    <div class="input-hint">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Adicione um link direto para uma música ou vídeo</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="media-section">
+                                <h3><i class="fas fa-palette"></i> Tema Visual</h3>
+                                <div class="theme-selector">
+                                    <div class="theme-option" data-theme="none">
+                                        <div class="theme-preview theme-none"></div>
+                                        <div class="theme-info">
+                                            <h4>Nenhum</h4>
+                                            <p>Sem efeitos visuais</p>
+                                        </div>
+                                    </div>
+                                    <div class="theme-option" data-theme="stars">
+                                        <div class="theme-preview theme-stars"></div>
+                                        <div class="theme-info">
+                                            <h4>Estrelas</h4>
+                                            <p>Fundo escuro com partículas</p>
+                                        </div>
+                                    </div>
+                                    <div class="theme-option" data-theme="clouds">
+                                        <div class="theme-preview theme-clouds"></div>
+                                        <div class="theme-info">
+                                            <h4>Nuvens</h4>
+                                            <p>Gradiente com movimento</p>
+                                        </div>
+                                    </div>
+                                    <div class="theme-option" data-theme="light">
+                                        <div class="theme-preview theme-light"></div>
+                                        <div class="theme-info">
+                                            <h4>Luz Divina</h4>
+                                            <p>Efeito de luz central</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="3">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="5">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-step" data-step="5">
+                        <div class="step-header">
+                            <h2><i class="fas fa-credit-card"></i> Escolha seu Plano</h2>
+                            <p>Selecione um plano para finalizar seu cartão</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="plan-cards" aria-labelledby="payment-label">
+                                <div class="plan-card featured" data-plan="forever">
+                                    <div class="plan-badge">Mais escolhido</div>
+                                    <h3>Para sempre</h3>
+                                    <ul>
+                                        <li><i class="fas fa-check"></i> Texto dedicado</li>
+                                        <li><i class="fas fa-check"></i> QR Code exclusivo</li>
+                                        <li><i class="fas fa-check"></i> 7 imagens</li>
+                                        <li><i class="fas fa-check"></i> Com música</li>
+                                        <li><i class="fas fa-check"></i> Chuva de emojis</li>
+                                        <li><i class="fas fa-check"></i> URL personalizada</li>
+                                        <li><i class="fas fa-check"></i> Suporte 24h</li>
+                                    </ul>
+                                    <div class="plan-price">
+                                        <span class="original-price">R$ 34,00</span>
+                                        <span class="discount-price">R$ 17,99 <small>/uma vez</small></span>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-select-plan" data-plan="forever">
+                                        Selecionar
+                                    </button>
+                                </div>
+                                <div class="plan-card" data-plan="annual">
+                                    <h3>Anual</h3>
+                                    <ul>
+                                        <li><i class="fas fa-check"></i> Texto dedicado</li>
+                                        <li><i class="fas fa-check"></i> QR Code exclusivo</li>
+                                        <li><i class="fas fa-check"></i> 3 imagens</li>
+                                        <li><i class="fas fa-times"></i> A música será removida</li>
+                                        <li><i class="fas fa-times"></i> Sem chuva de emojis</li>
+                                        <li><i class="fas fa-check"></i> URL personalizada</li>
+                                        <li><i class="fas fa-check"></i> Suporte 24h</li>
+                                    </ul>
+                                    <div class="plan-price">
+                                        <span class="original-price">R$ 24,00</span>
+                                        <span class="discount-price">R$ 8,99 <small>/por ano</small></span>
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-select-plan" data-plan="annual">
+                                        Selecionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="4">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="createCardBtn">
+                                <i class="fas fa-check"></i> Finalizar e Pagar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <aside class="card-preview-container">
+                <div class="card-preview">
+                    <div class="preview-theme" id="previewTheme">
+                        <div class="preview-card">
+                            <div class="preview-header">
+                                <h3 id="previewCardTitle">Mensagem de Fé para Você</h3>
+                            </div>
+                            <div class="preview-body">
+                                <p id="previewCardMessage">Sua mensagem aparecerá aqui...</p>
+                                <div class="preview-verse">
+                                    <p id="previewVerseText">"Porque Deus amou o mundo de tal maneira que deu o seu
+                                        Filho unigênito..."</p>
+                                    <p id="previewVerseRef">João 3:16</p>
+                                </div>
+                                <div class="preview-media" id="previewMedia">
+                                    <div class="no-media">
+                                        <i class="fas fa-music"></i>
+                                        <span>Nenhuma mídia selecionada</span>
+                                    </div>
+                                    <div class="media-controls">
+                                        <button class="media-toggle" aria-label="Tocar/Pausar mídia">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="preview-images" id="previewImages">
+                                    <div class="no-images">
+                                        <i class="fas fa-image"></i>
+                                        <span>Nenhuma imagem selecionada</span>
+                                    </div>
+                                    <div class="carousel-controls">
+                                        <button class="carousel-prev" aria-label="Imagem anterior">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button class="carousel-next" aria-label="Próxima imagem">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="preview-footer">
+                                <div class="preview-url">
+                                    <i class="fas fa-link"></i>
+                                    <span>devotly.com/<span id="previewUrl">seunome</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    <div class="modal-overlay" id="loadingModal">
+        <div class="modal-content">
+            <div class="spinner">
+                <div class="spinner-circle"></div>
+            </div>
+            <h3>Processando pagamento...</h3>
+            <p>Isso pode levar alguns instantes</p>
+        </div>
+    </div>
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Cartão criado com sucesso!</h3>
+            <p>Seu cartão digital está pronto para ser compartilhado</p>
+            <div class="modal-actions">
+                <button id="viewCardBtn" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt"></i> Ver Cartão
+                </button>
+                <button id="copyCardLinkBtn" class="btn btn-secondary">
+                    <i class="fas fa-copy"></i> Copiar Link
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="../js/effects.js"></script>
+    <script src="../js/create.js"></script>
+</body>
+
+</html>

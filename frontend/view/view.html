@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devotly - Cartão de Fé</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/view.css">
+  <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css">
+</head>
+<body>
+  <div class="view-container">
+    <!-- Canvas para efeitos de fundo -->
+    <canvas id="backgroundCanvas"></canvas>
+    
+    <!-- Conteúdo principal com scroll snap -->
+    <main class="snap-container">
+      <!-- Seção 1: Título e mensagem -->
+      <section class="snap-section section-title">
+        <div class="section-content">
+          <h1 id="cardTitle">Título do Cartão</h1>
+          <p id="cardMessage">Mensagem personalizada de fé e encorajamento</p>
+        </div>
+        <div class="scroll-indicator">
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </section>
+      
+      <!-- Seção 2: Mídia (condicional) -->
+      <section class="snap-section section-media hidden" id="mediaSection">
+        <div class="section-content">
+          <h2><i class="fas fa-music"></i> Bênção Musical</h2>
+          <button class="btn btn-primary media-button" id="mediaButton">
+            <i class="fab fa-youtube"></i> Reproduzir Vídeo
+          </button>
+        </div>
+      </section>
+      
+      <!-- Seção 3: Carrossel de imagens (condicional) -->
+      <section class="snap-section section-images hidden" id="imagesSection">
+        <div class="section-content">
+          <h2><i class="fas fa-images"></i> Galeria de Fé</h2>
+          <div class="swiper">
+            <div class="swiper-wrapper" id="swiperWrapper"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Seção 4: Versículo bíblico -->
+      <section class="snap-section section-verse">
+        <div class="section-content">
+          <div class="verse-container">
+            <i class="fas fa-quote-left"></i>
+            <p class="bible-verse" id="bibleVerse">"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."</p>
+            <p class="verse-reference" id="verseReference">— João 3:16</p>
+            <i class="fas fa-quote-right"></i>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Seção 5: Mensagem final e QR Code -->
+      <section class="snap-section section-final">
+        <div class="section-content">
+          <div class="final-message">
+            <i class="fas fa-dove"></i>
+            <p id="finalMessage">Que Deus te abençoe abundantemente!</p>
+          </div>
+          <div class="qr-code-container">
+            <img id="qrCodeImage" src="" alt="QR Code para compartilhar">
+            <p>Escaneie para compartilhar esta bênção</p>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- Rodapé -->
+    <footer class="view-footer">
+      <p>Criado com <i class="fas fa-heart"></i> pelo Devotly</p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+  <script src="../js/effects.js"></script>
+  <script src="../js/view.js"></script>
+</body>
+</html>
