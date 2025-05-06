@@ -641,98 +641,68 @@ class DevotlyCreator {
         return null;
     }
 
-    updatePreview() {
-        // Título
-        document.getElementById('previewCardTitle').textContent =
-            this.state.formData.cardTitle || "Mensagem de Fé para Você";
+updatePreview() {
+    // Seção 1: Título
+    document.getElementById('previewCardTitle').textContent = 
+        this.state.formData.cardTitle || "Mensagem de Fé para Você";
 
-        // Mensagem com formatação
-        const messageElement = document.getElementById('previewCardMessage');
-        let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
-        formattedMessage = formattedMessage
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/_(.*?)_/g, '<em>$1</em>');
-        messageElement.innerHTML = formattedMessage;
+    // Seção 2: Mensagem
+    const messageElement = document.getElementById('previewCardMessage');
+    let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
+    formattedMessage = formattedMessage
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/_(.*?)_/g, '<em>$1</em>');
+    messageElement.innerHTML = formattedMessage;
 
-        // Versículo
-        document.getElementById('previewVerseText').textContent =
-            this.state.formData.bibleVerse.text
-                ? `"${this.state.formData.bibleVerse.text}"`
-                : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
-        document.getElementById('previewVerseRef').textContent =
-            this.state.formData.bibleVerse.reference || 'João 3:16';
+    // Seção 3: Versículo
+    document.getElementById('previewVerseText').textContent =
+        this.state.formData.bibleVerse.text
+            ? `"${this.state.formData.bibleVerse.text}"`
+            : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
+    document.getElementById('previewVerseRef').textContent =
+        this.state.formData.bibleVerse.reference || 'João 3:16';
 
-        // URL
-        document.getElementById('previewUrl').textContent =
-            this.state.formData.cardName || 'seunome';
+    // Seção 4: Imagens
+    const previewImages = document.getElementById('previewImages');
+    previewImages.innerHTML = '';
 
-        // Imagens
-        const previewImages = this.elements.previewImages;
-        previewImages.innerHTML = ''; // Clear existing content
-
-        if (this.state.formData.images.length > 0) {
-            const imageContainer = document.createElement('div');
-            imageContainer.className = 'image-container';
-
-            this.state.formData.images.forEach((imgSrc, index) => {
-                const img = document.createElement('img');
-                img.src = imgSrc;
-                img.alt = `Imagem ${index + 1}`;
-                img.classList.toggle('active', index === this.state.currentImageIndex);
-                imageContainer.appendChild(img);
-            });
-
-            previewImages.appendChild(imageContainer);
-
-            const controls = document.createElement('div');
-            controls.className = 'carousel-controls';
-            controls.innerHTML = `
-                <button class="carousel-prev"><i class="fas fa-chevron-left"></i></button>
-                <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
-            `;
-            previewImages.appendChild(controls);
-
-            // Reattach event listeners
-            controls.querySelector('.carousel-prev').onclick = () => this.navigateCarousel(-1);
-            controls.querySelector('.carousel-next').onclick = () => this.navigateCarousel(1);
-
-            this.startImageCarousel();
-        } else {
-            previewImages.innerHTML = `
-                <div class="no-images">
-                    <i class="fas fa-image"></i>
-                    <span>Nenhuma imagem selecionada</span>
-                </div>
-            `;
-        }
-
-        // Mídia
-        const previewMedia = this.elements.previewMedia;
-        const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
-
-        if (embedUrl) {
-            previewMedia.innerHTML = `
-                <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                <div class="media-controls">
-                    <button class="media-toggle" aria-label="${this.state.isMediaPlaying ? 'Pausar' : 'Tocar'} mídia">
-                        <i class="fas ${this.state.isMediaPlaying ? 'fa-pause' : 'fa-play'}"></i>
-                    </button>
-                </div>
-            `;
-        } else {
-            previewMedia.innerHTML = `
-                <div class="no-media">
-                    <i class="fas fa-music"></i>
-                    <span>Nenhuma mídia selecionada</span>
-                </div>
-                <div class="media-controls">
-                    <button class="media-toggle" aria-label="Tocar/Pausar mídia" disabled>
-                        <i class="fas fa-play"></i>
-                    </button>
-                </div>
-            `;
-        }
+    if (this.state.formData.images.length > 0) {
+        this.state.formData.images.forEach(imgSrc => {
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = 'Imagem do cartão';
+            previewImages.appendChild(img);
+        });
+    } else {
+        previewImages.innerHTML = `
+            <div class="no-images">
+                <i class="fas fa-image"></i>
+                <span>Nenhuma imagem selecionada</span>
+            </div>
+        `;
     }
+
+    // Seção 5: Mídia
+    const previewMedia = document.getElementById('previewMedia');
+    const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
+
+    if (embedUrl) {
+        previewMedia.innerHTML = `
+            <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        `;
+    } else {
+        previewMedia.innerHTML = `
+            <div class="no-media">
+                <i class="fas fa-music"></i>
+                <span>Nenhuma mídia selecionada</span>
+            </div>
+        `;
+    }
+
+    // URL (rodapé)
+    document.getElementById('previewUrl').textContent =
+        this.state.formData.cardName || 'seunome';
+}
 
     copyToClipboard(text) {
         const textarea = document.createElement('textarea');

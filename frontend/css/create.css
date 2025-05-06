@@ -1,5 +1,7 @@
 /* Estilos Específicos para a Página de Criação */
 
+
+
 /* Layout Principal */
 .creation-flow {
     position: relative;
@@ -10,9 +12,12 @@
 
 .creation-layout {
     display: grid;
-    grid-template-columns: 1fr 450px; /* Ajustado para largura fixa do preview */
+    grid-template-columns: 1fr 450px;
     gap: 2rem;
     align-items: start;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
 .form-container {
@@ -26,14 +31,13 @@
     max-width: 450px;
     position: sticky;
     top: 2rem;
-    height: calc(100vh - 4rem);
+    height: fit-content;
+    /* Alterado para ajustar ao conteúdo */
+    max-height: calc(100vh - 4rem);
     overflow-y: auto;
-    padding-bottom: 2rem;
-    /* Fica fixo ao rolar, abaixo do header */
     background: linear-gradient(135deg, var(--color-secondary), var(--color-dark));
     border-radius: var(--border-radius);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -55,9 +59,8 @@
     background-color: var(--color-primary);
     border: 1px solid rgba(212, 175, 55, 0.15);
     border-radius: var(--border-radius);
-    height: 100%;
-    min-height: 600px;
-    /* Garante espaço suficiente */
+    height: auto;
+    min-height: auto;
 }
 
 .preview-header {
@@ -78,17 +81,9 @@
     gap: 0.5rem;
 }
 
-.preview-header h3::before {
-    content: '\f5a0';
-    /* Ícone de coração com cruz (Font Awesome) */
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    font-size: 1.2rem;
-    opacity: 0.8;
-}
-
 .preview-body {
-    flex: 1;
+    flex: 0 1 auto;
+    /* Alterado de flex: 1 para flex: 0 1 auto */
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -130,7 +125,9 @@
 
 .preview-images {
     position: relative;
-    min-height: 200px;
+    min-height: 250px;
+    height: auto;
+    /* Alterado para altura automática */
     background-color: var(--color-dark);
     border-radius: var(--border-radius);
     overflow: hidden;
@@ -143,15 +140,24 @@
     width: 100%;
     height: 100%;
     position: relative;
+    padding: 1rem;
+    /* Adicionado padding para espaçamento interno */
 }
+
 
 .preview-images img {
     width: 100%;
-    height: 200px; /* Altura fixa para melhor visualização */
-    object-fit: cover;
+    height: auto;
+    /* Alterado para altura automática */
+    max-height: 250px;
+    /* Altura máxima */
+    object-fit: scale-down;
+    /* Alterado para scale-down */
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Centraliza a imagem */
     opacity: 0;
     transition: opacity 0.6s ease-in-out;
 }
@@ -633,7 +639,7 @@
     border: 2px solid rgba(212, 175, 55, 0.2);
     border-radius: var(--border-radius);
     background-color: var(--color-secondary);
-    color: var(--color-light);
+    color: var (--color-light);
     font-size: 1.1rem;
     transition: var(--transition);
     cursor: pointer;
@@ -729,7 +735,8 @@
 }
 
 .verse-text {
-    font-family: 'Montserrat', sans-serif; /* Alterado de 'Crimson Pro' para 'Montserrat' */
+    font-family: 'Montserrat', sans-serif;
+    /* Alterado de 'Crimson Pro' para 'Montserrat' */
     color: var(--color-light);
     font-size: clamp(1.1rem, 2.5vw, 1.3rem);
     line-height: 1.8;
@@ -875,117 +882,6 @@
     margin-bottom: 0.4rem;
 }
 
-/* Seletor de Tema */
-.theme-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.theme-option {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    border-radius: var(--border-radius);
-    background-color: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.theme-option:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.theme-option.selected {
-    border-color: var(--color-accent);
-    background-color: rgba(58, 54, 224, 0.1);
-}
-
-.theme-preview {
-    width: clamp(60px, 10vw, 70px);
-    height: clamp(60px, 10vw, 70px);
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.theme-info h4 {
-    margin-bottom: 0.2rem;
-    color: var(--color-light);
-    font-size: clamp(0.9rem, 2vw, 1rem);
-}
-
-.theme-info p {
-    font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-    opacity: 0.7;
-}
-
-/* Seletor de Temas */
-.theme-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.theme-option {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid transparent;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    height: auto;
-}
-
-.theme-option.selected {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-}
-
-.theme-preview {
-    height: 100px;
-    border-radius: var(--border-radius);
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.theme-info {
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.theme-info h4 {
-    font-size: 1rem;
-    color: var(--color-accent);
-    margin-bottom: 0.5rem;
-}
-
-.theme-info p {
-    font-size: 0.9rem;
-    color: var(--color-text);
-    line-height: 1.4;
-}
-
-/* Estilos para o tema "Nenhum" */
-.theme-none {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-none::after {
-    content: '×';
-    font-size: 1.5rem;
-    color: var(--color-text);
-    opacity: 0.5;
-}
-
 /* Modais */
 .modal-overlay {
     position: fixed;
@@ -1058,10 +954,23 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
     max-width: 100%;
-    padding: 1rem;
-    line-height: 1.6;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    padding: 1.25rem;
+    line-height: 1.8;
+    font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+    /* Aumentado o tamanho da fonte */
     color: var(--color-light);
+    font-family: var(--font-accent);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+/* Ajuste responsivo para telas menores */
+@media (max-width: 480px) {
+    #previewCardMessage {
+        font-size: clamp(1.3rem, 3vw, 1.3rem);
+        padding: 1rem;
+        line-height: 1.6;
+    }
 }
 
 /* Estilos para Efeitos no Preview */
@@ -1282,9 +1191,15 @@
     }
 
     .card-preview-container {
-        max-width: 600px;
+        position: relative;
+        top: 0;
+        height: auto;
+        max-height: none;
         margin: 0 auto;
-        position: static;
+    }
+
+    .preview-card {
+        min-height: auto;
     }
 }
 
@@ -1665,5 +1580,44 @@
     #fetchVerse {
         width: 100%;
         min-width: unset;
+    }
+}
+
+/* Ajuste apenas para responsividade vertical */
+@media (max-height: 800px) {
+    .card-preview-container {
+        max-height: calc(100vh - 2rem);
+        top: 1rem;
+    }
+
+    .preview-body {
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .preview-images,
+    .preview-media {
+        min-height: 150px;
+    }
+}
+
+@media (max-height: 600px) {
+    .card-preview-container {
+        max-height: calc(100vh - 1rem);
+        top: 0.5rem;
+    }
+
+    .preview-header {
+        padding: 1rem;
+    }
+
+    .preview-body {
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .preview-images,
+    .preview-media {
+        min-height: 120px;
     }
 }
