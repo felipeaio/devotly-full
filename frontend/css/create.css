@@ -2158,3 +2158,63 @@
         min-height: 250px; /* Reduzido de 320px */
     }
 }
+
+/* Estilos para sugestões de música */
+.music-suggestions {
+    margin-top: 1.5rem;
+    background: rgba(212, 175, 55, 0.05);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+.music-suggestions h4 {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    color: var(--color-light);
+}
+
+.suggestion-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.suggestion-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: var(--color-light);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.suggestion-item:hover {
+    background: rgba(212, 175, 55, 0.2);
+}
+
+.suggestion-item i.fab {
+    color: #ff0000;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.form-check input[type="checkbox"] {
+    width: auto;
+    accent-color: var(--color-accent);
+}
+
+.form-check label {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}

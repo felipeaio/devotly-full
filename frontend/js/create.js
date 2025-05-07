@@ -26,7 +26,7 @@ class DevotlyCreator {
 
         this.state = {
             currentStep: 0,
-            totalSteps: this.elements.formSteps.length,
+            totalSteps: 8, // Atualizamos para 8 etapas no total
             formData: {
                 cardName: '',
                 cardTitle: '',
@@ -101,14 +101,6 @@ class DevotlyCreator {
         document.getElementById('bibleBook').addEventListener('change', () => this.updatePreview());
         document.getElementById('bibleChapter').addEventListener('input', () => this.updatePreview());
         document.getElementById('bibleVerse').addEventListener('input', () => this.updatePreview());
-
-        document.querySelectorAll('.format-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.formatText(e.target.closest('button').dataset.format);
-                this.updatePreview();
-            });
-        });
 
         const uploadArea = document.getElementById('uploadArea');
         uploadArea.addEventListener('click', () => this.elements.imageUpload.click());
@@ -209,6 +201,32 @@ class DevotlyCreator {
         document.querySelectorAll('.preview-section').forEach(section => {
             observer.observe(section);
         });
+
+        // Adicionar sugestões de música
+        document.querySelectorAll('.suggestion-item').forEach(button => {
+            button.addEventListener('click', () => {
+                const musicUrl = button.dataset.url;
+                document.getElementById('musicLink').value = musicUrl;
+                this.state.formData.musicLink = musicUrl;
+                this.updatePreview();
+            });
+        });
+
+        // Adicionar sugestões de versículos bíblicos
+        document.querySelectorAll('.verse-item').forEach(button => {
+            button.addEventListener('click', () => {
+                const book = button.dataset.book;
+                const chapter = button.dataset.chapter;
+                const verse = button.dataset.verse;
+                
+                document.getElementById('bibleBook').value = book;
+                document.getElementById('bibleChapter').value = chapter;
+                document.getElementById('bibleVerse').value = verse;
+                
+                // Buscar o versículo automaticamente
+                this.fetchBibleVerse();
+            });
+        });
     }
 
     nextStep() {
@@ -244,7 +262,7 @@ class DevotlyCreator {
         const currentStepElement = this.elements.formSteps[step];
 
         switch (step) {
-            case 0:
+            case 0: // Nome da página
                 const cardNameInput = currentStepElement.querySelector('#cardName');
                 if (!cardNameInput.value.trim()) {
                     this.showError(cardNameInput, 'Por favor, insira um nome para o cartão');
@@ -255,33 +273,38 @@ class DevotlyCreator {
                 }
                 break;
 
-            case 1:
+            case 1: // Título da página
                 const titleInput = currentStepElement.querySelector('#cardTitle');
-                const messageInput = currentStepElement.querySelector('#cardMessage');
-
                 if (!titleInput.value.trim()) {
                     this.showError(titleInput, 'Por favor, insira um título para o cartão');
                     isValid = false;
                 }
+                break;
 
+            case 2: // Mensagem principal
+                const messageInput = currentStepElement.querySelector('#cardMessage');
                 if (!messageInput.value.trim()) {
                     this.showError(messageInput, 'Por favor, insira uma mensagem para o cartão');
                     isValid = false;
                 }
                 break;
+                
+            case 3: // Versículo bíblico (opcional, não precisamos validar)
+                // Etapa opcional - não precisa de validação obrigatória
+                break;
 
-            case 2:
-                const bookSelect = currentStepElement.querySelector('#bibleBook');
-                const chapterInput = currentStepElement.querySelector('#bibleChapter');
-                const verseInput = currentStepElement.querySelector('#bibleVerse');
-
-                if (!bookSelect.value || !chapterInput.value || !verseInput.value) {
-                    this.showError(bookSelect, 'Por favor, selecione um livro, capítulo e versículo');
+            case 6: // Email
+                const emailInput = currentStepElement.querySelector('#userEmail');
+                if (!emailInput.value.trim()) {
+                    this.showError(emailInput, 'Por favor, insira seu email');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+                    this.showError(emailInput, 'Por favor, insira um email válido');
                     isValid = false;
                 }
                 break;
 
-            case 4:
+            case 7: // Plano
                 if (!this.state.formData.selectedPlan) {
                     this.showError(currentStepElement.querySelector('.plan-cards'),
                         'Por favor, selecione um plano');
@@ -325,31 +348,6 @@ class DevotlyCreator {
     updateProgress() {
         const progress = ((this.state.currentStep + 1) / this.state.totalSteps) * 100;
         this.elements.progressBar.style.width = `${progress}%`;
-    }
-
-    formatText(format) {
-        const textarea = document.getElementById('cardMessage');
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = textarea.value.substring(start, end);
-        let formattedText = '';
-
-        switch (format) {
-            case 'bold':
-                formattedText = `**${selectedText}**`;
-                break;
-            case 'italic':
-                formattedText = `_${selectedText}_`;
-                break;
-        }
-
-        textarea.value = textarea.value.substring(0, start) +
-            formattedText +
-            textarea.value.substring(end);
-
-        textarea.focus();
-        textarea.setSelectionRange(start, start + formattedText.length);
-        this.state.formData.cardMessage = textarea.value;
     }
 
     async convertToWebP(file) {

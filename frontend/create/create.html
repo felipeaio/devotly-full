@@ -43,25 +43,38 @@
                             <div class="step-number">1</div>
                             <div class="step-label">Nome</div>
                         </div>
-                        <div class="step" data-step="2" role="button" aria-label="Etapa 2: Mensagem">
+                        <div class="step" data-step="2" role="button" aria-label="Etapa 2: Título">
                             <div class="step-number">2</div>
+                            <div class="step-label">Título</div>
+                        </div>
+                        <div class="step" data-step="3" role="button" aria-label="Etapa 3: Mensagem">
+                            <div class="step-number">3</div>
                             <div class="step-label">Mensagem</div>
                         </div>
-                        <div class="step" data-step="3" role="button" aria-label="Etapa 3: Versículo">
-                            <div class="step-number">3</div>
+                        <div class="step" data-step="4" role="button" aria-label="Etapa 4: Versículo">
+                            <div class="step-number">4</div>
                             <div class="step-label">Versículo</div>
                         </div>
-                        <div class="step" data-step="4" role="button" aria-label="Etapa 4: Mídia">
-                            <div class="step-number">4</div>
-                            <div class="step-label">Mídia</div>
-                        </div>
-                        <div class="step" data-step="5" role="button" aria-label="Etapa 5: Pagamento">
+                        <div class="step" data-step="5" role="button" aria-label="Etapa 5: Fotos">
                             <div class="step-number">5</div>
-                            <div class="step-label">Pagamento</div>
+                            <div class="step-label">Fotos</div>
+                        </div>
+                        <div class="step" data-step="6" role="button" aria-label="Etapa 6: Música">
+                            <div class="step-number">6</div>
+                            <div class="step-label">Música</div>
+                        </div>
+                        <div class="step" data-step="7" role="button" aria-label="Etapa 7: Email">
+                            <div class="step-number">7</div>
+                            <div class="step-label">Email</div>
+                        </div>
+                        <div class="step" data-step="8" role="button" aria-label="Etapa 8: Plano">
+                            <div class="step-number">8</div>
+                            <div class="step-label">Plano</div>
                         </div>
                     </div>
                 </div>
                 <form id="cardForm" class="creation-form">
+                    <!-- Etapa 1: Nome da página -->
                     <div class="form-step active" data-step="1">
                         <div class="step-header">
                             <h2>Comece com um nome</h2>
@@ -86,26 +99,18 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Etapa 2: Título da página -->
                     <div class="form-step" data-step="2">
                         <div class="step-header">
-                            <h2>Crie sua mensagem</h2>
-                            <p>Escreva uma mensagem de fé, esperança ou amor</p>
+                            <h2>Adicione um título</h2>
+                            <p>Escolha um título impactante para sua mensagem</p>
                         </div>
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardTitle">Título do Cartão</label>
                                 <input type="text" id="cardTitle" name="cardTitle"
                                     placeholder="ex: Mensagem de Fé para Você" maxlength="60" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="cardMessage">Mensagem Principal</label>
-                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
-                                    maxlength="500" required></textarea>
-                                <div class="input-footer">
-                                    <div class="char-counter">
-                                        <span id="messageCounter">0</span>/500 caracteres
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <div class="step-actions">
@@ -117,45 +122,21 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Etapa 3: Mensagem Principal -->
                     <div class="form-step" data-step="3">
                         <div class="step-header">
-                            <h2>Selecione um versículo</h2>
-                            <p>Escolha uma passagem bíblica para incluir</p>
+                            <h2>Crie sua mensagem</h2>
+                            <p>Escreva uma mensagem inspiradora que toque corações</p>
                         </div>
                         <div class="step-content">
-                            <div class="bible-selector">
-                                <div class="input-row">
-                                    <div class="input-group">
-                                        <label for="bibleBook">Livro</label>
-                                        <select id="bibleBook" name="bibleBook" required>
-                                            <option value="">Selecione um livro</option>
-                                            <option value="genesis">Gênesis</option>
-                                            <option value="psalms">Salmos</option>
-                                            <option value="john">João</option>
-                                        </select>
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="bibleChapter">Capítulo</label>
-                                        <input type="number" id="bibleChapter" name="bibleChapter" min="1"
-                                            placeholder="ex: 23" required>
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="bibleVerse">Versículo</label>
-                                        <input type="number" id="bibleVerse" name="bibleVerse" min="1"
-                                            placeholder="ex: 1" required>
-                                    </div>
-                                </div>
-                                <button type="button" id="fetchVerse" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Buscar Versículo
-                                </button>
-                                <div class="verse-preview">
-                                    <div class="verse-content">
-                                        <div class="verse-quote">
-                                            <i class="fas fa-quote-left"></i>
-                                            <p class="verse-text">"Porque Deus amou o mundo de tal maneira que deu o seu
-                                                Filho unigênito..."</p>
-                                            <small class="verse-reference">João 3:16</small>
-                                        </div>
+                            <div class="input-group">
+                                <label for="cardMessage">Mensagem Principal</label>
+                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
+                                    maxlength="500" required></textarea>
+                                <div class="input-footer">
+                                    <div class="char-counter">
+                                        <span id="messageCounter">0</span>/500 caracteres
                                     </div>
                                 </div>
                             </div>
@@ -169,32 +150,71 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Etapa 4: Versículo -->
+                    <!-- Etapa 4: Versículo Bíblico -->
                     <div class="form-step" data-step="4">
                         <div class="step-header">
-                            <h2>Adicione mídia</h2>
-                            <p>Enriqueça seu cartão com imagens e música</p>
+                            <h2>Adicione um versículo</h2>
+                            <p>Escolha um versículo bíblico para fortalecer sua mensagem</p>
                         </div>
                         <div class="step-content">
-                            <div class="media-section">
-                                <h3><i class="fas fa-images"></i> Imagens</h3>
-                                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp" multiple
-                                    style="display: none;">
-                                <div class="upload-area" id="uploadArea">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <span>Arraste imagens aqui ou clique para selecionar</span>
-                                    <small>Máximo de 7 imagens (2MB cada)</small>
+                            <div class="bible-selector">
+                                <h3><i class="fas fa-book-bible"></i> Adicionar versículo</h3>
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label for="bibleBook">Livro</label>
+                                        <select id="bibleBook" name="bibleBook">
+                                            <option value="">Selecione um livro</option>
+                                            <option value="genesis">Gênesis</option>
+                                            <option value="exodus">Êxodo</option>
+                                            <option value="psalms">Salmos</option>
+                                            <option value="proverbs">Provérbios</option>
+                                            <option value="isaiah">Isaías</option>
+                                            <option value="matthew">Mateus</option>
+                                            <option value="john">João</option>
+                                            <option value="romans">Romanos</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="bibleChapter">Capítulo</label>
+                                        <input type="number" id="bibleChapter" name="bibleChapter" min="1"
+                                            placeholder="ex: 23">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="bibleVerse">Versículo</label>
+                                        <input type="number" id="bibleVerse" name="bibleVerse" min="1"
+                                            placeholder="ex: 1">
+                                    </div>
                                 </div>
-                                <div class="image-preview-container" id="imagePreviewContainer"></div>
-                            </div>
-                            <div class="media-section">
-                                <h3><i class="fas fa-music"></i> Música (Opcional)</h3>
-                                <div class="input-group">
-                                    <label for="musicLink">Link do YouTube ou Spotify</label>
-                                    <input type="url" id="musicLink" name="musicLink"
-                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
-                                    <div class="input-hint">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span>Adicione um link direto para uma música ou vídeo</span>
+                                <button type="button" id="fetchVerse" class="btn btn-secondary">
+                                    <i class="fas fa-search"></i> Buscar Versículo
+                                </button>
+                                <div class="verse-preview" style="display: none;">
+                                    <div class="verse-content">
+                                        <div class="verse-quote">
+                                            <i class="fas fa-quote-left"></i>
+                                            <p class="verse-text"></p>
+                                            <small class="verse-reference"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="verse-suggestions">
+                                    <h4>Versículos sugeridos:</h4>
+                                    <div class="suggestion-list verse-list">
+                                        <button type="button" class="suggestion-item verse-item" data-book="john"
+                                            data-chapter="3" data-verse="16">
+                                            <i class="fas fa-book-bible"></i> João 3:16
+                                        </button>
+                                        <button type="button" class="suggestion-item verse-item" data-book="psalms"
+                                            data-chapter="23" data-verse="1">
+                                            <i class="fas fa-book-bible"></i> Salmos 23:1
+                                        </button>
+                                        <button type="button" class="suggestion-item verse-item" data-book="proverbs"
+                                            data-chapter="3" data-verse="5">
+                                            <i class="fas fa-book-bible"></i> Provérbios 3:5
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -208,7 +228,123 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Etapa 5: Fotos -->
                     <div class="form-step" data-step="5">
+                        <div class="step-header">
+                            <h2>Adicione fotos</h2>
+                            <p>Enriqueça seu cartão com imagens inspiradoras</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="media-section">
+                                <h3><i class="fas fa-images"></i> Imagens</h3>
+                                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp" multiple
+                                    style="display: none;">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Arraste imagens aqui ou clique para selecionar</span>
+                                    <small>Máximo de 7 imagens (2MB cada)</small>
+                                </div>
+                                <div class="image-preview-container" id="imagePreviewContainer"></div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="4">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="6">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Etapa 6: Link do vídeo/música Spotify -->
+                    <div class="form-step" data-step="6">
+                        <div class="step-header">
+                            <h2>Adicione música</h2>
+                            <p>Inclua uma trilha sonora para sua mensagem</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="media-section">
+                                <h3><i class="fas fa-music"></i> Música (Opcional)</h3>
+                                <div class="input-group">
+                                    <label for="musicLink">Link do YouTube ou Spotify</label>
+                                    <input type="url" id="musicLink" name="musicLink"
+                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
+                                    <div class="input-hint">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Adicione um link direto para uma música ou vídeo inspirador</span>
+                                    </div>
+                                </div>
+
+                                <div class="music-suggestions">
+                                    <h4>Sugestões populares:</h4>
+                                    <div class="suggestion-list">
+                                        <button type="button" class="suggestion-item"
+                                            data-url="https://youtu.be/klWpi9T8K1E">
+                                            <i class="fab fa-youtube"></i> Amazing Grace
+                                        </button>
+                                        <button type="button" class="suggestion-item"
+                                            data-url="https://youtu.be/y8BBCYFAYRI">
+                                            <i class="fab fa-youtube"></i> Hallelujah
+                                        </button>
+                                        <button type="button" class="suggestion-item"
+                                            data-url="https://youtu.be/1Hrs-xa5RKw">
+                                            <i class="fab fa-youtube"></i> What A Beautiful Name
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="5">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="7">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Etapa 7: Email -->
+                    <div class="form-step" data-step="7">
+                        <div class="step-header">
+                            <h2>Seus dados de contato</h2>
+                            <p>Para enviarmos seu cartão e confirmações</p>
+                        </div>
+                        <div class="step-content">
+                            <div class="input-group">
+                                <label for="userEmail">Email</label>
+                                <input type="email" id="userEmail" name="userEmail" placeholder="seuemail@exemplo.com"
+                                    required>
+                                <div class="input-hint">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Usamos seu email apenas para enviar confirmações e o link do seu cartão</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="userName">Seu nome (opcional)</label>
+                                <input type="text" id="userName" name="userName" placeholder="Como podemos te chamar?">
+                            </div>
+
+                            <div class="form-check">
+                                <input type="checkbox" id="newsletter" name="newsletter" checked>
+                                <label for="newsletter">Quero receber novidades e dicas de fé por email</label>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="6">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-next" data-next="8">
+                                Próxima Etapa <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Etapa 8: Escolha do plano -->
+                    <div class="form-step" data-step="8">
                         <div class="step-header">
                             <h2><i class="fas fa-credit-card"></i> Escolha seu Plano</h2>
                             <p>Selecione um plano para finalizar seu cartão</p>
@@ -257,7 +393,7 @@
                             </div>
                         </div>
                         <div class="step-actions">
-                            <button type="button" class="btn btn-secondary btn-prev" data-prev="4">
+                            <button type="button" class="btn btn-secondary btn-prev" data-prev="7">
                                 <i class="fas fa-arrow-left"></i> Voltar
                             </button>
                             <button type="submit" class="btn btn-primary" id="createCardBtn">
