@@ -4,6 +4,54 @@
  * Controle completo do fluxo de criação de cartões com pré-visualização em tempo real
  */
 
+if (!HTMLCanvasElement.prototype.toBlob) {
+    // Polyfill para navegadores antigos
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+        const dataURL = this.toDataURL(type, quality);
+        const binStr = atob(dataURL.split(',')[1]);
+        const arr = new Uint8Array(binStr.length);
+
+        for (let i = 0; i < binStr.length; i++) {
+            arr[i] = binStr.charCodeAt(i);
+        }
+
+        callback(new Blob([arr], { type: type || 'image/png' }));
+    };
+}
+
+// preview.js
+class CardPreview {
+    constructor(container, state) {
+        this.container = container;
+        this.state = state;
+    }
+
+    update() {
+        // Lógica de atualização de preview
+    }
+}
+
+// form-manager.js
+class FormManager {
+    constructor(form, state) {
+        this.form = form;
+        this.state = state;
+    }
+
+    setupValidation() {
+        // Lógica de validação
+    }
+}
+
+// main.js
+class DevotlyApp {
+    constructor() {
+        this.state = {/* ... */ };
+        this.preview = new CardPreview(document.querySelector('.card-preview-container'), this.state);
+        this.formManager = new FormManager(document.getElementById('cardForm'), this.state);
+    }
+}
+
 class DevotlyCreator {
     constructor() {
         this.elements = {
@@ -26,7 +74,7 @@ class DevotlyCreator {
 
         this.state = {
             currentStep: 0,
-            totalSteps: 8, // Atualizamos para 8 etapas no total
+            totalSteps: 8,
             formData: {
                 cardName: '',
                 cardTitle: '',
@@ -47,6 +95,8 @@ class DevotlyCreator {
             isMediaPlaying: false
         };
 
+        this.sectionObserver = null;
+
         this.init();
     }
 
@@ -54,8 +104,65 @@ class DevotlyCreator {
         this.setupEventListeners();
         this.showStep(this.state.currentStep);
         this.updateProgress();
+
+        // Inicializar contadores
+        document.getElementById('titleCounter').textContent = '0';
+        document.getElementById('messageCounter').textContent = '0';
+
         this.updatePreview();
         this.loadBibleBooks();
+        this.setupSectionObserver();
+    }
+
+    setupSectionObserver() {
+        const previewSections = document.querySelector('.preview-sections');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const sections = document.querySelectorAll('.preview-section');
+
+        if (!previewSections || !sections.length) return;
+
+        // Configurar IntersectionObserver para detectar seções visíveis
+        const observerOptions = {
+            root: previewSections,
+            threshold: 0.5 // Considera a seção visível quando 50% dela está no viewport
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Atualizar indicadores
+                    sectionDots.forEach(dot => {
+                        dot.classList.toggle('active', dot.dataset.section === entry.target.id);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        // Observar todas as seções
+        sections.forEach(section => observer.observe(section));
+
+        // Adicionar eventos de clique nos indicadores
+        sectionDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetSection = document.getElementById(dot.dataset.section);
+                if (targetSection) {
+                    previewSections.scrollTo({
+                        top: targetSection.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Salvar o observador para limpeza futura
+        this.sectionObserver = observer;
+    }
+
+    cleanupSectionObserver() {
+        if (this.sectionObserver) {
+            this.sectionObserver.disconnect();
+            this.sectionObserver = null;
+        }
     }
 
     setupEventListeners() {
@@ -84,6 +191,7 @@ class DevotlyCreator {
 
         document.getElementById('cardTitle').addEventListener('input', (e) => {
             this.state.formData.cardTitle = e.target.value;
+            document.getElementById('titleCounter').textContent = e.target.value.length;
             this.updatePreview();
         });
 
@@ -174,34 +282,6 @@ class DevotlyCreator {
             }, 2000);
         });
 
-        document.querySelectorAll('.section-dot').forEach(indicator => {
-            indicator.addEventListener('click', () => {
-                const targetSection = document.getElementById(indicator.dataset.section);
-                targetSection.scrollIntoView({ behavior: 'smooth' });
-            });
-        });
-
-        // Adicione um observer para atualizar os indicadores conforme o scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    document.querySelectorAll('.section-dot').forEach(dot => {
-                        dot.classList.toggle(
-                            'active', 
-                            dot.dataset.section === entry.target.id
-                        );
-                    });
-                }
-            });
-        }, {
-            threshold: 0.5
-        });
-
-        // Observe todas as seções
-        document.querySelectorAll('.preview-section').forEach(section => {
-            observer.observe(section);
-        });
-
         // Adicionar sugestões de música
         document.querySelectorAll('.suggestion-item').forEach(button => {
             button.addEventListener('click', () => {
@@ -218,12 +298,11 @@ class DevotlyCreator {
                 const book = button.dataset.book;
                 const chapter = button.dataset.chapter;
                 const verse = button.dataset.verse;
-                
+
                 document.getElementById('bibleBook').value = book;
                 document.getElementById('bibleChapter').value = chapter;
                 document.getElementById('bibleVerse').value = verse;
-                
-                // Buscar o versículo automaticamente
+
                 this.fetchBibleVerse();
             });
         });
@@ -262,7 +341,7 @@ class DevotlyCreator {
         const currentStepElement = this.elements.formSteps[step];
 
         switch (step) {
-            case 0: // Nome da página
+            case 0:
                 const cardNameInput = currentStepElement.querySelector('#cardName');
                 if (!cardNameInput.value.trim()) {
                     this.showError(cardNameInput, 'Por favor, insira um nome para o cartão');
@@ -273,27 +352,32 @@ class DevotlyCreator {
                 }
                 break;
 
-            case 1: // Título da página
+            case 1:
                 const titleInput = currentStepElement.querySelector('#cardTitle');
                 if (!titleInput.value.trim()) {
                     this.showError(titleInput, 'Por favor, insira um título para o cartão');
                     isValid = false;
+                } else if (titleInput.value.trim().length < 3) {
+                    this.showError(titleInput, 'O título deve ter pelo menos 3 caracteres');
+                    isValid = false;
                 }
                 break;
 
-            case 2: // Mensagem principal
+            case 2:
                 const messageInput = currentStepElement.querySelector('#cardMessage');
                 if (!messageInput.value.trim()) {
                     this.showError(messageInput, 'Por favor, insira uma mensagem para o cartão');
                     isValid = false;
+                } else if (messageInput.value.trim().length < 10) {
+                    this.showError(messageInput, 'A mensagem deve ter pelo menos 10 caracteres');
+                    isValid = false;
                 }
                 break;
-                
-            case 3: // Versículo bíblico (opcional, não precisamos validar)
-                // Etapa opcional - não precisa de validação obrigatória
+
+            case 3:
                 break;
 
-            case 6: // Email
+            case 6:
                 const emailInput = currentStepElement.querySelector('#userEmail');
                 if (!emailInput.value.trim()) {
                     this.showError(emailInput, 'Por favor, insira seu email');
@@ -304,7 +388,7 @@ class DevotlyCreator {
                 }
                 break;
 
-            case 7: // Plano
+            case 7:
                 if (!this.state.formData.selectedPlan) {
                     this.showError(currentStepElement.querySelector('.plan-cards'),
                         'Por favor, selecione um plano');
@@ -360,11 +444,26 @@ class DevotlyCreator {
             };
 
             img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                const MAX_SIZE = 1200;
+
+                if (width > MAX_SIZE || height > MAX_SIZE) {
+                    if (width > height) {
+                        height = (height / width) * MAX_SIZE;
+                        width = MAX_SIZE;
+                    } else {
+                        width = (width / height) * MAX_SIZE;
+                        height = MAX_SIZE;
+                    }
+                }
+
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = width;
+                canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(img, 0, 0, width, height);
 
                 canvas.toBlob((blob) => {
                     if (blob) {
@@ -375,7 +474,7 @@ class DevotlyCreator {
                     } else {
                         reject(new Error('Failed to convert to WebP'));
                     }
-                }, 'image/webp', 0.8); // 80% quality
+                }, 'image/webp', 0.8);
             };
 
             img.onerror = () => reject(new Error('Failed to load image'));
@@ -385,60 +484,64 @@ class DevotlyCreator {
         });
     }
 
-    // Atualize o método handleImageUpload
     async handleImageUpload() {
         const files = Array.from(this.elements.imageUpload.files);
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-        
+
         if (!files.length) return;
 
         if (this.state.formData.images.length + files.length > 7) {
-            this.showError(uploadArea, 'Você pode enviar no máximo 7 imagens');
+            this.showError(document.getElementById('uploadArea'), 'Você pode enviar no máximo 7 imagens');
             this.elements.imageUpload.value = '';
             return;
         }
 
-        for (const file of files) {
-            if (file.size > 2 * 1024 * 1024) {
-                this.showError(uploadArea, `A imagem "${file.name}" é muito grande (máx. 2MB)`);
-                continue;
-            }
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.classList.add('loading');
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                // Adiciona ao estado
-                this.state.formData.images.push(e.target.result);
+        try {
+            for (const file of files) {
+                if (file.size > 2 * 1024 * 1024) {
+                    this.showError(uploadArea, `A imagem "${file.name}" é muito grande (máx. 2MB)`);
+                    continue;
+                }
 
-                // Cria o preview da imagem
-                const previewElement = document.createElement('div');
-                previewElement.className = 'image-preview';
-                previewElement.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview">
-                    <button class="remove-image" data-index="${this.state.formData.images.length - 1}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
+                const reader = new FileReader();
 
-                // Adiciona ao container de preview
-                imagePreviewContainer.appendChild(previewElement);
+                reader.onload = (e) => {
+                    const imageIndex = this.state.formData.images.length;
+                    this.state.formData.images.push(e.target.result);
 
-                // Adiciona evento para remover imagem
-                previewElement.querySelector('.remove-image').addEventListener('click', (event) => {
-                    const index = parseInt(event.currentTarget.dataset.index);
-                    this.state.formData.images.splice(index, 1);
-                    previewElement.remove();
+                    const previewElement = document.createElement('div');
+                    previewElement.className = 'image-preview';
+                    previewElement.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="remove-image" data-index="${imageIndex}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+
+                    imagePreviewContainer.appendChild(previewElement);
+
+                    // Usar uma função anônima para capturar o índice corretamente
+                    previewElement.querySelector('.remove-image').addEventListener('click', (event) => {
+                        const removeIndex = parseInt(event.currentTarget.getAttribute('data-index'));
+                        this.removeImage(removeIndex);
+                    });
+
+                    // Atualizar preview após cada imagem ser carregada
                     this.updatePreview();
-                    this.reindexImages();
-                });
+                };
 
-                this.updatePreview();
-            };
-
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            }
+        } finally {
+            uploadArea.classList.remove('loading');
+            // Limpar o input para permitir selecionar os mesmos arquivos novamente
+            this.elements.imageUpload.value = '';
         }
     }
 
-    // Adicione este novo método para reindexar as imagens após remoção
     reindexImages() {
         const previews = document.querySelectorAll('.image-preview .remove-image');
         previews.forEach((button, index) => {
@@ -448,10 +551,8 @@ class DevotlyCreator {
 
     updateCarouselControls() {
         const galleryContainer = document.getElementById('previewImages');
-        
-        // Só mostra controles se houver mais de uma imagem
+
         if (this.state.formData.images.length > 1) {
-            // Adiciona controles de navegação se ainda não existirem
             if (!galleryContainer.querySelector('.carousel-controls')) {
                 galleryContainer.innerHTML += `
                     <div class="carousel-controls">
@@ -459,9 +560,9 @@ class DevotlyCreator {
                         <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
                     </div>
                     <div class="carousel-indicators">
-                        ${Array(this.state.formData.images.length).fill(0).map((_, i) => 
-                            `<div class="carousel-indicator${i === 0 ? ' active' : ''}"></div>`
-                        ).join('')}
+                        ${Array(this.state.formData.images.length).fill(0).map((_, i) =>
+                    `<div class="carousel-indicator${i === 0 ? ' active' : ''}"></div>`
+                ).join('')}
                     </div>
                 `;
             }
@@ -611,7 +712,7 @@ class DevotlyCreator {
         document.querySelector(`.theme-option[data-theme="${theme}"]`).classList.add('selected');
 
         this.state.formData.theme = theme;
-        window.applyPreviewTheme(theme); // Call the global function from effects.js
+        window.applyPreviewTheme(theme);
         this.updatePreview();
     }
 
@@ -627,16 +728,32 @@ class DevotlyCreator {
     navigateCarousel(direction) {
         const images = document.querySelectorAll('#gallerySection img');
         const indicators = document.querySelectorAll('.carousel-indicator');
-        
+        const removeButtons = document.querySelectorAll('#gallerySection .remove-image');
+
         if (images.length <= 1) return;
 
+        // Esconder imagem e botão atuais
         images[this.state.currentImageIndex].classList.remove('active');
-        indicators[this.state.currentImageIndex].classList.remove('active');
+        images[this.state.currentImageIndex].style.display = 'none';
+        if (indicators.length) indicators[this.state.currentImageIndex].classList.remove('active');
 
+        // Esconder todos os botões de remoção
+        removeButtons.forEach(btn => {
+            btn.style.display = 'none';
+        });
+
+        // Atualizar o índice atual
         this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
-        
+
+        // Mostrar nova imagem e botão
         images[this.state.currentImageIndex].classList.add('active');
-        indicators[this.state.currentImageIndex].classList.add('active');
+        images[this.state.currentImageIndex].style.display = 'block';
+        if (indicators.length) indicators[this.state.currentImageIndex].classList.add('active');
+
+        // Mostrar apenas o botão de remoção da imagem atual
+        if (removeButtons[this.state.currentImageIndex]) {
+            removeButtons[this.state.currentImageIndex].style.display = 'flex';
+        }
     }
 
     startImageCarousel() {
@@ -686,92 +803,173 @@ class DevotlyCreator {
         return null;
     }
 
-updatePreview() {
-    // Seção 1: Título
-    document.getElementById('previewCardTitle').textContent = 
-        this.state.formData.cardTitle || "Mensagem de Fé para Você";
+    sanitizeHTML(html) {
+        const temp = document.createElement('div');
+        temp.textContent = html;
+        return temp.innerHTML
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/_(.*?)_/g, '<em>$1</em>');
+    }
 
-    // Seção 2: Mensagem
-    const messageElement = document.getElementById('previewCardMessage');
-    let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
-    formattedMessage = formattedMessage
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/_(.*?)_/g, '<em>$1</em>');
-    messageElement.innerHTML = formattedMessage;
+    updatePreview() {
+        document.getElementById('previewCardTitle').textContent =
+            this.state.formData.cardTitle || "Mensagem de Fé para Você";
 
-    // Seção 3: Versículo
-    document.getElementById('previewVerseText').textContent =
-        this.state.formData.bibleVerse.text
-            ? `"${this.state.formData.bibleVerse.text}"`
-            : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
-    document.getElementById('previewVerseRef').textContent =
-        this.state.formData.bibleVerse.reference || 'João 3:16';
+        const messageElement = document.getElementById('previewCardMessage');
+        let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
+        formattedMessage = formattedMessage
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/_(.*?)_/g, '<em>$1</em>');
+        messageElement.innerHTML = this.sanitizeHTML(formattedMessage);
 
-    // Seção 4: Imagens
-    const galleryContainer = document.querySelector('#gallerySection .gallery-container');
-    galleryContainer.innerHTML = '';
+        document.getElementById('previewVerseText').textContent =
+            this.state.formData.bibleVerse.text
+                ? `"${this.state.formData.bibleVerse.text}"`
+                : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
+        document.getElementById('previewVerseRef').textContent =
+            this.state.formData.bibleVerse.reference || 'João 3:16';
 
-    if (this.state.formData.images.length > 0) {
+        // Código completamente refeito para a gestão da galeria
+        this.updateGalleryPreview();
+
+        const previewMedia = document.getElementById('previewMedia');
+        const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
+
+        if (embedUrl) {
+            previewMedia.innerHTML = `
+                <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+            `;
+        } else {
+            previewMedia.innerHTML = `
+                <div class="no-media">
+                    <i class="fas fa-music"></i>
+                    <span>Nenhuma mídia selecionada</span>
+                </div>
+            `;
+        }
+
+        document.getElementById('previewUrl').textContent =
+            this.state.formData.cardName || 'seunome';
+
+        this.cleanupSectionObserver();
+        this.setupSectionObserver();
+    }
+
+    // Adicionar este novo método para lidar exclusivamente com a galeria
+    updateGalleryPreview() {
+        const galleryContainer = document.querySelector('#gallerySection .gallery-container');
+        galleryContainer.innerHTML = '';
+
+        if (this.state.formData.images.length === 0) {
+            galleryContainer.innerHTML = `
+                <div class="no-images">
+                    <i class="fas fa-image"></i>
+                    <span>Nenhuma imagem selecionada</span>
+            </div>
+            `;
+            return;
+        }
+
+        // Criar elementos de imagem
         this.state.formData.images.forEach((imageUrl, index) => {
             const img = document.createElement('img');
             img.src = imageUrl;
             img.alt = `Imagem ${index + 1}`;
             img.classList.toggle('active', index === this.state.currentImageIndex);
+            img.style.display = index === this.state.currentImageIndex ? 'block' : 'none';
             galleryContainer.appendChild(img);
         });
 
+        // Adicionar controles de carrossel se houver mais de uma imagem
         if (this.state.formData.images.length > 1) {
-            // Adiciona controles do carrossel
-            galleryContainer.innerHTML += `
-                <div class="carousel-controls">
-                    <button class="carousel-prev">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="carousel-next">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div class="carousel-indicators">
-                    ${this.state.formData.images.map((_, index) => `
-                        <div class="carousel-indicator${index === this.state.currentImageIndex ? ' active' : ''}"></div>
-                    `).join('')}
-                </div>
+            const carouselControls = document.createElement('div');
+            carouselControls.className = 'carousel-controls';
+            carouselControls.innerHTML = `
+                <button class="carousel-prev"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
             `;
+            galleryContainer.appendChild(carouselControls);
 
-            // Adiciona event listeners para os controles
-            galleryContainer.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
-            galleryContainer.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
+            const indicators = document.createElement('div');
+            indicators.className = 'carousel-indicators';
+            indicators.innerHTML = this.state.formData.images.map((_, idx) =>
+                `<div class="carousel-indicator${idx === this.state.currentImageIndex ? ' active' : ''}"></div>`
+            ).join('');
+            galleryContainer.appendChild(indicators);
+
+            // Adicionar eventos de clique para os controles
+            carouselControls.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
+            carouselControls.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
         }
-    } else {
-        galleryContainer.innerHTML = `
-            <div class="no-images">
-                <i class="fas fa-image"></i>
-                <span>Nenhuma imagem selecionada</span>
-            </div>
-        `;
+
+        // Adicionar botões de remoção para cada imagem
+        const imageActions = document.createElement('div');
+        imageActions.className = 'image-actions';
+
+        this.state.formData.images.forEach((_, index) => {
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-image';
+            removeBtn.setAttribute('data-index', index);
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.removeImage(parseInt(e.currentTarget.getAttribute('data-index')));
+            });
+            imageActions.appendChild(removeBtn);
+        });
+
+        galleryContainer.appendChild(imageActions);
     }
 
-    // Seção 5: Mídia
-    const previewMedia = document.getElementById('previewMedia');
-    const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
+    // Substituir o método removeImage existente por esta versão
+    removeImage(index) {
+        // Guardar o número total de imagens antes da remoção
+        const totalImages = this.state.formData.images.length;
 
-    if (embedUrl) {
-        previewMedia.innerHTML = `
-            <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-        `;
-    } else {
-        previewMedia.innerHTML = `
-            <div class="no-media">
-                <i class="fas fa-music"></i>
-                <span>Nenhuma mídia selecionada</span>
-            </div>
-        `;
+        // Remover a imagem do array
+        this.state.formData.images.splice(index, 1);
+
+        // Ajustar o índice atual de imagem se necessário
+        if (this.state.currentImageIndex >= this.state.formData.images.length) {
+            this.state.currentImageIndex = Math.max(0, this.state.formData.images.length - 1);
+        }
+
+        // Também remover do container de preview no formulário
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreviews = imagePreviewContainer.querySelectorAll('.image-preview');
+
+        // Se encontramos o elemento, removê-lo
+        if (index < imagePreviews.length) {
+            imagePreviews[index].remove();
+        }
+
+        // Atualizar os índices dos botões de remoção no formulário
+        this.reindexFormImages();
+
+        // Verificar se ainda temos imagens
+        if (totalImages > 0 && this.state.formData.images.length === 0) {
+            // Se removemos a última imagem, mostrar a mensagem "Nenhuma imagem"
+            this.updateGalleryPreview();
+        } else {
+            // Se ainda temos imagens, atualizar o preview
+            this.updatePreview();
+        }
+
+        console.log(`Imagem ${index} removida. Restam ${this.state.formData.images.length} imagens.`);
     }
 
-    // URL (rodapé)
-    document.getElementById('previewUrl').textContent =
-        this.state.formData.cardName || 'seunome';
-}
+    // Substituir o método reindexImages por este
+    reindexFormImages() {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewElements = previewContainer.querySelectorAll('.image-preview');
+
+        previewElements.forEach((preview, index) => {
+            const removeButton = preview.querySelector('.remove-image');
+            if (removeButton) {
+                removeButton.setAttribute('data-index', index);
+            }
+        });
+    }
 
     copyToClipboard(text) {
         const textarea = document.createElement('textarea');
@@ -810,23 +1008,27 @@ updatePreview() {
             }, 300);
         }
     }
+
+    updateImages(action, data) {
+        switch (action) {
+            case 'add':
+                if (this.state.formData.images.length >= 7) return false;
+                this.state.formData.images.push(data);
+                break;
+            case 'remove':
+                this.state.formData.images.splice(data, 1);
+                break;
+            case 'clear':
+                this.state.formData.images = [];
+                break;
+        }
+
+        this.updatePreview();
+        this.reindexImages();
+        return true;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     new DevotlyCreator();
-});
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            document.querySelectorAll('.section-dot').forEach(dot => {
-                dot.classList.toggle(
-                    'active', 
-                    dot.dataset.section === entry.target.id
-                );
-            });
-        }
-    });
-}, {
-    threshold: 0.5
 });

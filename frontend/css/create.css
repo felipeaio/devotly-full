@@ -1625,23 +1625,52 @@
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     background: var(--color-primary);
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    width: 100%; /* Garantir largura */
 }
 
 .preview-section {
     height: 100vh;
+    min-height: 100vh;
     scroll-snap-align: start;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1.5rem; /* Reduzido de 2rem para 1.5rem */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%; /* Garantir largura */
 }
 
+/* Ajustes responsivos */
+@media (max-width: 1200px), (max-height: 800px) {
+    .preview-sections, .preview-section {
+        height: 100vh;
+        min-height: 100vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .preview-sections, .preview-section {
+        height: 100vh;
+        min-height: 100vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-sections, .preview-section {
+        height: 100vh;
+        min-height: 100vh;
+    }
+}
+
+/* Manter conteúdo centralizado */
 .section-content {
     width: 100%;
     max-width: 400px;
-    min-height: 280px; /* Reduzido */
+    min-height: 150px; /* Reduzido para melhor visualização */
     text-align: center;
     padding: 1rem;
     background: rgba(255, 255, 255, 0.03);
@@ -1650,25 +1679,26 @@
     flex-direction: column;
     justify-content: center;
     margin: 0 auto;
+    overflow: hidden; /* Evita que o conteúdo ultrapasse o container */
 }
 
 /* Ajustes responsivos */
 @media (max-width: 768px) {
     .section-content {
-        min-height: 240px;
+        min-height: 180px; /* Reduzido de 240px para 180px */
     }
 }
 
 @media (max-width: 480px) {
     .section-content {
-        min-height: 200px;
+        min-height: 160px; /* Reduzido de 200px para 160px */
         max-width: 320px;
     }
 }
 
 @media (max-width: 360px) {
     .section-content {
-        min-height: 340px; /* Reduzido de 480px */
+        min-height: 150px; /* Reduzido de 340px para 150px */
         max-width: 280px;
         padding: 0.75rem;
     }
@@ -1683,12 +1713,19 @@
     color: white;
     margin: 0;
     line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
 }
 
 #messageSection .message-container {
     font-size: 1.2rem;
     line-height: 1.8;
     color: var(--color-light);
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #verseSection .verse-container {
@@ -1714,7 +1751,7 @@
     width: 100%;
     height: 100%;
     aspect-ratio: 9/16; /* Mantém proporção vertical consistente */
-    min-height: 160px; /* Altura mínima reduzida */
+    min-height: 180px; /* Reduzido de 200px para 180px */
     border-radius: var(--border-radius);
     overflow: hidden;
     background: var(--color-dark);
@@ -1739,36 +1776,23 @@
 }
 
 /* Ajustes responsivos */
-@media (max-width: 1200px) {
-    #gallerySection .gallery-container {
-        min-height: 350px;
-    }
-}
-
-@media (max-width: 992px) {
-    #gallerySection .gallery-container {
-        min-height: 300px;
-    }
-}
-
 @media (max-width: 768px) {
-    .section-content {
-        min-height: 240px;
+    #gallerySection .gallery-container {
+        min-height: 160px; /* Reduzido de 260px para 160px */
     }
     
-    #gallerySection .gallery-container {
-        min-height: 140px;
+    #gallerySection .section-content {
+        min-height: 160px; /* Reduzido de 260px para 160px */
     }
 }
 
 @media (max-width: 480px) {
-    .section-content {
-        min-height: 200px;
-        max-width: 320px;
+    #gallerySection .gallery-container {
+        min-height: 150px; /* Reduzido de 300px para 150px */
     }
     
-    #gallerySection .gallery-container {
-        min-height: 120px;
+    #gallerySection .section-content {
+        min-height: 150px; /* Reduzido de 300px para 150px */
     }
 }
 
@@ -1795,119 +1819,18 @@
 }
 
 /* Ajustes responsivos */
-@media (max-width: 768px) {
-    .preview-section {
-        padding: 1rem;
-    }
-
-    .section-content {
-        padding: 1rem;
-    }
-
+@media (max-width: 480px) {
     #titleSection h1 {
         font-size: 2rem;
     }
-
-    #messageSection .message-container {
-        font-size: 1rem;
-    }
-
-    #verseSection #previewVerseText {
-        font-size: 1.1rem;
-    }
 }
 
-/* Estilos para o índice lateral */
-.section-indicators {
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 0.75rem;
-    border-radius: var(--border-radius);
-    backdrop-filter: blur(10px);
-}
-
-/* Responsividade para o índice lateral */
-@media (max-width: 768px) {
-    .section-indicators {
-        right: 10px;
-        padding: 0.5rem;
-    }
-
-    .section-indicator {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-    }
-
-    .indicator-tooltip {
-        display: none;
-    }
-}
-
-/* Estilos para o índice lateral simplificado */
-.section-indicators {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 100;
-}
-
-.section-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.section-dot:hover {
-    background: rgba(255, 255, 255, 0.5);
-    transform: scale(1.2);
-}
-
-.section-dot.active {
-    background: var(--color-accent);
-    transform: scale(1.2);
-}
-
-/* Ajuste responsivo */
-@media (max-width: 768px) {
-    .section-indicators {
-        right: 10px;
-    }
-    
-    .section-dot {
-        width: 6px;
-        height: 6px;
-    }
-}
-
-/* Ajuste da seção de galeria */
-#gallerySection .section-content {
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%; /* Garante que ocupe toda a altura disponível */
-}
-
+/* Corrigir galeria de imagens */
 #gallerySection .gallery-container {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 400px;
+    min-height: 150px; /* Altura mínima reduzida */
     border-radius: var(--border-radius);
     overflow: hidden;
     background: var(--color-dark);
@@ -1919,302 +1842,154 @@
 
 #gallerySection img {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Alterado para contain para garantir visualização completa */
     opacity: 0;
     transition: opacity 0.3s ease;
-    display: none;
-    margin: 0;
 }
 
 #gallerySection img.active {
     opacity: 1;
-    display: block;
+    display: block !important; /* Forçar visibilidade */
 }
 
-/* Estado vazio (quando não há imagens) */
-.no-images {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text);
-    opacity: 0.5;
+/* Adicionar isso para garantir que as imagens apareçam */
+.preview-section#gallerySection .section-content {
+    min-height: 200px; /* Altura maior específica para a galeria */
 }
 
-.no-images i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+/* Garantir que todo conteúdo interno das seções seja ajustado corretamente */
+
+/* Para todas as seções */
+.section-content > * {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Ajustes responsivos para manter a proporção */
-@media (max-width: 768px) {
-    #gallerySection .section-content {
-        padding: 0.75rem;
-    }
-
-    #gallerySection img {
-        padding: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    #gallerySection .section-content {
-        padding: 0.5rem;
-    }
-
-    #gallerySection img {
-        padding: 0.5rem;
-    }
-}
-
-/* Ajuste da seção de galeria */
-#gallerySection .gallery-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 9/16; /* Mantém proporção vertical consistente */
-    min-height: 160px; /* Altura mínima reduzida */
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    background: var(--color-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-#gallerySection img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    display: none;
-}
-
-#gallerySection img.active {
-    opacity: 1;
-    display: block;
-}
-
-/* Ajustes responsivos para garantir boa visualização em diferentes telas */
-@media (max-width: 768px) {
-    #gallerySection .gallery-container {
-        aspect-ratio: 9/16; /* Mantém a proporção em mobile */
-        height: 100%;
-        min-height: unset;
-    }
-
-    #gallerySection .section-content {
-        padding: 0.5rem;
-        height: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    #gallerySection .gallery-container {
-        aspect-ratio: 9/16;
-        height: 100%;
-    }
-}
-
-/* Controles do carrossel */
-.carousel-controls {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: space-between;
-    padding: 0 1rem;
-    z-index: 2;
-}
-
-.carousel-prev,
-.carousel-next {
-    background: rgba(0, 0, 0, 0.5);
-    color: var(--color-accent);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.carousel-prev:hover,
-.carousel-next:hover {
-    background: var(--color-accent);
-    color: var(--color-dark);
-}
-
-/* Indicadores de imagem */
-.carousel-indicators {
-    position: absolute;
-    bottom: 1rem;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    z-index: 2;
-}
-
-.carousel-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.carousel-indicator.active {
-    background: var(--color-accent);
-    transform: scale(1.2);
-}
-
-/* Estado vazio */
-.no-images {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: var(--color-text);
-    opacity: 0.5;
-}
-
-.no-images i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-    #gallerySection .gallery-container {
-        height: 250px;
-    }
-}
-
-@media (max-width: 480px) {
-    #gallerySection .gallery-container {
-        height: 200px;
-    }
-}
-
-/* Ajuste base para a galeria */
-#gallerySection .gallery-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 9/16;
-    min-height: 200px; /* Reduzido de 280px */
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    background: var(--color-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-/* Ajustes responsivos - tamanhos reduzidos */
-@media (max-width: 768px) {
-    #gallerySection .gallery-container {
-        min-height: 260px; /* Reduzido de 320px */
-        aspect-ratio: 9/16;
-    }
-
-    #gallerySection .section-content {
-        padding: 0.5rem;
-        min-height: 260px;
-    }
-}
-
-@media (max-width: 480px) {
-    #gallerySection .gallery-container {
-        min-height: 300px; /* Reduzido de 380px */
-        aspect-ratio: 9/16;
-    }
-
-    #gallerySection .section-content {
-        padding: 0.5rem;
-        min-height: 300px;
-    }
-}
-
-@media (max-width: 360px) {
-    #gallerySection .gallery-container {
-        min-height: 250px; /* Reduzido de 320px */
-    }
-}
-
-/* Estilos para sugestões de música */
-.music-suggestions {
+/* Estilos refinados para as sugestões de versículos */
+.verse-suggestions {
     margin-top: 1.5rem;
-    background: rgba(212, 175, 55, 0.05);
     padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.03);
     border-radius: var(--border-radius);
+    border: 1px solid rgba(212, 175, 55, 0.1);
 }
 
-.music-suggestions h4 {
-    margin-bottom: 0.75rem;
+.verse-suggestions h4 {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
     font-size: 1rem;
-    color: var(--color-light);
-}
-
-.suggestion-list {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
 }
 
-.suggestion-item {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.2);
+.verse-suggestions h4::before {
+    content: '\f02e';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: var(--color-accent);
+}
+
+.suggestion-list.verse-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.suggestion-item.verse-item {
+    background-color: rgba(212, 175, 55, 0.05);
     color: var(--color-light);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    text-align: left;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
 }
 
-.suggestion-item:hover {
-    background: rgba(212, 175, 55, 0.2);
+.suggestion-item.verse-item:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.suggestion-item i.fab {
-    color: #ff0000;
+.suggestion-item.verse-item i {
+    color: var(--gold-light);
+    font-size: 0.85rem;
 }
 
-.form-check {
+/* Adicionar animação ao clicar */
+.suggestion-item.verse-item:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+    .suggestion-list.verse-list {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .suggestion-list.verse-list {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Estilo para os botões de remoção no preview */
+#gallerySection .image-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 100; /* Aumentado para garantir que esteja acima de outros elementos */
+}
+
+#gallerySection .remove-image {
+    background-color: var(--color-error);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin: 1rem 0;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    opacity: 0.8; /* Aumentada para maior visibilidade */
+    transition: var(--transition);
+    padding: 0; /* Remover padding para evitar problemas de layout */
 }
 
-.form-check input[type="checkbox"] {
-    width: auto;
-    accent-color: var(--color-accent);
+#gallerySection .remove-image:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: #d32f2f; /* Vermelho mais intenso no hover */
 }
 
-.form-check label {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--color-text);
+/* Isso permite que apenas o botão da imagem atual seja visível */
+#gallerySection .remove-image {
+    display: none;
+}
+
+#gallerySection .remove-image[data-index="0"] {
+    display: flex;
+}
+
+/* Quando os botões de navegação do carrossel são clicados, 
+   mostrar o botão de remoção correspondente à imagem atual */
+#gallerySection img.active + .image-actions .remove-image,
+#gallerySection img.active ~ .image-actions .remove-image[data-index="0"] {
+    display: flex;
 }

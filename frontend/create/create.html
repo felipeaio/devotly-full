@@ -109,8 +109,13 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardTitle">Título do Cartão</label>
-                                <input type="text" id="cardTitle" name="cardTitle"
-                                    placeholder="ex: Mensagem de Fé para Você" maxlength="60" required>
+                                <input type="text" id="cardTitle" name="cardTitle" placeholder="ex: Mensagem de Fé para Você" 
+                                       maxlength="60" minlength="3" required>
+                                <div class="input-footer">
+                                    <div class="char-counter">
+                                        <span id="titleCounter">0</span>/60 caracteres
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="step-actions">
@@ -201,7 +206,7 @@
                                 </div>
 
                                 <div class="verse-suggestions">
-                                    <h4>Versículos sugeridos:</h4>
+                                    <h4>Versículos populares</h4>
                                     <div class="suggestion-list verse-list">
                                         <button type="button" class="suggestion-item verse-item" data-book="john"
                                             data-chapter="3" data-verse="16">
@@ -214,6 +219,18 @@
                                         <button type="button" class="suggestion-item verse-item" data-book="proverbs"
                                             data-chapter="3" data-verse="5">
                                             <i class="fas fa-book-bible"></i> Provérbios 3:5
+                                        </button>
+                                        <button type="button" class="suggestion-item verse-item" data-book="isaiah"
+                                            data-chapter="41" data-verse="10">
+                                            <i class="fas fa-book-bible"></i> Isaías 41:10
+                                        </button>
+                                        <button type="button" class="suggestion-item verse-item" data-book="matthew"
+                                            data-chapter="6" data-verse="33">
+                                            <i class="fas fa-book-bible"></i> Mateus 6:33
+                                        </button>
+                                        <button type="button" class="suggestion-item verse-item" data-book="romans"
+                                            data-chapter="8" data-verse="28">
+                                            <i class="fas fa-book-bible"></i> Romanos 8:28
                                         </button>
                                     </div>
                                 </div>
@@ -406,7 +423,7 @@
             <aside class="card-preview-container">
                 <div class="card-preview">
                     <div class="preview-theme" id="previewTheme">
-                        <div class="preview-sections">
+                        <div class="preview-sections" style="height: 100%; max-height: calc(100vh - 4rem);">
                             <!-- Seção 1: Título -->
                             <section class="preview-section" id="titleSection">
                                 <div class="section-content">
@@ -510,6 +527,7 @@
         </div>
     </div>
     <script src="../js/create.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"></script>
 </body>
 
 </html>
