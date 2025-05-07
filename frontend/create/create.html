@@ -270,49 +270,77 @@
             <aside class="card-preview-container">
                 <div class="card-preview">
                     <div class="preview-theme" id="previewTheme">
-                        <div class="preview-card">
-                            <div class="preview-header">
-                                <h3 id="previewCardTitle">Mensagem de Fé para Você</h3>
-                            </div>
-                            <div class="preview-body">
-                                <p id="previewCardMessage">Sua mensagem aparecerá aqui...</p>
-                                <div class="preview-verse">
-                                    <p id="previewVerseText">"Porque Deus amou o mundo de tal maneira que deu o seu
-                                        Filho unigênito..."</p>
-                                    <p id="previewVerseRef">João 3:16</p>
+                        <div class="preview-sections">
+                            <!-- Seção 1: Título -->
+                            <section class="preview-section" id="titleSection">
+                                <div class="section-content">
+                                    <h1 id="previewCardTitle">Mensagem de Fé para Você</h1>
                                 </div>
-                                <div class="preview-images" id="previewImages">
-                                    <div class="no-images">
-                                        <i class="fas fa-image"></i>
-                                        <span>Nenhuma imagem selecionada</span>
-                                    </div>
-                                    <div class="carousel-controls">
-                                        <button class="carousel-prev" aria-label="Imagem anterior">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                        <button class="carousel-next" aria-label="Próxima imagem">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
+                            </section>
+
+                            <!-- Seção 2: Mensagem -->
+                            <section class="preview-section" id="messageSection">
+                                <div class="section-content">
+                                    <div class="message-container">
+                                        <p id="previewCardMessage">Sua mensagem aparecerá aqui...</p>
                                     </div>
                                 </div>
-                                <div class="preview-media" id="previewMedia">
-                                    <div class="no-media">
-                                        <i class="fas fa-music"></i>
-                                        <span>Nenhuma mídia selecionada</span>
-                                    </div>
-                                    <div class="media-controls">
-                                        <button class="media-toggle" aria-label="Tocar/Pausar mídia">
-                                            <i class="fas fa-play"></i>
-                                        </button>
+                            </section>
+
+                            <!-- Seção 3: Versículo -->
+                            <section class="preview-section" id="verseSection">
+                                <div class="section-content">
+                                    <div class="verse-container">
+                                        <p id="previewVerseText">"Porque Deus amou o mundo de tal maneira..."</p>
+                                        <span id="previewVerseRef">João 3:16</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="preview-footer">
-                                <div class="preview-url">
-                                    <i class="fas fa-link"></i>
-                                    <span>devotly.com/<span id="previewUrl">seunome</span></span>
+                            </section>
+
+                            <!-- Seção 4: Galeria -->
+                            <section class="preview-section" id="gallerySection">
+                                <div class="section-content">
+                                    <div class="gallery-container" id="previewImages">
+                                        <div class="no-images">
+                                            <i class="fas fa-image"></i>
+                                            <span>Nenhuma imagem selecionada</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            </section>
+
+                            <!-- Seção 5: Mídia -->
+                            <section class="preview-section" id="mediaSection">
+                                <div class="section-content">
+                                    <div class="media-container" id="previewMedia">
+                                        <div class="no-media">
+                                            <i class="fas fa-music"></i>
+                                            <span>Nenhuma mídia selecionada</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Seção 6: Mensagem Final -->
+                            <section class="preview-section" id="finalSection">
+                                <div class="section-content">
+                                    <div class="final-message">
+                                        <p>Que esta mensagem toque seu coração</p>
+                                        <div class="preview-url">
+                                            <i class="fas fa-link"></i>
+                                            <span>devotly.com/<span id="previewUrl">seunome</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="section-indicators">
+                            <div class="section-dot active" data-section="titleSection"></div>
+                            <div class="section-dot" data-section="messageSection"></div>
+                            <div class="section-dot" data-section="verseSection"></div>
+                            <div class="section-dot" data-section="gallerySection"></div>
+                            <div class="section-dot" data-section="mediaSection"></div>
+                            <div class="section-dot" data-section="finalSection"></div>
                         </div>
                     </div>
                 </div>

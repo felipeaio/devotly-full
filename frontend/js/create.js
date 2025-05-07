@@ -181,6 +181,34 @@ class DevotlyCreator {
                 this.elements.copyCardLinkBtn.innerHTML = originalText;
             }, 2000);
         });
+
+        document.querySelectorAll('.section-dot').forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                const targetSection = document.getElementById(indicator.dataset.section);
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Adicione um observer para atualizar os indicadores conforme o scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.section-dot').forEach(dot => {
+                        dot.classList.toggle(
+                            'active', 
+                            dot.dataset.section === entry.target.id
+                        );
+                    });
+                }
+            });
+        }, {
+            threshold: 0.5
+        });
+
+        // Observe todas as seções
+        document.querySelectorAll('.preview-section').forEach(section => {
+            observer.observe(section);
+        });
     }
 
     nextStep() {
@@ -359,11 +387,11 @@ class DevotlyCreator {
         });
     }
 
+    // Atualize o método handleImageUpload
     async handleImageUpload() {
         const files = Array.from(this.elements.imageUpload.files);
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        const uploadArea = document.getElementById('uploadArea');
-
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        
         if (!files.length) return;
 
         if (this.state.formData.images.length + files.length > 7) {
@@ -372,55 +400,73 @@ class DevotlyCreator {
             return;
         }
 
-        uploadArea.classList.add('loading');
-
-        try {
-            for (const file of files) {
-                if (file.size > 2 * 1024 * 1024) {
-                    this.showError(uploadArea, `A imagem "${file.name}" é muito grande (máx. 2MB)`);
-                    continue;
-                }
-
-                if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-                    this.showError(uploadArea, `O formato da imagem "${file.name}" não é suportado`);
-                    continue;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    // Preview container
-                    const previewDiv = document.createElement('div');
-                    previewDiv.className = 'image-preview fade-in';
-
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = `Imagem ${this.state.formData.images.length + 1}`;
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'remove-image';
-                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                    removeBtn.onclick = () => {
-                        previewDiv.remove();
-                        this.state.formData.images = this.state.formData.images.filter(
-                            img => img !== e.target.result
-                        );
-                        this.updatePreview();
-                    };
-
-                    previewDiv.appendChild(img);
-                    previewDiv.appendChild(removeBtn);
-                    previewContainer.appendChild(previewDiv);
-
-                    // Adicionar ao state e atualizar preview
-                    this.state.formData.images.push(e.target.result);
-                    this.updatePreview();
-                };
-
-                reader.readAsDataURL(file);
+        for (const file of files) {
+            if (file.size > 2 * 1024 * 1024) {
+                this.showError(uploadArea, `A imagem "${file.name}" é muito grande (máx. 2MB)`);
+                continue;
             }
-        } finally {
-            uploadArea.classList.remove('loading');
-            this.elements.imageUpload.value = '';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // Adiciona ao estado
+                this.state.formData.images.push(e.target.result);
+
+                // Cria o preview da imagem
+                const previewElement = document.createElement('div');
+                previewElement.className = 'image-preview';
+                previewElement.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="remove-image" data-index="${this.state.formData.images.length - 1}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+
+                // Adiciona ao container de preview
+                imagePreviewContainer.appendChild(previewElement);
+
+                // Adiciona evento para remover imagem
+                previewElement.querySelector('.remove-image').addEventListener('click', (event) => {
+                    const index = parseInt(event.currentTarget.dataset.index);
+                    this.state.formData.images.splice(index, 1);
+                    previewElement.remove();
+                    this.updatePreview();
+                    this.reindexImages();
+                });
+
+                this.updatePreview();
+            };
+
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Adicione este novo método para reindexar as imagens após remoção
+    reindexImages() {
+        const previews = document.querySelectorAll('.image-preview .remove-image');
+        previews.forEach((button, index) => {
+            button.dataset.index = index;
+        });
+    }
+
+    updateCarouselControls() {
+        const galleryContainer = document.getElementById('previewImages');
+        
+        // Só mostra controles se houver mais de uma imagem
+        if (this.state.formData.images.length > 1) {
+            // Adiciona controles de navegação se ainda não existirem
+            if (!galleryContainer.querySelector('.carousel-controls')) {
+                galleryContainer.innerHTML += `
+                    <div class="carousel-controls">
+                        <button class="carousel-prev"><i class="fas fa-chevron-left"></i></button>
+                        <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="carousel-indicators">
+                        ${Array(this.state.formData.images.length).fill(0).map((_, i) => 
+                            `<div class="carousel-indicator${i === 0 ? ' active' : ''}"></div>`
+                        ).join('')}
+                    </div>
+                `;
+            }
         }
     }
 
@@ -581,17 +627,18 @@ class DevotlyCreator {
     }
 
     navigateCarousel(direction) {
-        if (this.state.formData.images.length === 0) return;
-
-        clearInterval(this.imageInterval);
-        const images = this.elements.previewImages.querySelectorAll('.image-container img');
-        if (images.length === 0) return;
+        const images = document.querySelectorAll('#gallerySection img');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        
+        if (images.length <= 1) return;
 
         images[this.state.currentImageIndex].classList.remove('active');
-        this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
-        images[this.state.currentImageIndex].classList.add('active');
+        indicators[this.state.currentImageIndex].classList.remove('active');
 
-        this.startImageCarousel();
+        this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
+        
+        images[this.state.currentImageIndex].classList.add('active');
+        indicators[this.state.currentImageIndex].classList.add('active');
     }
 
     startImageCarousel() {
@@ -663,18 +710,42 @@ updatePreview() {
         this.state.formData.bibleVerse.reference || 'João 3:16';
 
     // Seção 4: Imagens
-    const previewImages = document.getElementById('previewImages');
-    previewImages.innerHTML = '';
+    const galleryContainer = document.querySelector('#gallerySection .gallery-container');
+    galleryContainer.innerHTML = '';
 
     if (this.state.formData.images.length > 0) {
-        this.state.formData.images.forEach(imgSrc => {
+        this.state.formData.images.forEach((imageUrl, index) => {
             const img = document.createElement('img');
-            img.src = imgSrc;
-            img.alt = 'Imagem do cartão';
-            previewImages.appendChild(img);
+            img.src = imageUrl;
+            img.alt = `Imagem ${index + 1}`;
+            img.classList.toggle('active', index === this.state.currentImageIndex);
+            galleryContainer.appendChild(img);
         });
+
+        if (this.state.formData.images.length > 1) {
+            // Adiciona controles do carrossel
+            galleryContainer.innerHTML += `
+                <div class="carousel-controls">
+                    <button class="carousel-prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="carousel-indicators">
+                    ${this.state.formData.images.map((_, index) => `
+                        <div class="carousel-indicator${index === this.state.currentImageIndex ? ' active' : ''}"></div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Adiciona event listeners para os controles
+            galleryContainer.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
+            galleryContainer.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
+        }
     } else {
-        previewImages.innerHTML = `
+        galleryContainer.innerHTML = `
             <div class="no-images">
                 <i class="fas fa-image"></i>
                 <span>Nenhuma imagem selecionada</span>
@@ -745,4 +816,19 @@ updatePreview() {
 
 document.addEventListener('DOMContentLoaded', () => {
     new DevotlyCreator();
+});
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            document.querySelectorAll('.section-dot').forEach(dot => {
+                dot.classList.toggle(
+                    'active', 
+                    dot.dataset.section === entry.target.id
+                );
+            });
+        }
+    });
+}, {
+    threshold: 0.5
 });

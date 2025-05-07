@@ -1,7 +1,5 @@
 /* Estilos Específicos para a Página de Criação */
 
-
-
 /* Layout Principal */
 .creation-flow {
     position: relative;
@@ -47,7 +45,7 @@
 }
 
 .preview-theme {
-    position: relative;
+    position: relative; /* Certifique-se que está relativo */
     height: 100%;
     border-radius: var(--border-radius);
     overflow: hidden;
@@ -143,7 +141,6 @@
     padding: 1rem;
     /* Adicionado padding para espaçamento interno */
 }
-
 
 .preview-images img {
     width: 100%;
@@ -641,7 +638,7 @@
     background-color: var(--color-secondary);
     color: var (--color-light);
     font-size: 1.1rem;
-    transition: var(--transition);
+    transition: var (--transition);
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23D4AF37' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
@@ -708,7 +705,7 @@
 .verse-preview {
     background-color: var(--color-secondary);
     border: 1px solid rgba(212, 175, 55, 0.1);
-    border-radius: var(--border-radius);
+    border-radius: var (--border-radius);
     padding: 1.5rem;
     margin: 1rem 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -1619,5 +1616,545 @@
     .preview-images,
     .preview-media {
         min-height: 120px;
+    }
+}
+
+/* Novo estilo para a estrutura de preview */
+.preview-sections {
+    height: 100vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    background: var(--color-primary);
+}
+
+.preview-section {
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-content {
+    width: 100%;
+    max-width: 400px;
+    min-height: 280px; /* Reduzido */
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .section-content {
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-content {
+        min-height: 200px;
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 360px) {
+    .section-content {
+        min-height: 340px; /* Reduzido de 480px */
+        max-width: 280px;
+        padding: 0.75rem;
+    }
+}
+
+#titleSection .section-content {
+    background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
+}
+
+#titleSection h1 {
+    font-size: 2.5rem;
+    color: white;
+    margin: 0;
+    line-height: 1.2;
+}
+
+#messageSection .message-container {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--color-light);
+}
+
+#verseSection .verse-container {
+    border-left: 4px solid var(--color-accent);
+    padding-left: 1.5rem;
+    text-align: left;
+}
+
+#verseSection #previewVerseText {
+    font-size: 1.3rem;
+    color: var(--color-light);
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+#verseSection #previewVerseRef {
+    color: var(--color-accent);
+    font-size: 1rem;
+}
+
+#gallerySection .gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 9/16; /* Mantém proporção vertical consistente */
+    min-height: 160px; /* Altura mínima reduzida */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#gallerySection img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Mantém a cobertura total */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1200px) {
+    #gallerySection .gallery-container {
+        min-height: 350px;
+    }
+}
+
+@media (max-width: 992px) {
+    #gallerySection .gallery-container {
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .section-content {
+        min-height: 240px;
+    }
+    
+    #gallerySection .gallery-container {
+        min-height: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-content {
+        min-height: 200px;
+        max-width: 320px;
+    }
+    
+    #gallerySection .gallery-container {
+        min-height: 120px;
+    }
+}
+
+@media (max-width: 360px) {
+    .section-content {
+        min-height: 340px; /* Reduzido de 480px */
+        max-width: 280px;
+        padding: 0.75rem;
+    }
+}
+
+#mediaSection .media-container {
+    aspect-ratio: 16/9;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+}
+
+#finalSection .final-message {
+    color: var(--color-light);
+    font-size: 1.2rem;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .preview-section {
+        padding: 1rem;
+    }
+
+    .section-content {
+        padding: 1rem;
+    }
+
+    #titleSection h1 {
+        font-size: 2rem;
+    }
+
+    #messageSection .message-container {
+        font-size: 1rem;
+    }
+
+    #verseSection #previewVerseText {
+        font-size: 1.1rem;
+    }
+}
+
+/* Estilos para o índice lateral */
+.section-indicators {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+}
+
+/* Responsividade para o índice lateral */
+@media (max-width: 768px) {
+    .section-indicators {
+        right: 10px;
+        padding: 0.5rem;
+    }
+
+    .section-indicator {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .indicator-tooltip {
+        display: none;
+    }
+}
+
+/* Estilos para o índice lateral simplificado */
+.section-indicators {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.section-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.section-dot:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.2);
+}
+
+.section-dot.active {
+    background: var(--color-accent);
+    transform: scale(1.2);
+}
+
+/* Ajuste responsivo */
+@media (max-width: 768px) {
+    .section-indicators {
+        right: 10px;
+    }
+    
+    .section-dot {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* Ajuste da seção de galeria */
+#gallerySection .section-content {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Garante que ocupe toda a altura disponível */
+}
+
+#gallerySection .gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#gallerySection img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+    margin: 0;
+}
+
+#gallerySection img.active {
+    opacity: 1;
+    display: block;
+}
+
+/* Estado vazio (quando não há imagens) */
+.no-images {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    opacity: 0.5;
+}
+
+.no-images i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Ajustes responsivos para manter a proporção */
+@media (max-width: 768px) {
+    #gallerySection .section-content {
+        padding: 0.75rem;
+    }
+
+    #gallerySection img {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #gallerySection .section-content {
+        padding: 0.5rem;
+    }
+
+    #gallerySection img {
+        padding: 0.5rem;
+    }
+}
+
+/* Ajuste da seção de galeria */
+#gallerySection .gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 9/16; /* Mantém proporção vertical consistente */
+    min-height: 160px; /* Altura mínima reduzida */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#gallerySection img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+#gallerySection img.active {
+    opacity: 1;
+    display: block;
+}
+
+/* Ajustes responsivos para garantir boa visualização em diferentes telas */
+@media (max-width: 768px) {
+    #gallerySection .gallery-container {
+        aspect-ratio: 9/16; /* Mantém a proporção em mobile */
+        height: 100%;
+        min-height: unset;
+    }
+
+    #gallerySection .section-content {
+        padding: 0.5rem;
+        height: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #gallerySection .gallery-container {
+        aspect-ratio: 9/16;
+        height: 100%;
+    }
+}
+
+/* Controles do carrossel */
+.carousel-controls {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 2;
+}
+
+.carousel-prev,
+.carousel-next {
+    background: rgba(0, 0, 0, 0.5);
+    color: var(--color-accent);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.carousel-prev:hover,
+.carousel-next:hover {
+    background: var(--color-accent);
+    color: var(--color-dark);
+}
+
+/* Indicadores de imagem */
+.carousel-indicators {
+    position: absolute;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    z-index: 2;
+}
+
+.carousel-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-indicator.active {
+    background: var(--color-accent);
+    transform: scale(1.2);
+}
+
+/* Estado vazio */
+.no-images {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--color-text);
+    opacity: 0.5;
+}
+
+.no-images i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    #gallerySection .gallery-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    #gallerySection .gallery-container {
+        height: 200px;
+    }
+}
+
+/* Ajuste base para a galeria */
+#gallerySection .gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 9/16;
+    min-height: 200px; /* Reduzido de 280px */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* Ajustes responsivos - tamanhos reduzidos */
+@media (max-width: 768px) {
+    #gallerySection .gallery-container {
+        min-height: 260px; /* Reduzido de 320px */
+        aspect-ratio: 9/16;
+    }
+
+    #gallerySection .section-content {
+        padding: 0.5rem;
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 480px) {
+    #gallerySection .gallery-container {
+        min-height: 300px; /* Reduzido de 380px */
+        aspect-ratio: 9/16;
+    }
+
+    #gallerySection .section-content {
+        padding: 0.5rem;
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 360px) {
+    #gallerySection .gallery-container {
+        min-height: 250px; /* Reduzido de 320px */
     }
 }
