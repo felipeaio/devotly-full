@@ -112,6 +112,52 @@ class DevotlyCreator {
         this.updatePreview();
         this.loadBibleBooks();
         this.setupSectionObserver();
+
+        // Indicador de rolagem
+        const previewSections = document.querySelector('.preview-sections');
+        const scrollIndicator = document.createElement('div');
+        scrollIndicator.className = 'scroll-indicator';
+        document.querySelector('.preview-theme').appendChild(scrollIndicator);
+
+        // Ocultar indicador após rolagem
+        previewSections.addEventListener('scroll', () => {
+            if (previewSections.scrollTop > 50) {
+                previewSections.classList.add('scrolled');
+            } else {
+                previewSections.classList.remove('scrolled');
+            }
+        });
+
+        // Adicionar indicadores de seção ao preview
+        const previewTheme = document.querySelector('.preview-theme');
+        const sectionIndicators = document.createElement('div');
+        sectionIndicators.className = 'section-indicators';
+        sectionIndicators.innerHTML = `
+            <div class="section-dot active" data-section="titleSection" data-label="Título"></div>
+            <div class="section-dot" data-section="messageSection" data-label="Mensagem"></div>
+            <div class="section-dot" data-section="verseSection" data-label="Versículo"></div>
+            <div class="section-dot" data-section="gallerySection" data-label="Galeria"></div>
+            <div class="section-dot" data-section="mediaSection" data-label="Mídia"></div>
+            <div class="section-dot" data-section="finalSection" data-label="Final"></div>
+        `;
+        previewTheme.appendChild(sectionIndicators);
+
+        // IMPORTANTE: Usar uma função única para adicionar evento de clique em todos os indicadores
+        this.setupSectionDotListeners();
+
+        // Adicionar eventos de clique nos indicadores
+        document.querySelectorAll('.section-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetSection = document.getElementById(dot.dataset.section);
+                const previewSections = document.querySelector('.preview-sections');
+                if (targetSection) {
+                    previewSections.scrollTo({
+                        top: targetSection.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
     }
 
     setupSectionObserver() {
@@ -130,9 +176,25 @@ class DevotlyCreator {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // Atualizar indicadores
-                    sectionDots.forEach(dot => {
+                    // IMPORTANTE: Utilize querySelector para encontrar os pontos correspondentes
+                    // ao invés de usar a variável sectionDots que pode estar desatualizada
+                    document.querySelectorAll('.section-dot').forEach(dot => {
                         dot.classList.toggle('active', dot.dataset.section === entry.target.id);
+                    });
+
+                    // Aplicar efeito baseado na seção
+                    this.applyBackgroundEffect(entry.target.id);
+
+                    // Destacar campo correspondente no formulário
+                    const sectionId = entry.target.id;
+                    const formSection = this.getCorrespondingFormSection(sectionId);
+                    if (formSection) {
+                        this.highlightFormSection(formSection);
+                    }
+
+                    // Atualizar miniaturas também
+                    document.querySelectorAll('.preview-thumbnail').forEach(thumbnail => {
+                        thumbnail.classList.toggle('active', thumbnail.dataset.section === entry.target.id);
                     });
                 }
             });
@@ -141,21 +203,33 @@ class DevotlyCreator {
         // Observar todas as seções
         sections.forEach(section => observer.observe(section));
 
-        // Adicionar eventos de clique nos indicadores
-        sectionDots.forEach(dot => {
-            dot.addEventListener('click', () => {
-                const targetSection = document.getElementById(dot.dataset.section);
-                if (targetSection) {
-                    previewSections.scrollTo({
-                        top: targetSection.offsetTop,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
         // Salvar o observador para limpeza futura
         this.sectionObserver = observer;
+    }
+
+    applyBackgroundEffect(sectionId) {
+        const previewTheme = document.getElementById('previewTheme');
+
+        // Remover classes existentes
+        previewTheme.classList.remove('bg-title', 'bg-message', 'bg-verse', 'bg-gallery', 'bg-media', 'bg-final');
+
+        // Adicionar classe específica
+        previewTheme.classList.add(`bg-${sectionId.replace('Section', '')}`);
+
+        // Animar transição de fundo
+        previewTheme.style.transition = 'background-color 0.8s ease';
+
+        switch (sectionId) {
+            case 'titleSection':
+                // Efeito de destaque para título
+                break;
+            case 'verseSection':
+                // Efeito de foco para versículo
+                break;
+            case 'gallerySection':
+                // Efeito de destaque para imagens
+                break;
+        }
     }
 
     cleanupSectionObserver() {
@@ -304,6 +378,84 @@ class DevotlyCreator {
                 document.getElementById('bibleVerse').value = verse;
 
                 this.fetchBibleVerse();
+            });
+        });
+
+        // Botão de modo tela cheia
+        const previewContainer = document.querySelector('.card-preview-container');
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'preview-fullscreen-btn';
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+        fullscreenBtn.setAttribute('title', 'Visualizar em tela cheia');
+        previewContainer.appendChild(fullscreenBtn);
+
+        fullscreenBtn.addEventListener('click', () => {
+            const previewSections = document.querySelector('.preview-sections');
+
+            if (!document.fullscreenElement) {
+                if (previewSections.requestFullscreen) {
+                    previewSections.requestFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const previewSections = document.querySelector('.preview-sections');
+            if (document.fullscreenElement === previewSections) {
+                previewSections.classList.add('fullscreen-mode');
+            } else {
+                previewSections.classList.remove('fullscreen-mode');
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        });
+
+        document.querySelectorAll('.preview-thumbnail').forEach(thumbnail => {
+            thumbnail.addEventListener('click', () => {
+                const targetSection = document.getElementById(thumbnail.dataset.section);
+                const previewSections = document.querySelector('.preview-sections');
+
+                if (targetSection) {
+                    previewSections.scrollTo({
+                        top: targetSection.offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    }
+
+    setupSectionDotListeners() {
+        document.querySelectorAll('.section-dot, .preview-thumbnail').forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                const targetSection = document.getElementById(indicator.dataset.section);
+                const previewSections = document.querySelector('.preview-sections');
+                
+                if (targetSection) {
+                    // Usar scrollTo para navegação suave
+                    previewSections.scrollTo({
+                        top: targetSection.offsetTop,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Atualizar a classe ativa manualmente (para feedback imediato)
+                    if (indicator.classList.contains('section-dot')) {
+                        document.querySelectorAll('.section-dot').forEach(dot => {
+                            dot.classList.remove('active');
+                        });
+                        indicator.classList.add('active');
+                    } else if (indicator.classList.contains('preview-thumbnail')) {
+                        document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
+                            thumb.classList.remove('active');
+                        });
+                        indicator.classList.add('active');
+                    }
+                }
             });
         });
     }
@@ -1026,6 +1178,45 @@ class DevotlyCreator {
         this.updatePreview();
         this.reindexImages();
         return true;
+    }
+
+    getCorrespondingFormSection(sectionId) {
+        const mapping = {
+            'titleSection': 'cardTitle',
+            'messageSection': 'cardMessage',
+            'verseSection': 'bibleBook',
+            'gallerySection': 'imageUpload',
+            'mediaSection': 'musicLink'
+        };
+
+        return document.getElementById(mapping[sectionId]);
+    }
+
+    highlightFormSection(element) {
+        // Remover destaque existente
+        document.querySelectorAll('.highlight-pulse').forEach(el => {
+            el.classList.remove('highlight-pulse');
+        });
+
+        if (element) {
+            // Destacar elemento correspondente
+            element.classList.add('highlight-pulse');
+
+            // Opcional: scroll para o elemento
+            if (!this.isElementInViewport(element)) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }
+
+    isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     }
 }
 

@@ -275,7 +275,7 @@
                         </div>
                     </div>
 
-                    <!-- Etapa 6: Link do vídeo/música Spotify -->
+                    <!-- Etapa 6: Link do vídeo/música Spotify - Sem as sugestões musicais -->
                     <div class="form-step" data-step="6">
                         <div class="step-header">
                             <h2>Adicione música</h2>
@@ -287,30 +287,13 @@
                                 <div class="input-group">
                                     <label for="musicLink">Link do YouTube ou Spotify</label>
                                     <input type="url" id="musicLink" name="musicLink"
-                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
+                                           placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
                                     <div class="input-hint">
                                         <i class="fas fa-info-circle"></i>
                                         <span>Adicione um link direto para uma música ou vídeo inspirador</span>
                                     </div>
                                 </div>
-
-                                <div class="music-suggestions">
-                                    <h4>Sugestões populares:</h4>
-                                    <div class="suggestion-list">
-                                        <button type="button" class="suggestion-item"
-                                            data-url="https://youtu.be/klWpi9T8K1E">
-                                            <i class="fab fa-youtube"></i> Amazing Grace
-                                        </button>
-                                        <button type="button" class="suggestion-item"
-                                            data-url="https://youtu.be/y8BBCYFAYRI">
-                                            <i class="fab fa-youtube"></i> Hallelujah
-                                        </button>
-                                        <button type="button" class="suggestion-item"
-                                            data-url="https://youtu.be/1Hrs-xa5RKw">
-                                            <i class="fab fa-youtube"></i> What A Beautiful Name
-                                        </button>
-                                    </div>
-                                </div>
+                                <!-- Elementos de sugestões de música removidos -->
                             </div>
                         </div>
                         <div class="step-actions">
@@ -323,7 +306,7 @@
                         </div>
                     </div>
 
-                    <!-- Etapa 7: Email -->
+                    <!-- Etapa 7: Email - Remover o checkbox de newsletter -->
                     <div class="form-step" data-step="7">
                         <div class="step-header">
                             <h2>Seus dados de contato</h2>
@@ -345,10 +328,7 @@
                                 <input type="text" id="userName" name="userName" placeholder="Como podemos te chamar?">
                             </div>
 
-                            <div class="form-check">
-                                <input type="checkbox" id="newsletter" name="newsletter" checked>
-                                <label for="newsletter">Quero receber novidades e dicas de fé por email</label>
-                            </div>
+                            <!-- O elemento form-check do newsletter foi removido daqui -->
                         </div>
                         <div class="step-actions">
                             <button type="button" class="btn btn-secondary btn-prev" data-prev="6">
@@ -371,40 +351,42 @@
                                 <div class="plan-card featured" data-plan="forever">
                                     <div class="plan-badge">Mais escolhido</div>
                                     <h3>Para sempre</h3>
-                                    <ul>
-                                        <li><i class="fas fa-check"></i> Texto dedicado</li>
-                                        <li><i class="fas fa-check"></i> QR Code exclusivo</li>
-                                        <li><i class="fas fa-check"></i> 7 imagens</li>
-                                        <li><i class="fas fa-check"></i> Com música</li>
-                                        <li><i class="fas fa-check"></i> Chuva de emojis</li>
-                                        <li><i class="fas fa-check"></i> URL personalizada</li>
-                                        <li><i class="fas fa-check"></i> Suporte 24h</li>
-                                    </ul>
+                                    <div class="plan-features">
+                                        <ul>
+                                            <li><i class="fas fa-check"></i> Texto dedicado</li>
+                                            <li><i class="fas fa-check"></i> QR Code exclusivo</li>
+                                            <li><i class="fas fa-check"></i> 7 imagens</li>
+                                            <li><i class="fas fa-check"></i> Com música</li>
+                                            <li><i class="fas fa-check"></i> URL personalizada</li>
+                                            <li><i class="fas fa-check"></i> Suporte 24h</li>
+                                        </ul>
+                                    </div>
                                     <div class="plan-price">
                                         <span class="original-price">R$ 34,00</span>
                                         <span class="discount-price">R$ 17,99 <small>/uma vez</small></span>
                                     </div>
                                     <button type="button" class="btn btn-primary btn-select-plan" data-plan="forever">
-                                        Selecionar
+                                        <i class="fas fa-check-circle"></i> Selecionar
                                     </button>
                                 </div>
                                 <div class="plan-card" data-plan="annual">
                                     <h3>Anual</h3>
-                                    <ul>
-                                        <li><i class="fas fa-check"></i> Texto dedicado</li>
-                                        <li><i class="fas fa-check"></i> QR Code exclusivo</li>
-                                        <li><i class="fas fa-check"></i> 3 imagens</li>
-                                        <li><i class="fas fa-times"></i> A música será removida</li>
-                                        <li><i class="fas fa-times"></i> Sem chuva de emojis</li>
-                                        <li><i class="fas fa-check"></i> URL personalizada</li>
-                                        <li><i class="fas fa-check"></i> Suporte 24h</li>
-                                    </ul>
+                                    <div class="plan-features">
+                                        <ul>
+                                            <li><i class="fas fa-check"></i> Texto dedicado</li>
+                                            <li><i class="fas fa-check"></i> QR Code exclusivo</li>
+                                            <li><i class="fas fa-check"></i> 3 imagens</li>
+                                            <li><i class="fas fa-times"></i> Sem música</li>
+                                            <li><i class="fas fa-check"></i> URL personalizada</li>
+                                            <li><i class="fas fa-check"></i> Suporte 24h</li>
+                                        </ul>
+                                    </div>
                                     <div class="plan-price">
                                         <span class="original-price">R$ 24,00</span>
                                         <span class="discount-price">R$ 8,99 <small>/por ano</small></span>
                                     </div>
                                     <button type="button" class="btn btn-primary btn-select-plan" data-plan="annual">
-                                        Selecionar
+                                        <i class="fas fa-check-circle"></i> Selecionar
                                     </button>
                                 </div>
                             </div>
@@ -484,17 +466,54 @@
                                             <span>devotly.com/<span id="previewUrl">seunome</span></span>
                                         </div>
                                     </div>
+                                    <!-- Adicionar dentro da seção finalSection -->
+                                    <div class="preview-share-buttons">
+                                        <button class="preview-share-btn" data-platform="whatsapp">
+                                            <i class="fab fa-whatsapp"></i>
+                                        </button>
+                                        <button class="preview-share-btn" data-platform="facebook">
+                                            <i class="fab fa-facebook-f"></i>
+                                        </button>
+                                        <button class="preview-share-btn" data-platform="twitter">
+                                            <i class="fab fa-twitter"></i>
+                                        </button>
+                                        <button class="preview-share-btn" data-platform="email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </section>
                         </div>
+                        <!-- Modificar os section-dot para incluir labels -->
                         <div class="section-indicators">
-                            <div class="section-dot active" data-section="titleSection"></div>
-                            <div class="section-dot" data-section="messageSection"></div>
-                            <div class="section-dot" data-section="verseSection"></div>
-                            <div class="section-dot" data-section="gallerySection"></div>
-                            <div class="section-dot" data-section="mediaSection"></div>
-                            <div class="section-dot" data-section="finalSection"></div>
+                            <div class="section-dot active" data-section="titleSection" data-label="Título"></div>
+                            <div class="section-dot" data-section="messageSection" data-label="Mensagem"></div>
+                            <div class="section-dot" data-section="verseSection" data-label="Versículo"></div>
+                            <div class="section-dot" data-section="gallerySection" data-label="Galeria"></div>
+                            <div class="section-dot" data-section="mediaSection" data-label="Mídia"></div>
+                            <div class="section-dot" data-section="finalSection" data-label="Final"></div>
                         </div>
+                    </div>
+                </div>
+                <!-- Adicionar abaixo do card-preview-container -->
+                <div class="preview-thumbnails">
+                    <div class="preview-thumbnail active" data-section="titleSection">
+                        <i class="fas fa-heading"></i>
+                    </div>
+                    <div class="preview-thumbnail" data-section="messageSection">
+                        <i class="fas fa-comment-alt"></i>
+                    </div>
+                    <div class="preview-thumbnail" data-section="verseSection">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="preview-thumbnail" data-section="gallerySection">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="preview-thumbnail" data-section="mediaSection">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="preview-thumbnail" data-section="finalSection">
+                        <i class="fas fa-heart"></i>
                     </div>
                 </div>
             </aside>
