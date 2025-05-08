@@ -54,6 +54,29 @@ class DevotlyApp {
 
 class DevotlyCreator {
     constructor() {
+        // Garantir que o DOM está carregado
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            this.initialize();
+        }
+    }
+
+    initialize() {
+        // Inicializar elementos
+        this.initializeElements();
+        
+        // Inicializar estado
+        this.initializeState();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        // Outras inicializações
+        this.init();
+    }
+
+    initializeElements() {
         this.elements = {
             form: document.getElementById('cardForm'),
             formSteps: document.querySelectorAll('.form-step'),
@@ -69,9 +92,20 @@ class DevotlyCreator {
             previewImages: document.getElementById('previewImages'),
             previewMedia: document.getElementById('previewMedia'),
             imageUpload: document.getElementById('imageUpload'),
-            previewTheme: document.getElementById('previewTheme')
+            previewTheme: document.getElementById('previewTheme'),
+            finalMessageInput: document.getElementById('cardFinalMessage'),
+            finalMessageCounter: document.getElementById('finalMessageCounter'),
+            finalMessagePreview: document.querySelector('.final-message p')
         };
 
+        // Verificar se elementos críticos existem
+        if (!this.elements.form) {
+            console.error('Elementos críticos não encontrados');
+            return;
+        }
+    }
+
+    initializeState() {
         // Garantir que o estado comece corretamente
         this.state = {
             currentStep: 0,
@@ -99,15 +133,57 @@ class DevotlyCreator {
 
         this.sectionObserver = null;
 
-        this.init();
+        // Remover inicialização duplicada
+        this.state.formData.finalMessage = '';
 
-        setTimeout(() => this.updateProgress(), 0);
+        // Inicializar elementos uma única vez
+        this.finalMessageInput = document.getElementById('cardFinalMessage');
+        this.finalMessageCounter = document.getElementById('finalMessageCounter');
+        this.finalMessagePreview = document.querySelector('.final-message p');
+
+        this.init();
+        this.setupMessageHandlers();
+    }
+
+    setupMessageHandlers() {
+        // Manipulador da mensagem final
+        const finalMessageInput = document.getElementById('cardFinalMessage');
+        const finalMessageCounter = document.getElementById('finalMessageCounter');
+        const finalMessagePreview = document.querySelector('.final-message p');
+
+        if (finalMessageInput && finalMessageCounter && finalMessagePreview) {
+            // Remover listeners existentes
+            const newInput = finalMessageInput.cloneNode(true);
+            finalMessageInput.parentNode.replaceChild(newInput, finalMessageInput);
+
+            // Inicializar estado
+            finalMessageCounter.textContent = '0';
+            finalMessagePreview.textContent = 'Que esta mensagem toque seu coração';
+
+            // Adicionar o novo listener
+            newInput.addEventListener('input', (e) => {
+                const text = e.target.value;
+                
+                // 1. Atualizar contador
+                finalMessageCounter.textContent = text.length;
+                
+                // 2. Atualizar preview
+                finalMessagePreview.textContent = text || "Que esta mensagem toque seu coração";
+            });
+
+            // Atualizar manualmente na primeira vez
+            this.updateInitialState(newInput, finalMessageCounter, finalMessagePreview);
+        }
+    }
+
+    updateInitialState(input, counter, preview) {
+        const initialText = input.value;
+        counter.textContent = initialText.length;
+        preview.textContent = initialText || "Que esta mensagem toque seu coração";
     }
 
     init() {
         // Estado inicial
-        this.state.currentStep = 0; // Começar na primeira etapa (índice 0)
-        
         // Mostrar apenas a primeira etapa
         this.showStep(this.state.currentStep);
         
@@ -120,26 +196,14 @@ class DevotlyCreator {
         // Inicializar contadores
         document.getElementById('titleCounter').textContent = '0';
         document.getElementById('messageCounter').textContent = '0';
-        document.getElementById('finalMessageCounter').textContent = '0';
+        
+        // Garantir que o contador da mensagem final seja inicializado
+        const finalMessage = document.getElementById('cardFinalMessage').value;
+        document.getElementById('finalMessageCounter').textContent = finalMessage ? finalMessage.length : '0';
 
         this.updatePreview();
         this.loadBibleBooks();
         this.setupSectionObserver();
-
-        // Indicador de rolagem
-        const previewSections = document.querySelector('.preview-sections');
-        const scrollIndicator = document.createElement('div');
-        scrollIndicator.className = 'scroll-indicator';
-        document.querySelector('.preview-theme').appendChild(scrollIndicator);
-
-        // Ocultar indicador após rolagem
-        previewSections.addEventListener('scroll', () => {
-            if (previewSections.scrollTop > 50) {
-                previewSections.classList.add('scrolled');
-            } else {
-                previewSections.classList.remove('scrolled');
-            }
-        });
 
         // Adicionar indicadores de seção ao preview
         const previewTheme = document.querySelector('.preview-theme');
@@ -206,6 +270,20 @@ class DevotlyCreator {
             this.state.formData.finalMessage = "";
             document.getElementById('finalMessageCounter').textContent = '0';
         }
+
+        // Inicializar o contador da mensagem final
+        const finalMessageInput = document.getElementById('cardFinalMessage');
+        if (finalMessageInput) {
+            finalMessageInput.value = '';
+            document.getElementById('finalMessageCounter').textContent = '0';
+        }
+
+        // Inicializar elementos da mensagem final
+        if (this.elements.finalMessageInput) {
+            this.elements.finalMessageInput.value = '';
+            this.elements.finalMessageCounter.textContent = '0';
+            this.updateFinalMessagePreview();
+        }
     }
 
     setupSectionObserver() {
@@ -217,7 +295,7 @@ class DevotlyCreator {
         // Configurar IntersectionObserver para detectar seções visíveis
         const observerOptions = {
             root: previewSections,
-            threshold: 0.3, // Reduzido de 0.5 para 0.3 para maior sensibilidade
+            threshold: 0.3, // Reduzido de 0.5 para maior sensibilidade
             rootMargin: '0px' // Adicionar rootMargin explícito
         };
 
@@ -284,99 +362,106 @@ class DevotlyCreator {
     }
 
     setupEventListeners() {
-        this.elements.nextButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.nextStep();
+        // Verificar se os elementos existem antes de adicionar listeners
+        if (this.elements.nextButtons?.length) {
+            this.elements.nextButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.nextStep();
+                });
             });
-        });
+        }
 
-        this.elements.prevButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.prevStep();
+        if (this.elements.prevButtons?.length) {
+            this.elements.prevButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.prevStep();
+                });
             });
-        });
+        }
 
-        document.getElementById('cardName').addEventListener('input', (e) => {
-            // Salvar a posição do cursor
-            const cursorPosition = e.target.selectionStart;
-            
-            // Armazenar o valor original com espaços mantidos
-            const originalValue = e.target.value;
-            
-            // Converter espaços em hífens em tempo real, mas manter letras maiúsculas para melhor usabilidade
-            // (a conversão para minúsculas acontecerá somente no valor armazenado)
-            let friendlyValue = originalValue.replace(/\s+/g, '-');
-            
-            // Apenas para mostrar ao usuário - manter maiúsculas/minúsculas como digitado
-            e.target.value = friendlyValue;
-            
-            // Restaurar a posição do cursor, ajustando para possíveis alterações de comprimento
-            const lengthDifference = friendlyValue.length - originalValue.length;
-            e.target.setSelectionRange(cursorPosition + lengthDifference, cursorPosition + lengthDifference);
-            
-            // Converter para minúsculas e limpar para armazenamento e exibição de URL
-            let urlFriendlyValue = friendlyValue
-                .toLowerCase()
-                .replace(/[^\w\-]+/g, '')     // Remover caracteres não alfanuméricos
-                .replace(/\-\-+/g, '-')       // Substituir múltiplas hífens por uma única
-                .replace(/^-+|-+$/g, '');     // Remover hífens no início e fim
-            
-            // Atualizar estado e preview
-            this.state.formData.cardName = urlFriendlyValue;
-            document.getElementById('urlPreview').textContent = urlFriendlyValue || 'seunome';
-            document.getElementById('previewUrl').textContent = urlFriendlyValue || 'seunome';
-            this.updatePreview();
-        });
+        // Verificar outros elementos antes de adicionar listeners
+        const cardName = document.getElementById('cardName');
+        if (cardName) {
+            cardName.addEventListener('input', (e) => {
+                // Salvar a posição do cursor
+                const cursorPosition = e.target.selectionStart;
+                
+                // Armazenar o valor original com espaços mantidos
+                const originalValue = e.target.value;
+                
+                // Converter espaços em hífens em tempo real, mas manter letras maiúsculas para melhor usabilidade
+                // (a conversão para minúsculas acontecerá somente no valor armazenado)
+                let friendlyValue = originalValue.replace(/\s+/g, '-');
+                
+                // Apenas para mostrar ao usuário - manter maiúsculas/minúsculas como digitado
+                e.target.value = friendlyValue;
+                
+                // Restaurar a posição do cursor, ajustando para possíveis alterações de comprimento
+                const lengthDifference = friendlyValue.length - originalValue.length;
+                e.target.setSelectionRange(cursorPosition + lengthDifference, cursorPosition + lengthDifference);
+                
+                // Converter para minúsculas e limpar para armazenamento e exibição de URL
+                let urlFriendlyValue = friendlyValue
+                    .toLowerCase()
+                    .replace(/[^\w\-]+/g, '')     // Remover caracteres não alfanuméricos
+                    .replace(/\-\-+/g, '-')       // Substituir múltiplas hífens por uma única
+                    .replace(/^-+|-+$/g, '');     // Remover hífens no início e fim
+                
+                // Atualizar estado e preview
+                this.state.formData.cardName = urlFriendlyValue;
+                document.getElementById('urlPreview').textContent = urlFriendlyValue || 'seunome';
+                document.getElementById('previewUrl').textContent = urlFriendlyValue || 'seunome';
+                this.updatePreview();
+            });
+        }
 
-        document.getElementById('cardTitle').addEventListener('input', (e) => {
-            this.state.formData.cardTitle = e.target.value;
-            document.getElementById('titleCounter').textContent = e.target.value.length;
-            this.updatePreview();
-        });
-
-        document.getElementById('cardMessage').addEventListener('input', (e) => {
-            this.state.formData.cardMessage = e.target.value;
-            document.getElementById('messageCounter').textContent = e.target.value.length;
-            this.updatePreview();
-        });
-
-        document.getElementById('musicLink').addEventListener('input', (e) => {
-            this.state.formData.musicLink = e.target.value;
-            this.updatePreview();
-        });
-
-        document.getElementById('bibleBook').addEventListener('change', () => this.updatePreview());
-        document.getElementById('bibleChapter').addEventListener('input', () => this.updatePreview());
-        document.getElementById('bibleVerse').addEventListener('input', () => this.updatePreview());
+        // Fazer o mesmo para outros elementos
+        // Adicionar verificações de null antes de cada addEventListener
+        
+        // Exemplo:
+        const musicLink = document.getElementById('musicLink');
+        if (musicLink) {
+            musicLink.addEventListener('input', (e) => {
+                this.state.formData.musicLink = e.target.value;
+                this.updatePreview();
+            });
+        }
 
         const uploadArea = document.getElementById('uploadArea');
-        uploadArea.addEventListener('click', () => this.elements.imageUpload.click());
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => this.elements.imageUpload.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length) {
-                this.elements.imageUpload.files = e.dataTransfer.files;
-                this.handleImageUpload();
-            }
-        });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    this.elements.imageUpload.files = e.dataTransfer.files;
+                    this.handleImageUpload();
+                }
+            });
+        }
 
-        this.elements.imageUpload.addEventListener('change', () => this.handleImageUpload());
+        if (this.elements.imageUpload) {
+            this.elements.imageUpload.addEventListener('change', () => this.handleImageUpload());
+        }
 
-        document.getElementById('fetchVerse').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.fetchBibleVerse();
-        });
+        const fetchVerse = document.getElementById('fetchVerse');
+        if (fetchVerse) {
+            fetchVerse.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.fetchBibleVerse();
+            });
+        }
 
         document.querySelectorAll('.theme-option').forEach(option => {
             option.addEventListener('click', () => {
@@ -390,38 +475,53 @@ class DevotlyCreator {
             });
         });
 
-        document.querySelector('.carousel-prev').addEventListener('click', () => {
-            this.navigateCarousel(-1);
-        });
+        const carouselPrev = document.querySelector('.carousel-prev');
+        if (carouselPrev) {
+            carouselPrev.addEventListener('click', () => {
+                this.navigateCarousel(-1);
+            });
+        }
 
-        document.querySelector('.carousel-next').addEventListener('click', () => {
-            this.navigateCarousel(1);
-        });
+        const carouselNext = document.querySelector('.carousel-next');
+        if (carouselNext) {
+            carouselNext.addEventListener('click', () => {
+                this.navigateCarousel(1);
+            });
+        }
 
-        document.querySelector('.media-toggle').addEventListener('click', () => {
-            this.toggleMedia();
-        });
+        const mediaToggle = document.querySelector('.media-toggle');
+        if (mediaToggle) {
+            mediaToggle.addEventListener('click', () => {
+                this.toggleMedia();
+            });
+        }
 
-        this.elements.form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.submitForm();
-        });
+        if (this.elements.form) {
+            this.elements.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitForm();
+            });
+        }
 
-        this.elements.viewCardBtn.addEventListener('click', () => {
-            window.location.href = `view.html?id=${this.state.formData.cardName}`;
-        });
+        if (this.elements.viewCardBtn) {
+            this.elements.viewCardBtn.addEventListener('click', () => {
+                window.location.href = `view.html?id=${this.state.formData.cardName}`;
+            });
+        }
 
-        this.elements.copyCardLinkBtn.addEventListener('click', () => {
-            this.copyToClipboard(window.location.origin + '/view.html?id=' +
-                this.state.formData.cardName);
+        if (this.elements.copyCardLinkBtn) {
+            this.elements.copyCardLinkBtn.addEventListener('click', () => {
+                this.copyToClipboard(window.location.origin + '/view.html?id=' +
+                    this.state.formData.cardName);
 
-            const originalText = this.elements.copyCardLinkBtn.innerHTML;
-            this.elements.copyCardLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                const originalText = this.elements.copyCardLinkBtn.innerHTML;
+                this.elements.copyCardLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
 
-            setTimeout(() => {
-                this.elements.copyCardLinkBtn.innerHTML = originalText;
-            }, 2000);
-        });
+                setTimeout(() => {
+                    this.elements.copyCardLinkBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
 
         // Adicionar sugestões de música
         document.querySelectorAll('.suggestion-item').forEach(button => {
@@ -482,49 +582,124 @@ class DevotlyCreator {
             }
         });
 
-        document.getElementById('userPhone').addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
+        const userPhone = document.getElementById('userPhone');
+        if (userPhone) {
+            userPhone.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                
+                if (value.length > 2 && value.length <= 6) {
+                    value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+                } else if (value.length > 6) {
+                    value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+                }
+                
+                e.target.value = value;
+                this.state.formData.userPhone = value;
+            });
+        }
+
+        const cardFinalMessage = document.getElementById('cardFinalMessage');
+        if (cardFinalMessage) {
+            cardFinalMessage.addEventListener('input', (e) => {
+                const text = e.target.value;
+                
+                // Atualizar o contador
+                document.getElementById('finalMessageCounter').textContent = text.length;
+                
+                // Atualizar o state
+                this.state.formData.finalMessage = text;
+                
+                // Atualizar o preview da mensagem final imediatamente
+                const finalMessageElement = document.querySelector('.final-message p');
+                if (finalMessageElement) {
+                    finalMessageElement.textContent = text || "Que esta mensagem toque seu coração";
+                }
+            });
+        }
+
+        // Remover qualquer listener existente primeiro
+        const finalMessageInput = document.getElementById('cardFinalMessage');
+        finalMessageInput?.removeEventListener('input', this.handleFinalMessageInput);
+
+        // Adicionar novo listener para a mensagem final
+        finalMessageInput?.addEventListener('input', (e) => {
+            const text = e.target.value;
             
-            if (value.length > 2 && value.length <= 6) {
-                value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
-            } else if (value.length > 6) {
-                value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+            // 1. Atualizar o contador de caracteres
+            const counter = document.getElementById('finalMessageCounter');
+            if (counter) {
+                counter.textContent = text.length;
             }
             
-            e.target.value = value;
-            this.state.formData.userPhone = value;
+            // 2. Atualizar o state
+            this.state.formData.finalMessage = text;
+            
+            // 3. Atualizar o preview
+            const finalMessagePreview = document.querySelector('.final-message p');
+            if (finalMessagePreview) {
+                finalMessagePreview.textContent = text || "Que esta mensagem toque seu coração";
+            }
         });
 
-        document.getElementById('cardFinalMessage').addEventListener('input', (e) => {
-            this.state.formData.finalMessage = e.target.value;
-            document.getElementById('finalMessageCounter').textContent = e.target.value.length;
+        // Input handlers - Centralize todos em um local
+        const inputHandlers = {
+            'cardName': (e) => {
+                // Salvar a posição do cursor
+                const cursorPosition = e.target.selectionStart;
+                const originalValue = e.target.value;
+                let friendlyValue = originalValue.replace(/\s+/g, '-');
+                
+                e.target.value = friendlyValue;
+                e.target.setSelectionRange(cursorPosition + (friendlyValue.length - originalValue.length), 
+                    cursorPosition + (friendlyValue.length - originalValue.length));
+                
+                let urlFriendlyValue = friendlyValue.toLowerCase()
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/\-\-+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                
+                this.state.formData.cardName = urlFriendlyValue;
+                document.getElementById('urlPreview').textContent = urlFriendlyValue || 'seunome';
+                document.getElementById('previewUrl').textContent = urlFriendlyValue || 'seunome';
+            },
             
-            // Atualização direta para garantir que o preview seja atualizado imediatamente
-            const finalMessageElement = document.querySelector('.final-message p');
-            if (finalMessageElement) {
-                finalMessageElement.textContent = e.target.value || "Que esta mensagem toque seu coração";
+            'cardTitle': (e) => {
+                const text = e.target.value;
+                document.getElementById('titleCounter').textContent = text.length;
+                document.getElementById('previewCardTitle').textContent = text || "Mensagem de Fé para Você";
+                this.state.formData.cardTitle = text;
+            },
+            
+            'cardMessage': (e) => {
+                const text = e.target.value;
+                document.getElementById('messageCounter').textContent = text.length;
+                document.getElementById('previewCardMessage').textContent = text || "Sua mensagem aparecerá aqui...";
+                this.state.formData.cardMessage = text;
+            },
+            
+            'cardFinalMessage': (e) => {
+                const text = e.target.value;
+                document.getElementById('finalMessageCounter').textContent = text.length;
+                const finalMessageElement = document.querySelector('.final-message p');
+                if (finalMessageElement) {
+                    finalMessageElement.textContent = text || "Que esta mensagem toque seu coração";
+                }
+                this.state.formData.finalMessage = text;
             }
-            
-            this.updatePreview();
-        });
+        };
 
-        // Verificar se o evento para cardFinalMessage está correto
-        document.getElementById('cardFinalMessage').addEventListener('input', (e) => {
-            // Atualizar o estado
-            this.state.formData.finalMessage = e.target.value;
-            
-            // Atualizar o contador
-            document.getElementById('finalMessageCounter').textContent = e.target.value.length;
-            
-            // Atualização forçada da mensagem final
-            const finalMessageElement = document.querySelector('.final-message p');
-            if (finalMessageElement) {
-                finalMessageElement.textContent = e.target.value || "Que esta mensagem toque seu coração";
+        // Adicionar listeners para cada input
+        Object.keys(inputHandlers).forEach(inputId => {
+            const element = document.getElementById(inputId);
+            if (element) {
+                // Remove listeners existentes
+                const newElement = element.cloneNode(true);
+                element.parentNode.replaceChild(newElement, element);
+                
+                // Adiciona novo listener
+                newElement.addEventListener('input', inputHandlers[inputId]);
             }
-            
-            // Atualizar preview completo
-            this.updatePreview();
         });
     }
 
@@ -1163,6 +1338,8 @@ class DevotlyCreator {
                 finalMessageElement.textContent = "Que esta mensagem toque seu coração";
             }
         }
+
+        this.saveToLocalStorage();
     }
 
     // Adicionar este novo método para lidar exclusivamente com a galeria
@@ -1376,8 +1553,15 @@ class DevotlyCreator {
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
     }
+
+    saveToLocalStorage() {
+        localStorage.setItem('devotlyDraft', JSON.stringify(this.state.formData));
+        
+        // Mostrar uma notificação sutil
+        this.showSaveNotification();
+    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
     new DevotlyCreator();
 });

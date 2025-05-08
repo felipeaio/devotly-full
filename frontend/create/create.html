@@ -84,9 +84,8 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardName">Nome do Cartão</label>
-                                <input type="text" id="cardName" name="cardName" 
-                                    placeholder="ex: mensagem de fé" 
-                                    required 
+                                <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem de fé"
+                                    required
                                     title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
                                 <div class="input-hint">
                                     <i class="fas fa-link"></i>
@@ -139,18 +138,22 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardMessage">Mensagem Principal</label>
-                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..." maxlength="500" required=""></textarea>
+                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
+                                    maxlength="500" required=""></textarea>
                                 <div class="input-footer">
                                     <div class="char-counter">
                                         <span id="messageCounter">0</span>/500 caracteres
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Novo campo para mensagem final atualizado -->
                             <div class="input-group">
-                                <label for="cardFinalMessage">Mensagem Final <span class="required-mark">*</span></label>
-                                <textarea id="cardFinalMessage" name="cardFinalMessage" placeholder="Escreva uma mensagem de encerramento..." maxlength="200" required></textarea>
+                                <label for="cardFinalMessage">Mensagem Final <span
+                                        class="required-mark">*</span></label>
+                                <textarea id="cardFinalMessage" name="cardFinalMessage"
+                                    placeholder="Escreva uma mensagem de encerramento..." maxlength="200"
+                                    required></textarea>
                                 <div class="input-footer">
                                     <div class="char-counter">
                                         <span id="finalMessageCounter">0</span>/200 caracteres
@@ -158,7 +161,8 @@
                                 </div>
                                 <div class="input-hint">
                                     <i class="fas fa-info-circle"></i>
-                                    <span>Esta mensagem aparecerá no final do cartão como uma conclusão ou despedida (mínimo 5 caracteres)</span>
+                                    <span>Esta mensagem aparecerá no final do cartão como uma conclusão ou despedida
+                                        (mínimo 5 caracteres)</span>
                                 </div>
                             </div>
                         </div>
@@ -276,7 +280,8 @@
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <span>Arraste imagens aqui ou clique para selecionar</span>
-                                    <small>Mínimo 1 imagem, máximo 7 imagens (2MB cada) <span class="required-mark">*</span></small>
+                                    <small>Mínimo 1 imagem, máximo 7 imagens (2MB cada) <span
+                                            class="required-mark">*</span></small>
                                 </div>
                                 <div class="image-preview-container" id="imagePreviewContainer"></div>
                             </div>
@@ -346,7 +351,8 @@
 
                             <div class="input-group">
                                 <label for="userPhone">Telefone (WhatsApp)</label>
-                                <input type="tel" id="userPhone" name="userPhone" placeholder="(99) 99999-9999" required>
+                                <input type="tel" id="userPhone" name="userPhone" placeholder="(99) 99999-9999"
+                                    required>
                                 <div class="input-hint">
                                     <i class="fas fa-phone"></i>
                                     <span>Usamos seu telefone para enviar confirmações e para contato de suporte</span>
@@ -556,6 +562,8 @@
             </div>
         </div>
     </div>
+    <!-- Adicione esta linha antes de seus scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
     <script src="../js/create.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"></script>
 </body>
