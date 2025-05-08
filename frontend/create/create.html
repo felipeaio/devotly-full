@@ -37,7 +37,7 @@
                 <!-- Versão reorganizada dos indicadores de progresso -->
                 <div class="progress-container">
                     <div class="progress-bar">
-                        <div class="progress" id="progressBar"></div>
+                        <div class="progress" id="progressBar" style="width: 25%;"></div>
                     </div>
                     <div class="step-indicators">
                         <div class="step active" data-step="1" role="button" aria-label="Etapa 1: Nome">
@@ -84,9 +84,10 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardName">Nome do Cartão</label>
-                                <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem-de-fe"
-                                    required pattern="[a-z0-9-]+"
-                                    title="Use apenas letras minúsculas, números e hífens">
+                                <input type="text" id="cardName" name="cardName" 
+                                    placeholder="ex: mensagem de fé" 
+                                    required 
+                                    title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
                                 <div class="input-hint">
                                     <i class="fas fa-link"></i>
                                     <span>Seu cartão estará em: <strong>devotly.com/<span
@@ -138,12 +139,26 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardMessage">Mensagem Principal</label>
-                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
-                                    maxlength="500" required></textarea>
+                                <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..." maxlength="500" required=""></textarea>
                                 <div class="input-footer">
                                     <div class="char-counter">
                                         <span id="messageCounter">0</span>/500 caracteres
                                     </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Novo campo para mensagem final atualizado -->
+                            <div class="input-group">
+                                <label for="cardFinalMessage">Mensagem Final <span class="required-mark">*</span></label>
+                                <textarea id="cardFinalMessage" name="cardFinalMessage" placeholder="Escreva uma mensagem de encerramento..." maxlength="200" required></textarea>
+                                <div class="input-footer">
+                                    <div class="char-counter">
+                                        <span id="finalMessageCounter">0</span>/200 caracteres
+                                    </div>
+                                </div>
+                                <div class="input-hint">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Esta mensagem aparecerá no final do cartão como uma conclusão ou despedida (mínimo 5 caracteres)</span>
                                 </div>
                             </div>
                         </div>

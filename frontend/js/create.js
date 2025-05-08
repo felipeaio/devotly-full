@@ -80,6 +80,7 @@ class DevotlyCreator {
                 cardName: '',
                 cardTitle: '',
                 cardMessage: '',
+                finalMessage: '', // Propriedade para a mensagem final
                 bibleVerse: {
                     book: '',
                     chapter: '',
@@ -104,6 +105,14 @@ class DevotlyCreator {
     }
 
     init() {
+        // Estado inicial
+        this.state.currentStep = 0; // Começar na primeira etapa (índice 0)
+        
+        // Mostrar apenas a primeira etapa
+        this.showStep(this.state.currentStep);
+        
+        // Resto do código de inicialização...
+
         this.setupEventListeners();
         this.showStep(this.state.currentStep);
         this.updateProgress();
@@ -111,6 +120,7 @@ class DevotlyCreator {
         // Inicializar contadores
         document.getElementById('titleCounter').textContent = '0';
         document.getElementById('messageCounter').textContent = '0';
+        document.getElementById('finalMessageCounter').textContent = '0';
 
         this.updatePreview();
         this.loadBibleBooks();
@@ -190,6 +200,12 @@ class DevotlyCreator {
         
         // Rolar para o topo da página para garantir visualização correta
         window.scrollTo(0, 0);
+
+        // Inicializar o campo de mensagem final com um valor padrão se necessário
+        if (!this.state.formData.finalMessage) {
+            this.state.formData.finalMessage = "";
+            document.getElementById('finalMessageCounter').textContent = '0';
+        }
     }
 
     setupSectionObserver() {
@@ -283,16 +299,29 @@ class DevotlyCreator {
         });
 
         document.getElementById('cardName').addEventListener('input', (e) => {
-            // Converter para minúsculas, remover caracteres especiais e substituir espaços por hífens
-            let urlFriendlyValue = e.target.value
+            // Salvar a posição do cursor
+            const cursorPosition = e.target.selectionStart;
+            
+            // Armazenar o valor original com espaços mantidos
+            const originalValue = e.target.value;
+            
+            // Converter espaços em hífens em tempo real, mas manter letras maiúsculas para melhor usabilidade
+            // (a conversão para minúsculas acontecerá somente no valor armazenado)
+            let friendlyValue = originalValue.replace(/\s+/g, '-');
+            
+            // Apenas para mostrar ao usuário - manter maiúsculas/minúsculas como digitado
+            e.target.value = friendlyValue;
+            
+            // Restaurar a posição do cursor, ajustando para possíveis alterações de comprimento
+            const lengthDifference = friendlyValue.length - originalValue.length;
+            e.target.setSelectionRange(cursorPosition + lengthDifference, cursorPosition + lengthDifference);
+            
+            // Converter para minúsculas e limpar para armazenamento e exibição de URL
+            let urlFriendlyValue = friendlyValue
                 .toLowerCase()
-                .replace(/\s+/g, '-')         // Substituir espaços por hífens
                 .replace(/[^\w\-]+/g, '')     // Remover caracteres não alfanuméricos
                 .replace(/\-\-+/g, '-')       // Substituir múltiplas hífens por uma única
                 .replace(/^-+|-+$/g, '');     // Remover hífens no início e fim
-
-            // Atualizar o campo com o valor convertido
-            e.target.value = urlFriendlyValue;
             
             // Atualizar estado e preview
             this.state.formData.cardName = urlFriendlyValue;
@@ -466,6 +495,37 @@ class DevotlyCreator {
             e.target.value = value;
             this.state.formData.userPhone = value;
         });
+
+        document.getElementById('cardFinalMessage').addEventListener('input', (e) => {
+            this.state.formData.finalMessage = e.target.value;
+            document.getElementById('finalMessageCounter').textContent = e.target.value.length;
+            
+            // Atualização direta para garantir que o preview seja atualizado imediatamente
+            const finalMessageElement = document.querySelector('.final-message p');
+            if (finalMessageElement) {
+                finalMessageElement.textContent = e.target.value || "Que esta mensagem toque seu coração";
+            }
+            
+            this.updatePreview();
+        });
+
+        // Verificar se o evento para cardFinalMessage está correto
+        document.getElementById('cardFinalMessage').addEventListener('input', (e) => {
+            // Atualizar o estado
+            this.state.formData.finalMessage = e.target.value;
+            
+            // Atualizar o contador
+            document.getElementById('finalMessageCounter').textContent = e.target.value.length;
+            
+            // Atualização forçada da mensagem final
+            const finalMessageElement = document.querySelector('.final-message p');
+            if (finalMessageElement) {
+                finalMessageElement.textContent = e.target.value || "Que esta mensagem toque seu coração";
+            }
+            
+            // Atualizar preview completo
+            this.updatePreview();
+        });
     }
 
     setupSectionDotListeners() {
@@ -511,13 +571,18 @@ class DevotlyCreator {
 
     showStep(step) {
         this.elements.formSteps.forEach((stepElement, index) => {
-            stepElement.classList.toggle('active', index === step);
+            // Garantir que cada etapa tenha a classe "active" apenas se for a etapa atual
+            if (index === step) {
+                stepElement.classList.add('active');
+            } else {
+                stepElement.classList.remove('active');
+            }
         });
 
-        this.elements.stepIndicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index <= step);
-        });
-
+        // Atualize a barra de progresso e os indicadores
+        this.updateProgress();
+        
+        // Opcional: rolar para o topo do formulário
         this.elements.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -555,6 +620,16 @@ class DevotlyCreator {
                     isValid = false;
                 } else if (messageInput.value.trim().length < 10) {
                     this.showError(messageInput, 'A mensagem deve ter pelo menos 10 caracteres');
+                    isValid = false;
+                }
+                
+                // Adicionar validação para a mensagem final
+                const finalMessageInput = currentStepElement.querySelector('#cardFinalMessage');
+                if (!finalMessageInput.value.trim()) {
+                    this.showError(finalMessageInput, 'Por favor, insira uma mensagem final');
+                    isValid = false;
+                } else if (finalMessageInput.value.trim().length < 5) {
+                    this.showError(finalMessageInput, 'A mensagem final deve ter pelo menos 5 caracteres');
                     isValid = false;
                 }
                 break;
@@ -641,19 +716,19 @@ class DevotlyCreator {
             progressBar.style.width = `${progress}%`;
         }
         
-        // Atualizar classes dos indicadores
+        // Atualizar classes dos indicadores - código único e melhorado:
         this.elements.stepIndicators.forEach((indicator, index) => {
-            // Remover todas as classes de estado
+            // Remover todas as classes de estado primeiro
             indicator.classList.remove('active', 'completed');
             
-            // Adicionar classe ativa ao passo atual
             if (index === this.state.currentStep) {
+                // Passo atual recebe classe 'active'
                 indicator.classList.add('active');
-            }
-            // Adicionar classe completed aos passos já concluídos
-            else if (index < this.state.currentStep) {
+            } else if (index < this.state.currentStep) {
+                // Passos anteriores recebem classe 'completed'
                 indicator.classList.add('completed');
             }
+            // Passos futuros não têm classes especiais
         });
     }
 
@@ -1076,6 +1151,18 @@ class DevotlyCreator {
 
         this.cleanupSectionObserver();
         this.setupSectionObserver();
+
+        // Atualizar a mensagem final - implementação corrigida
+        const finalMessage = this.state.formData.finalMessage;
+        const finalMessageElement = document.querySelector('.final-message p');
+        
+        if (finalMessageElement) {
+            if (finalMessage && finalMessage.trim()) {
+                finalMessageElement.textContent = finalMessage;
+            } else {
+                finalMessageElement.textContent = "Que esta mensagem toque seu coração";
+            }
+        }
     }
 
     // Adicionar este novo método para lidar exclusivamente com a galeria
