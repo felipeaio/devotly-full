@@ -466,7 +466,7 @@
 .step-header h2 {
     font-size: clamp(1.5rem, 3vw, 1.8rem);
     margin-bottom: 0.8rem;
-    color: var(--gold-light);
+    color: var (--gold-light);
 }
 
 .step-header p {
@@ -485,139 +485,144 @@
     margin-top: 1.5rem;
 }
 
-/* Payment Plans */
+/* Payment Plans - Versão otimizada */
 .plan-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2.5rem;
-    margin: 2rem 0;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
 }
 
 .plan-card {
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: var(--border-radius);
-    padding: 2.5rem 2rem;
-    text-align: center;
+    padding: 1.5rem;
     position: relative;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transform: scale(1);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.plan-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 40px rgba(212, 175, 55, 0.2);
 }
 
 .plan-card.featured {
     border-color: var(--color-accent);
     background-color: rgba(212, 175, 55, 0.07);
-    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
 }
 
 .plan-badge {
     position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--color-accent);
+    top: -10px;
+    right: -10px;
+    background: var(--color-accent);
     color: white;
-    padding: 0.4rem 1.2rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 20px;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.plan-card h3 {
-    margin-bottom: 1.5rem;
-    color: var(--color-light);
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-}
-
-.plan-features {
-    margin-bottom: 2rem;
-}
-
-.plan-card ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 1.5rem;
-}
-
-.plan-card li {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    font-size: 1.1rem;
-    color: var(--color-text);
+.plan-header {
+    text-align: center;
+    padding-bottom: 1rem;
     margin-bottom: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.plan-card li:last-child {
-    border-bottom: none;
-}
-
-.plan-card li i.fa-check {
-    color: var(--color-success);
-    font-size: 1.2rem;
-}
-
-.plan-card li i.fa-times {
-    color: var(--color-error);
-    font-size: 1.2rem;
+.plan-header h3 {
+    color: var(--color-light);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .plan-price {
-    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
 }
 
 .original-price {
-    display: block;
-    text-decoration: line-through;
     color: var(--color-text);
-    opacity: 0.6;
-    font-size: 1.1rem;
-    margin-bottom: 0.4rem;
+    text-decoration: line-through;
+    font-size: 0.9rem;
+    opacity: 0.7;
 }
 
 .discount-price {
-    color: var(--color-light);
-    font-size: 2rem;
+    color: var(--color-accent);
+    font-size: 1.8rem;
     font-weight: 700;
-    line-height: 1;
 }
 
-.discount-price small {
-    font-size: 1rem;
-    font-weight: 400;
+.price-period {
+    color: var(--color-text);
+    font-size: 0.9rem;
     opacity: 0.8;
+}
+
+.plan-features {
+    margin: 1rem 0;
+}
+
+.plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    color: var(--color-text);
+    font-size: 0.95rem;
+}
+
+.plan-features i.fa-check {
+    color: var(--color-success);
+    font-size: 1rem;
+}
+
+.plan-features i.fa-times {
+    color: var(--color-error);
+    font-size: 1rem;
 }
 
 .btn-select-plan {
     width: 100%;
-    padding: 1rem;
-    font-size: 1.1rem;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.plan-card.selected .btn-select-plan {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.15);
+}
+
+.plan-card:hover .btn-select-plan {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .plan-cards {
+        gap: 1rem;
+    }
+
+    .plan-card {
+        padding: 1.2rem;
+    }
+
+    .plan-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .discount-price {
+        font-size: 1.5rem;
+    }
 }
 
 /* Responsividade para telas menores */
