@@ -34,9 +34,10 @@
     <main class="creation-flow">
         <div class="container creation-layout">
             <section class="form-container">
+                <!-- Versão reorganizada dos indicadores de progresso -->
                 <div class="progress-container">
                     <div class="progress-bar">
-                        <div class="progress" style="width: 20%;"></div>
+                        <div class="progress" id="progressBar"></div>
                     </div>
                     <div class="step-indicators">
                         <div class="step active" data-step="1" role="button" aria-label="Etapa 1: Nome">
@@ -63,9 +64,9 @@
                             <div class="step-number">6</div>
                             <div class="step-label">Música</div>
                         </div>
-                        <div class="step" data-step="7" role="button" aria-label="Etapa 7: Email">
+                        <div class="step" data-step="7" role="button" aria-label="Etapa 7: Contato">
                             <div class="step-number">7</div>
-                            <div class="step-label">Email</div>
+                            <div class="step-label">Contato</div>
                         </div>
                         <div class="step" data-step="8" role="button" aria-label="Etapa 8: Plano">
                             <div class="step-number">8</div>
@@ -260,7 +261,7 @@
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <span>Arraste imagens aqui ou clique para selecionar</span>
-                                    <small>Máximo de 7 imagens (2MB cada)</small>
+                                    <small>Mínimo 1 imagem, máximo 7 imagens (2MB cada) <span class="required-mark">*</span></small>
                                 </div>
                                 <div class="image-preview-container" id="imagePreviewContainer"></div>
                             </div>
@@ -326,6 +327,15 @@
                             <div class="input-group">
                                 <label for="userName">Seu nome (opcional)</label>
                                 <input type="text" id="userName" name="userName" placeholder="Como podemos te chamar?">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="userPhone">Telefone (WhatsApp)</label>
+                                <input type="tel" id="userPhone" name="userPhone" placeholder="(99) 99999-9999" required>
+                                <div class="input-hint">
+                                    <i class="fas fa-phone"></i>
+                                    <span>Usamos seu telefone para enviar confirmações e para contato de suporte</span>
+                                </div>
                             </div>
 
                             <!-- O elemento form-check do newsletter foi removido daqui -->
@@ -500,27 +510,6 @@
                             <div class="section-dot" data-section="mediaSection" data-label="Mídia"></div>
                             <div class="section-dot" data-section="finalSection" data-label="Final"></div>
                         </div>
-                    </div>
-                </div>
-                <!-- Adicionar abaixo do card-preview-container -->
-                <div class="preview-thumbnails">
-                    <div class="preview-thumbnail active" data-section="titleSection">
-                        <i class="fas fa-heading"></i>
-                    </div>
-                    <div class="preview-thumbnail" data-section="messageSection">
-                        <i class="fas fa-comment-alt"></i>
-                    </div>
-                    <div class="preview-thumbnail" data-section="verseSection">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <div class="preview-thumbnail" data-section="gallerySection">
-                        <i class="fas fa-images"></i>
-                    </div>
-                    <div class="preview-thumbnail" data-section="mediaSection">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <div class="preview-thumbnail" data-section="finalSection">
-                        <i class="fas fa-heart"></i>
                     </div>
                 </div>
             </aside>

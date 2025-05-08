@@ -72,6 +72,7 @@ class DevotlyCreator {
             previewTheme: document.getElementById('previewTheme')
         };
 
+        // Garantir que o estado comece corretamente
         this.state = {
             currentStep: 0,
             totalSteps: 8,
@@ -98,6 +99,8 @@ class DevotlyCreator {
         this.sectionObserver = null;
 
         this.init();
+
+        setTimeout(() => this.updateProgress(), 0);
     }
 
     init() {
@@ -151,18 +154,46 @@ class DevotlyCreator {
                 const targetSection = document.getElementById(dot.dataset.section);
                 const previewSections = document.querySelector('.preview-sections');
                 if (targetSection) {
+                    // Remover comportamento smooth
                     previewSections.scrollTo({
                         top: targetSection.offsetTop,
-                        behavior: 'smooth'
+                        behavior: 'auto' // Alterado de 'smooth' para 'auto'
                     });
                 }
             });
         });
+
+        // Adicione este código ao método init() da classe DevotlyCreator, logo após criar os indicadores de seção
+
+        // Garantir que a observação das seções começa imediatamente
+        setTimeout(() => {
+            this.cleanupSectionObserver();
+            this.setupSectionObserver();
+            
+            // Trigger um evento de scroll para ativar o observer
+            const previewSections = document.querySelector('.preview-sections');
+            if (previewSections) {
+                // Pequeno scroll para ativar o observer
+                previewSections.scrollBy(0, 1);
+                previewSections.scrollBy(0, -1);
+            }
+        }, 500);
+
+        // Adicione esta linha ao final do método init()
+
+        // Definir manualmente a seção ativa no carregamento da página
+        document.querySelector('.section-dot[data-section="titleSection"]').classList.add('active');
+        document.querySelector('.preview-section#titleSection').classList.add('active');
+
+        // Garantir a atualização da barra de progresso
+        this.updateProgress();
+        
+        // Rolar para o topo da página para garantir visualização correta
+        window.scrollTo(0, 0);
     }
 
     setupSectionObserver() {
         const previewSections = document.querySelector('.preview-sections');
-        const sectionDots = document.querySelectorAll('.section-dot');
         const sections = document.querySelectorAll('.preview-section');
 
         if (!previewSections || !sections.length) return;
@@ -170,41 +201,38 @@ class DevotlyCreator {
         // Configurar IntersectionObserver para detectar seções visíveis
         const observerOptions = {
             root: previewSections,
-            threshold: 0.5 // Considera a seção visível quando 50% dela está no viewport
+            threshold: 0.3, // Reduzido de 0.5 para 0.3 para maior sensibilidade
+            rootMargin: '0px' // Adicionar rootMargin explícito
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // IMPORTANTE: Utilize querySelector para encontrar os pontos correspondentes
-                    // ao invés de usar a variável sectionDots que pode estar desatualizada
+                    console.log('Seção visível:', entry.target.id); // Logging para debug
+                    
                     document.querySelectorAll('.section-dot').forEach(dot => {
                         dot.classList.toggle('active', dot.dataset.section === entry.target.id);
                     });
 
-                    // Aplicar efeito baseado na seção
                     this.applyBackgroundEffect(entry.target.id);
-
-                    // Destacar campo correspondente no formulário
-                    const sectionId = entry.target.id;
-                    const formSection = this.getCorrespondingFormSection(sectionId);
-                    if (formSection) {
-                        this.highlightFormSection(formSection);
-                    }
-
-                    // Atualizar miniaturas também
-                    document.querySelectorAll('.preview-thumbnail').forEach(thumbnail => {
-                        thumbnail.classList.toggle('active', thumbnail.dataset.section === entry.target.id);
-                    });
                 }
             });
         }, observerOptions);
 
         // Observar todas as seções
-        sections.forEach(section => observer.observe(section));
+        sections.forEach(section => {
+            observer.observe(section);
+            console.log('Observando seção:', section.id); // Logging para debug
+        });
 
         // Salvar o observador para limpeza futura
         this.sectionObserver = observer;
+
+        // Forçar um scroll mínimo para ativar o observer imediatamente
+        setTimeout(() => {
+            previewSections.scrollBy(0, 1);
+            previewSections.scrollBy(0, -1);
+        }, 100);
     }
 
     applyBackgroundEffect(sectionId) {
@@ -255,11 +283,21 @@ class DevotlyCreator {
         });
 
         document.getElementById('cardName').addEventListener('input', (e) => {
-            this.state.formData.cardName = e.target.value.trim().toLowerCase();
-            document.getElementById('urlPreview').textContent =
-                this.state.formData.cardName || 'seunome';
-            document.getElementById('previewUrl').textContent =
-                this.state.formData.cardName || 'seunome';
+            // Converter para minúsculas, remover caracteres especiais e substituir espaços por hífens
+            let urlFriendlyValue = e.target.value
+                .toLowerCase()
+                .replace(/\s+/g, '-')         // Substituir espaços por hífens
+                .replace(/[^\w\-]+/g, '')     // Remover caracteres não alfanuméricos
+                .replace(/\-\-+/g, '-')       // Substituir múltiplas hífens por uma única
+                .replace(/^-+|-+$/g, '');     // Remover hífens no início e fim
+
+            // Atualizar o campo com o valor convertido
+            e.target.value = urlFriendlyValue;
+            
+            // Atualizar estado e preview
+            this.state.formData.cardName = urlFriendlyValue;
+            document.getElementById('urlPreview').textContent = urlFriendlyValue || 'seunome';
+            document.getElementById('previewUrl').textContent = urlFriendlyValue || 'seunome';
             this.updatePreview();
         });
 
@@ -415,23 +453,23 @@ class DevotlyCreator {
             }
         });
 
-        document.querySelectorAll('.preview-thumbnail').forEach(thumbnail => {
-            thumbnail.addEventListener('click', () => {
-                const targetSection = document.getElementById(thumbnail.dataset.section);
-                const previewSections = document.querySelector('.preview-sections');
-
-                if (targetSection) {
-                    previewSections.scrollTo({
-                        top: targetSection.offsetTop,
-                        behavior: 'smooth'
-                    });
-                }
-            });
+        document.getElementById('userPhone').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            
+            if (value.length > 2 && value.length <= 6) {
+                value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+            } else if (value.length > 6) {
+                value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+            }
+            
+            e.target.value = value;
+            this.state.formData.userPhone = value;
         });
     }
 
     setupSectionDotListeners() {
-        document.querySelectorAll('.section-dot, .preview-thumbnail').forEach(indicator => {
+        document.querySelectorAll('.section-dot').forEach(indicator => {
             indicator.addEventListener('click', () => {
                 const targetSection = document.getElementById(indicator.dataset.section);
                 const previewSections = document.querySelector('.preview-sections');
@@ -440,18 +478,13 @@ class DevotlyCreator {
                     // Usar scrollTo para navegação suave
                     previewSections.scrollTo({
                         top: targetSection.offsetTop,
-                        behavior: 'smooth'
+                        behavior: 'auto' // Alterado de 'smooth' para 'auto'
                     });
                     
                     // Atualizar a classe ativa manualmente (para feedback imediato)
                     if (indicator.classList.contains('section-dot')) {
                         document.querySelectorAll('.section-dot').forEach(dot => {
                             dot.classList.remove('active');
-                        });
-                        indicator.classList.add('active');
-                    } else if (indicator.classList.contains('preview-thumbnail')) {
-                        document.querySelectorAll('.preview-thumbnail').forEach(thumb => {
-                            thumb.classList.remove('active');
                         });
                         indicator.classList.add('active');
                     }
@@ -529,6 +562,13 @@ class DevotlyCreator {
             case 3:
                 break;
 
+            case 4:
+                if (this.state.formData.images.length === 0) {
+                    this.showError(document.getElementById('uploadArea'), 'Por favor, adicione pelo menos uma imagem');
+                    isValid = false;
+                }
+                break;
+
             case 6:
                 const emailInput = currentStepElement.querySelector('#userEmail');
                 if (!emailInput.value.trim()) {
@@ -536,6 +576,15 @@ class DevotlyCreator {
                     isValid = false;
                 } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
                     this.showError(emailInput, 'Por favor, insira um email válido');
+                    isValid = false;
+                }
+
+                const phoneInput = currentStepElement.querySelector('#userPhone');
+                if (!phoneInput.value.trim()) {
+                    this.showError(phoneInput, 'Por favor, insira seu telefone');
+                    isValid = false;
+                } else if (phoneInput.value.replace(/\D/g, '').length < 10) {
+                    this.showError(phoneInput, 'Por favor, insira um telefone válido');
                     isValid = false;
                 }
                 break;
@@ -582,8 +631,30 @@ class DevotlyCreator {
     }
 
     updateProgress() {
+        // Garantir que a barra começa corretamente na etapa 1
         const progress = ((this.state.currentStep + 1) / this.state.totalSteps) * 100;
-        this.elements.progressBar.style.width = `${progress}%`;
+        
+        // Garantir que o elemento progressBar é acessado corretamente
+        const progressBar = document.getElementById('progressBar') || this.elements.progressBar;
+        
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // Atualizar classes dos indicadores
+        this.elements.stepIndicators.forEach((indicator, index) => {
+            // Remover todas as classes de estado
+            indicator.classList.remove('active', 'completed');
+            
+            // Adicionar classe ativa ao passo atual
+            if (index === this.state.currentStep) {
+                indicator.classList.add('active');
+            }
+            // Adicionar classe completed aos passos já concluídos
+            else if (index < this.state.currentStep) {
+                indicator.classList.add('completed');
+            }
+        });
     }
 
     async convertToWebP(file) {
