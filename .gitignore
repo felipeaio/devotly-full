@@ -1,0 +1,52 @@
+# Arquivos de configuração sensíveis
+.env
+*.env
+.env.local
+.env.development
+.env.production
+
+# Dependências do Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Arquivos temporários e logs
+*.log
+*.log.*
+logs/
+*.cache
+.cache/
+dist/
+build/
+tmp/
+temp/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos do editor e IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Arquivos de cobertura de testes
+coverage/
+*.lcov
+
+# Arquivos de compilação e bundling
+*.min.js
+*.min.css
+*.map
+
+# Outros arquivos sensíveis
+*.pem
+*.key
+*.cert
+*.secret

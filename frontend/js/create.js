@@ -1191,42 +1191,51 @@ class DevotlyCreator {
 
     selectPlan(plan) {
         this.state.formData.selectedPlan = plan;
+        
+        // Remover seleção visual de todos os cards
         document.querySelectorAll('.plan-card').forEach(card => {
             card.classList.remove('selected');
         });
-        document.querySelector(`.plan-card[data-plan="${plan}"]`).classList.add('selected');
-        this.updatePreview();
+        
+        // Adicionar seleção visual ao card escolhido
+        const selectedCard = document.querySelector(`.plan-card[data-plan="${plan}"]`);
+        selectedCard.classList.add('selected');
+        
+        // Mostrar animação de seleção
+        selectedCard.classList.add('highlight-pulse');
+        
+        // Remover a animação após 1.5 segundos
+        setTimeout(() => {
+            selectedCard.classList.remove('highlight-pulse');
+            
+            // Validar se podemos finalizar
+            if (this.validateStep(this.state.currentStep)) {
+                // Mostrar o loading após uma pausa curta para dar feedback visual
+                setTimeout(() => {
+                    this.submitForm();
+                }, 500);
+            }
+        }, 1500);
     }
 
     navigateCarousel(direction) {
         const images = document.querySelectorAll('#gallerySection img');
         const indicators = document.querySelectorAll('.carousel-indicator');
-        const removeButtons = document.querySelectorAll('#gallerySection .remove-image');
-
+        
         if (images.length <= 1) return;
 
-        // Esconder imagem e botão atuais
+        // Esconder imagem atual
         images[this.state.currentImageIndex].classList.remove('active');
         images[this.state.currentImageIndex].style.display = 'none';
         if (indicators.length) indicators[this.state.currentImageIndex].classList.remove('active');
 
-        // Esconder todos os botões de remoção
-        removeButtons.forEach(btn => {
-            btn.style.display = 'none';
-        });
-
         // Atualizar o índice atual
         this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
 
-        // Mostrar nova imagem e botão
+        // Mostrar nova imagem
         images[this.state.currentImageIndex].classList.add('active');
         images[this.state.currentImageIndex].style.display = 'block';
         if (indicators.length) indicators[this.state.currentImageIndex].classList.add('active');
-
-        // Mostrar apenas o botão de remoção da imagem atual
-        if (removeButtons[this.state.currentImageIndex]) {
-            removeButtons[this.state.currentImageIndex].style.display = 'flex';
-        }
     }
 
     startImageCarousel() {
@@ -1352,7 +1361,7 @@ class DevotlyCreator {
                 <div class="no-images">
                     <i class="fas fa-image"></i>
                     <span>Nenhuma imagem selecionada</span>
-            </div>
+                </div>
             `;
             return;
         }
@@ -1388,24 +1397,6 @@ class DevotlyCreator {
             carouselControls.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
             carouselControls.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
         }
-
-        // Adicionar botões de remoção para cada imagem
-        const imageActions = document.createElement('div');
-        imageActions.className = 'image-actions';
-
-        this.state.formData.images.forEach((_, index) => {
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-image';
-            removeBtn.setAttribute('data-index', index);
-            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.removeImage(parseInt(e.currentTarget.getAttribute('data-index')));
-            });
-            imageActions.appendChild(removeBtn);
-        });
-
-        galleryContainer.appendChild(imageActions);
     }
 
     // Substituir o método removeImage existente por esta versão
@@ -1475,23 +1466,65 @@ class DevotlyCreator {
             this.elements.loadingModal.classList.add('visible');
         }, 10);
 
+        // Obter userEmail, userPhone e userName do DOM
+        const userEmail = document.getElementById('userEmail')?.value || '';
+        const userPhone = document.getElementById('userPhone')?.value || '';
+        const userName = document.getElementById('userName')?.value || '';
+
+        // Mapear os dados para o formato esperado pelo backend
+        const payload = {
+            email: userEmail,
+            plano: this.state.formData.selectedPlan === 'forever' ? 'para_sempre' : 'anual',
+            conteudo: {
+                cardName: this.state.formData.cardName,
+                cardTitle: this.state.formData.cardTitle,
+                cardMessage: this.state.formData.cardMessage,
+                finalMessage: this.state.formData.finalMessage,
+                bibleVerse: this.state.formData.bibleVerse,
+                images: this.state.formData.images, // URLs temporárias (data:image/...)
+                musicLink: this.state.formData.musicLink || null,
+                userName: userName,
+                userPhone: userPhone
+            }
+        };
+
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const response = await fetch('http://localhost:3000/cards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Email': userEmail
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao criar cartão');
+            }
+
+            const result = await response.json();
+            // Armazenar a URL retornada para uso no viewCardBtn e copyCardLinkBtn
+            this.state.formData.cardUrl = result.data.url;
 
             this.elements.loadingModal.classList.remove('visible');
             setTimeout(() => {
                 this.elements.loadingModal.style.display = 'none';
                 this.elements.successModal.style.display = 'flex';
+                // Atualizar o href do botão "Ver Cartão"
+                this.elements.viewCardBtn.href = result.data.url;
+                // Atualizar o copyCardLinkBtn para copiar a URL correta
+                this.elements.copyCardLinkBtn.dataset.url = result.data.url;
                 setTimeout(() => {
                     this.elements.successModal.classList.add('visible');
                 }, 10);
             }, 300);
         } catch (error) {
-            console.error('Erro ao processar pagamento:', error);
+            console.error('Erro ao enviar:', error);
             this.elements.loadingModal.classList.remove('visible');
             setTimeout(() => {
                 this.elements.loadingModal.style.display = 'none';
-                this.showError(this.elements.form, 'Erro ao processar pagamento. Tente novamente.');
+                this.showError(this.elements.form, error.message || 'Erro ao criar cartão. Tente novamente.');
             }, 300);
         }
     }

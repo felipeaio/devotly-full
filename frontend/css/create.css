@@ -758,6 +758,56 @@
     border-color: var(--color-accent);
 }
 
+/* Estilos adicionais para os botões de seleção de plano */
+.btn-select-plan {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.btn-select-plan::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.7);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-select-plan:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}
+
+.plan-card.selected .btn-select-plan {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    pointer-events: none;
+}
+
+.plan-card.selected .btn-select-plan::before {
+    content: '✓ ';
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .plan-cards {
@@ -2156,35 +2206,11 @@
 
 /* Estilo para os botões de remoção no preview */
 #gallerySection .image-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    z-index: 100; /* Aumentado para garantir que esteja acima de outros elementos */
+    display: none; /* Esconder completamente */
 }
 
 #gallerySection .remove-image {
-    background-color: var(--color-error);
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    opacity: 0.8; /* Aumentada para maior visibilidade */
-    transition: var(--transition);
-    padding: 0; /* Remover padding para evitar problemas de layout */
-}
-
-#gallerySection .remove-image:hover {
-    opacity: 1;
-    transform: scale(1.1);
-    background-color: #d32f2f; /* Vermelho mais intenso no hover */
+    display: none; /* Esconder completamente */
 }
 
 /* Isso permite que apenas o botão da imagem atual seja visível */
@@ -2193,14 +2219,14 @@
 }
 
 #gallerySection .remove-image[data-index="0"] {
-    display: flex;
+    display: none;
 }
 
 /* Quando os botões de navegação do carrossel são clicados, 
    mostrar o botão de remoção correspondente à imagem atual */
 #gallerySection img.active + .image-actions .remove-image,
 #gallerySection img.active ~ .image-actions .remove-image[data-index="0"] {
-    display: flex;
+    display: none;
 }
 
 /* Estilo para os indicadores de seção */
