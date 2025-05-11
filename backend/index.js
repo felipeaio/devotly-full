@@ -25,6 +25,9 @@ import supabaseMiddleware from './middleware/supabase.js';
 // Ao importar o módulo cards.js, verifique se está utilizando o caminho correto
 import cardsRouter from './routes/cards.js';
 
+// Adicionar depois das importações existentes
+import uploadRouter from './routes/upload.js';
+
 // Resolve o caminho do diretório raiz
 const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
@@ -63,7 +66,11 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Middlewares
-app.use(cors({ origin: '*', methods: ['POST'], allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] }));
+app.use(cors({ 
+    origin: '*', 
+    methods: ['GET', 'POST'], // Adicionar GET
+    allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] 
+}));
 app.use(helmet());
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -86,6 +93,13 @@ app.use((req, res, next) => {
 // Rotas
 app.use('/cards', supabaseMiddleware);
 app.use('/cards', cardsRouter);
+
+// Adicionar middleware do Supabase também para /api/cards
+app.use('/api/cards', supabaseMiddleware);
+app.use('/api/cards', cardsRouter);
+
+// Adicionar depois das outras rotas
+app.use('/api/upload-image', supabaseMiddleware, uploadRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {

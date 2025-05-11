@@ -1,89 +1,168 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Devotly - Cartão de Fé</title>
+  <title>Devotly | Mensagem de Fé</title>
+  <meta name="description" content="Uma mensagem especial de fé para você">
+  <meta property="og:title" content="Devotly | Mensagem de Fé">
+  <meta property="og:description" content="Uma mensagem especial de fé para você">
+  <meta property="og:url" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/view.css">
-  <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css">
 </head>
+
 <body>
-  <div class="view-container">
-    <!-- Canvas para efeitos de fundo -->
-    <canvas id="backgroundCanvas"></canvas>
-    
-    <!-- Conteúdo principal com scroll snap -->
-    <main class="snap-container">
-      <!-- Seção 1: Título e mensagem -->
-      <section class="snap-section section-title">
-        <div class="section-content">
-          <h1 id="cardTitle">Título do Cartão</h1>
-          <p id="cardMessage">Mensagem personalizada de fé e encorajamento</p>
-        </div>
-        <div class="scroll-indicator">
-          <i class="fas fa-chevron-down"></i>
-        </div>
-      </section>
-      
-      <!-- Seção 2: Mídia (condicional) -->
-      <section class="snap-section section-media hidden" id="mediaSection">
-        <div class="section-content">
-          <h2><i class="fas fa-music"></i> Bênção Musical</h2>
-          <button class="btn btn-primary media-button" id="mediaButton">
-            <i class="fab fa-youtube"></i> Reproduzir Vídeo
-          </button>
-        </div>
-      </section>
-      
-      <!-- Seção 3: Carrossel de imagens (condicional) -->
-      <section class="snap-section section-images hidden" id="imagesSection">
-        <div class="section-content">
-          <h2><i class="fas fa-images"></i> Galeria de Fé</h2>
-          <div class="swiper">
-            <div class="swiper-wrapper" id="swiperWrapper"></div>
-            <div class="swiper-pagination"></div>
+  <header class="main-header">
+    <div class="container">
+      <div class="header-content">
+        <a href="../index.html" class="logo">
+          <i class="fas fa-cross"></i>
+          <span>Devotly</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="view-container">
+    <!-- Estado de carregamento -->
+    <div id="loadingState" class="state-container">
+      <div class="spinner">
+        <div class="spinner-circle"></div>
+      </div>
+      <h2>Carregando mensagem...</h2>
+      <p>Por favor, aguarde alguns instantes</p>
+    </div>
+
+    <!-- Estado de erro -->
+    <div id="errorState" class="state-container error-state" style="display: none;">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <h2>Erro ao carregar</h2>
+      <p>Ocorreu um erro ao carregar esta mensagem.</p>
+      <div class="error-actions">
+        <a href="../index.html" class="btn btn-primary">Voltar para a página inicial</a>
+        <button id="retryBtn" class="btn btn-secondary">Tentar novamente</button>
+      </div>
+    </div>
+
+    <!-- Estado de cartão não encontrado -->
+    <div id="notFoundState" class="state-container error-state" style="display: none;">
+      <div class="error-icon">
+        <i class="fas fa-search"></i>
+      </div>
+      <h2>Cartão não encontrado</h2>
+      <p>O cartão que você está procurando não existe ou foi removido.</p>
+      <div class="error-actions">
+        <a href="../index.html" class="btn btn-primary">Voltar para a página inicial</a>
+        <a href="../create/create.html" class="btn btn-secondary">Criar novo cartão</a>
+      </div>
+    </div>
+
+    <!-- Estado de pagamento não aprovado -->
+    <div id="paymentErrorState" class="state-container error-state" style="display: none;">
+      <div class="error-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <h2>Pagamento pendente</h2>
+      <p>Este cartão ainda não está disponível para visualização porque o pagamento ainda não foi confirmado.</p>
+      <div class="error-actions">
+        <a href="../index.html" class="btn btn-primary">Voltar para a página inicial</a>
+        <button id="checkAgainBtn" class="btn btn-secondary">Verificar novamente</button>
+      </div>
+    </div>
+
+    <!-- Conteúdo do cartão -->
+    <div id="cardContent" class="card-preview-container" style="display: none;">
+      <div class="card-preview">
+        <div class="preview-theme" id="cardTheme">
+          <div class="preview-sections">
+            <!-- Seção 1: Título -->
+            <section class="preview-section" id="titleSection">
+              <div class="section-content">
+                <h1 id="cardTitle"></h1>
+              </div>
+            </section>
+
+            <!-- Seção 2: Mensagem -->
+            <section class="preview-section" id="messageSection">
+              <div class="section-content">
+                <div class="message-container">
+                  <p id="cardMessage"></p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Seção 3: Versículo -->
+            <section class="preview-section" id="verseSection">
+              <div class="section-content">
+                <div class="verse-container">
+                  <p id="verseText"></p>
+                  <span id="verseRef"></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Seção 4: Galeria -->
+            <section class="preview-section" id="gallerySection">
+              <div class="section-content">
+                <div class="gallery-container" id="cardImages">
+                  <!-- Imagens serão inseridas via JavaScript -->
+                </div>
+              </div>
+            </section>
+
+            <!-- Seção 5: Mídia -->
+            <section class="preview-section" id="mediaSection">
+              <div class="section-content">
+                <div class="media-container" id="cardMedia">
+                  <!-- Mídia será inserida via JavaScript -->
+                </div>
+              </div>
+            </section>
+
+            <!-- Seção 6: Mensagem Final -->
+            <section class="preview-section" id="finalSection">
+              <div class="section-content">
+                <div class="final-message">
+                  <p id="finalMessage"></p>
+                  <div class="card-author" id="cardAuthor"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Indicadores de seção -->
+          <div class="section-indicators">
+            <div class="section-dot" data-section="titleSection" data-label="Título"></div>
+            <div class="section-dot" data-section="messageSection" data-label="Mensagem"></div>
+            <div class="section-dot" data-section="verseSection" data-label="Versículo"></div>
+            <div class="section-dot" data-section="gallerySection" data-label="Galeria"></div>
+            <div class="section-dot" data-section="mediaSection" data-label="Mídia"></div>
+            <div class="section-dot" data-section="finalSection" data-label="Final"></div>
           </div>
         </div>
-      </section>
-      
-      <!-- Seção 4: Versículo bíblico -->
-      <section class="snap-section section-verse">
-        <div class="section-content">
-          <div class="verse-container">
-            <i class="fas fa-quote-left"></i>
-            <p class="bible-verse" id="bibleVerse">"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."</p>
-            <p class="verse-reference" id="verseReference">— João 3:16</p>
-            <i class="fas fa-quote-right"></i>
-          </div>
-        </div>
-      </section>
-      
-      <!-- Seção 5: Mensagem final e QR Code -->
-      <section class="snap-section section-final">
-        <div class="section-content">
-          <div class="final-message">
-            <i class="fas fa-dove"></i>
-            <p id="finalMessage">Que Deus te abençoe abundantemente!</p>
-          </div>
-          <div class="qr-code-container">
-            <img id="qrCodeImage" src="" alt="QR Code para compartilhar">
-            <p>Escaneie para compartilhar esta bênção</p>
-          </div>
-        </div>
-      </section>
-    </main>
-    
-    <!-- Rodapé -->
-    <footer class="view-footer">
-      <p>Criado com <i class="fas fa-heart"></i> pelo Devotly</p>
-    </footer>
+      </div>
+    </div>
+  </main>
+
+  <!-- QR Code (escondido) -->
+  <img id="qrCodeImage" style="display:none;" alt="QR Code">
+
+  <!-- Feedback do usuário -->
+  <div id="toastNotification" class="toast-notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage"></span>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
-  <script src="../js/effects.js"></script>
   <script src="../js/view.js"></script>
 </body>
+
 </html>

@@ -44,6 +44,22 @@ router.post('/', async (req, res) => {
     const cardId = uuidv4();
     const cardUrl = `devotly.com/${cardId}-${conteudo.cardName}`;
 
+    // Antes de criar o cartão, verifique se as imagens são URLs válidas
+    const { images } = conteudo;
+    if (images && Array.isArray(images)) {
+      // Verificar se todas as imagens são URLs (não base64)
+      const validImages = images.every(img => img.startsWith('http'));
+
+      if (!validImages) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Todas as imagens devem ser URLs válidas'
+        });
+      }
+
+      // Se todas são URLs válidas, continuar com a criação do cartão
+    }
+
     const qrCodeBuffer = await QRCode.toBuffer(cardUrl);
     const qrCodePath = `qr_code_${cardId}.png`;
 
@@ -120,6 +136,66 @@ router.post('/', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: error.message || 'Erro interno no servidor'
+    });
+  }
+});
+
+// Rota para obter um cartão específico pelo ID
+router.get('/:id', async (req, res) => {
+  try {
+    if (!req.supabase) {
+      console.error(`[${new Date().toISOString()}] Erro: Cliente Supabase não inicializado`);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      });
+    }
+
+    const cardId = req.params.id;
+    
+    // Buscar o cartão pelo ID
+    const { data, error } = await req.supabase
+      .from('cards')
+      .select('*')
+      .eq('id', cardId)
+      .single();
+      
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Erro ao buscar cartão:`, error);
+      return res.status(404).json({
+        status: 'error',
+        message: 'Cartão não encontrado'
+      });
+    }
+    
+    if (!data) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Cartão não encontrado'
+      });
+    }
+    
+    // Obter URL do QR Code
+    const qrCodePath = `qr_code_${cardId}.png`;
+    const { data: qrCodeData } = await req.supabase
+      .storage
+      .from('qrcodes')
+      .getPublicUrl(qrCodePath);
+    
+    // Adicionar URL do QR Code aos dados
+    data.qr_code_url = qrCodeData?.publicUrl;
+    
+    // Retornar os dados do cartão
+    res.json({
+      status: 'success',
+      data: data
+    });
+    
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao processar requisição:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno no servidor'
     });
   }
 });

@@ -54,12 +54,29 @@ class DevotlyApp {
 
 class DevotlyCreator {
     constructor() {
+        // Detectar dispositivos de baixo desempenho
+        this.isLowEndDevice = this.detectLowEndDevice();
+        
         // Garantir que o DOM está carregado
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.initialize());
         } else {
             this.initialize();
         }
+    }
+
+    // Método para detectar dispositivos de baixo desempenho
+    detectLowEndDevice() {
+        // Verificar hardware
+        const lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 4;
+        const lowCPU = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+        
+        // Verificar se é um dispositivo Android antigo
+        const isOldAndroid = /Android/.test(navigator.userAgent) && 
+                             (/Android 4\./.test(navigator.userAgent) || 
+                              /Android 5\./.test(navigator.userAgent));
+        
+        return lowMemory || lowCPU || isOldAndroid;
     }
 
     initialize() {
@@ -497,9 +514,11 @@ class DevotlyCreator {
         }
 
         if (this.elements.form) {
+            this.elements.form.removeEventListener('submit', this.handleFormSubmit);
+            // Prevenir submissão natural do formulário
             this.elements.form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                this.submitForm();
+                // Não fazer nada aqui - o envio só acontece na seleção do plano
             });
         }
 
@@ -907,52 +926,59 @@ class DevotlyCreator {
         });
     }
 
+    // Modificar o método convertToWebP para dispositivos lentos
     async convertToWebP(file) {
         return new Promise((resolve, reject) => {
-            const img = new Image();
             const reader = new FileReader();
-
             reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Detectar dispositivos de baixo desempenho
+                    const isLowEnd = this.isLowEndDevice;
+                    
+                    // Definir tamanhos máximos baseados no dispositivo
+                    const MAX_WIDTH = isLowEnd ? 800 : 1600;
+                    const MAX_HEIGHT = isLowEnd ? 600 : 1200;
+                    
+                    // Calcular dimensões mantendo proporção
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > MAX_WIDTH) {
+                        height = Math.round(height * (MAX_WIDTH / width));
+                        width = MAX_WIDTH;
+                    }
+                    
+                    if (height > MAX_HEIGHT) {
+                        width = Math.round(width * (MAX_HEIGHT / height));
+                        height = MAX_HEIGHT;
+                    }
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Desenhar a imagem no canvas
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Usar qualidade menor para dispositivos de baixo desempenho
+                    const quality = isLowEnd ? 0.65 : 0.75;
+                    
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Falha ao converter para WebP'));
+                        }
+                    }, 'image/webp', quality);
+                };
+                
+                img.onerror = () => reject(new Error('Falha ao carregar imagem'));
                 img.src = e.target.result;
             };
-
-            img.onload = () => {
-                let width = img.width;
-                let height = img.height;
-
-                const MAX_SIZE = 1200;
-
-                if (width > MAX_SIZE || height > MAX_SIZE) {
-                    if (width > height) {
-                        height = (height / width) * MAX_SIZE;
-                        width = MAX_SIZE;
-                    } else {
-                        width = (width / height) * MAX_SIZE;
-                        height = MAX_SIZE;
-                    }
-                }
-
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const webpFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), {
-                            type: 'image/webp'
-                        });
-                        resolve(webpFile);
-                    } else {
-                        reject(new Error('Failed to convert to WebP'));
-                    }
-                }, 'image/webp', 0.8);
-            };
-
-            img.onerror = () => reject(new Error('Failed to load image'));
-            reader.onerror = () => reject(new Error('Failed to read file'));
-
+            
+            reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
             reader.readAsDataURL(file);
         });
     }
@@ -963,9 +989,9 @@ class DevotlyCreator {
 
         if (!files.length) return;
 
+        // Verificar se excede o limite de 7 imagens
         if (this.state.formData.images.length + files.length > 7) {
-            this.showError(document.getElementById('uploadArea'), 'Você pode enviar no máximo 7 imagens');
-            this.elements.imageUpload.value = '';
+            alert('Você pode adicionar no máximo 7 imagens. Por favor, remova algumas antes de adicionar mais.');
             return;
         }
 
@@ -973,44 +999,72 @@ class DevotlyCreator {
         uploadArea.classList.add('loading');
 
         try {
+            // Array para armazenar as imagens temporárias
+            const tempImages = [];
+
+            // Processar cada arquivo
             for (const file of files) {
+                // Verificar tamanho (2MB)
                 if (file.size > 2 * 1024 * 1024) {
-                    this.showError(uploadArea, `A imagem "${file.name}" é muito grande (máx. 2MB)`);
+                    alert(`A imagem ${file.name} excede o limite de 2MB. Por favor, escolha uma imagem menor.`);
                     continue;
                 }
 
-                const reader = new FileReader();
+                // Converter para WebP para visualização local
+                const webpBlob = await this.convertToWebP(file);
+                
+                // Criar URL temporária para a imagem
+                const tempUrl = URL.createObjectURL(webpBlob);
+                
+                // Adicionar a imagem processada e o blob ao array temporário
+                tempImages.push({
+                    tempUrl: tempUrl,
+                    blob: webpBlob,
+                    fileName: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.webp`
+                });
+                
+                // Criar preview local
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'image-preview';
+                previewDiv.innerHTML = `
+                    <img src="${tempUrl}" alt="Imagem ${this.state.formData.images.length + tempImages.length}">
+                    <button class="remove-image" data-index="${this.state.formData.images.length + tempImages.length - 1}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                imagePreviewContainer.appendChild(previewDiv);
 
-                reader.onload = (e) => {
-                    const imageIndex = this.state.formData.images.length;
-                    this.state.formData.images.push(e.target.result);
-
-                    const previewElement = document.createElement('div');
-                    previewElement.className = 'image-preview';
-                    previewElement.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview">
-                        <button class="remove-image" data-index="${imageIndex}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    `;
-
-                    imagePreviewContainer.appendChild(previewElement);
-
-                    // Usar uma função anônima para capturar o índice corretamente
-                    previewElement.querySelector('.remove-image').addEventListener('click', (event) => {
-                        const removeIndex = parseInt(event.currentTarget.getAttribute('data-index'));
-                        this.removeImage(removeIndex);
-                    });
-
-                    // Atualizar preview após cada imagem ser carregada
-                    this.updatePreview();
-                };
-
-                reader.readAsDataURL(file);
+                // Adicionar evento para remover imagem
+                const removeButton = previewDiv.querySelector('.remove-image');
+                removeButton.addEventListener('click', () => {
+                    const index = parseInt(removeButton.dataset.index);
+                    this.removeImage(index);
+                });
             }
+
+            // Adicionar as imagens temporárias ao estado
+            this.state.formData.images = [
+                ...this.state.formData.images, 
+                ...tempImages.map(img => ({ 
+                    tempUrl: img.tempUrl, 
+                    blob: img.blob,
+                    fileName: img.fileName,
+                    isTemp: true  // Marcador para indicar que é uma imagem temporária
+                }))
+            ];
+            
+            // Reindexar botões de remoção
+            this.reindexImages();
+            
+            // Atualizar preview
+            this.updatePreview();
+            
+        } catch (error) {
+            console.error('Erro ao processar as imagens:', error);
+            alert('Ocorreu um erro ao processar as imagens. Por favor, tente novamente.');
         } finally {
             uploadArea.classList.remove('loading');
-            // Limpar o input para permitir selecionar os mesmos arquivos novamente
+            // Limpar input de upload para permitir selecionar os mesmos arquivos novamente
             this.elements.imageUpload.value = '';
         }
     }
@@ -1189,7 +1243,7 @@ class DevotlyCreator {
         this.updatePreview();
     }
 
-    selectPlan(plan) {
+    async selectPlan(plan) {
         this.state.formData.selectedPlan = plan;
         
         // Remover seleção visual de todos os cards
@@ -1205,15 +1259,46 @@ class DevotlyCreator {
         selectedCard.classList.add('highlight-pulse');
         
         // Remover a animação após 1.5 segundos
-        setTimeout(() => {
+        setTimeout(async () => {
             selectedCard.classList.remove('highlight-pulse');
             
             // Validar se podemos finalizar
-            if (this.validateStep(this.state.currentStep)) {
-                // Mostrar o loading após uma pausa curta para dar feedback visual
+            if (this.validateAllSteps()) {
+                // Mostrar o loading
+                this.elements.loadingModal.style.display = 'flex';
                 setTimeout(() => {
-                    this.submitForm();
-                }, 500);
+                    this.elements.loadingModal.classList.add('visible');
+                }, 10);
+                
+                try {
+                    // Enviar todas as imagens temporárias primeiro
+                    const uploadedImageUrls = await this.uploadAllImages();
+                    
+                    // Substituir imagens temporárias por URLs permanentes
+                    const updatedImages = this.state.formData.images.map(img => {
+                        if (img.isTemp) {
+                            // Pegar a próxima URL de imagem enviada
+                            return uploadedImageUrls.shift();
+                        }
+                        // Retornar a URL existente para imagens não temporárias
+                        return img;
+                    });
+                    
+                    // Atualizar o estado com as novas URLs
+                    this.state.formData.images = updatedImages;
+                    
+                    // Agora enviar o formulário com as imagens já processadas
+                    await this.submitFormData();
+                } catch (error) {
+                    console.error('Erro ao processar imagens:', error);
+                    this.elements.loadingModal.classList.remove('visible');
+                    setTimeout(() => {
+                        this.elements.loadingModal.style.display = 'none';
+                        alert(`Erro ao processar imagens: ${error.message}`);
+                    }, 300);
+                }
+            } else {
+                alert('Por favor, preencha todos os campos obrigatórios antes de finalizar.');
             }
         }, 1500);
     }
@@ -1367,9 +1452,10 @@ class DevotlyCreator {
         }
 
         // Criar elementos de imagem
-        this.state.formData.images.forEach((imageUrl, index) => {
+        this.state.formData.images.forEach((image, index) => {
             const img = document.createElement('img');
-            img.src = imageUrl;
+            // Usar a URL temporária para visualização
+            img.src = image.isTemp ? image.tempUrl : image;
             img.alt = `Imagem ${index + 1}`;
             img.classList.toggle('active', index === this.state.currentImageIndex);
             img.style.display = index === this.state.currentImageIndex ? 'block' : 'none';
@@ -1400,43 +1486,38 @@ class DevotlyCreator {
     }
 
     // Substituir o método removeImage existente por esta versão
-    removeImage(index) {
-        // Guardar o número total de imagens antes da remoção
-        const totalImages = this.state.formData.images.length;
-
-        // Remover a imagem do array
+    async removeImage(index) {
+        // Guardar referência da imagem que será removida
+        const image = this.state.formData.images[index];
+        
+        // Se for uma imagem temporária, revogar a URL do objeto
+        if (image.isTemp && image.tempUrl) {
+            URL.revokeObjectURL(image.tempUrl);
+        }
+        
+        // Remover a imagem do array de imagens
         this.state.formData.images.splice(index, 1);
-
-        // Ajustar o índice atual de imagem se necessário
+        
+        // Ajustar o índice atual se necessário
         if (this.state.currentImageIndex >= this.state.formData.images.length) {
             this.state.currentImageIndex = Math.max(0, this.state.formData.images.length - 1);
         }
-
-        // Também remover do container de preview no formulário
+        
+        // Remover do container de preview no formulário
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const imagePreviews = imagePreviewContainer.querySelectorAll('.image-preview');
-
-        // Se encontramos o elemento, removê-lo
+        
         if (index < imagePreviews.length) {
             imagePreviews[index].remove();
         }
-
-        // Atualizar os índices dos botões de remoção no formulário
-        this.reindexFormImages();
-
-        // Verificar se ainda temos imagens
-        if (totalImages > 0 && this.state.formData.images.length === 0) {
-            // Se removemos a última imagem, mostrar a mensagem "Nenhuma imagem"
-            this.updateGalleryPreview();
-        } else {
-            // Se ainda temos imagens, atualizar o preview
-            this.updatePreview();
-        }
-
-        console.log(`Imagem ${index} removida. Restam ${this.state.formData.images.length} imagens.`);
+        
+        // Reindexar botões de remoção
+        this.reindexImages();
+        
+        // Atualizar preview
+        this.updatePreview();
     }
 
-    // Substituir o método reindexImages por este
     reindexFormImages() {
         const previewContainer = document.getElementById('imagePreviewContainer');
         const previewElements = previewContainer.querySelectorAll('.image-preview');
@@ -1458,73 +1539,85 @@ class DevotlyCreator {
         document.body.removeChild(textarea);
     }
 
-    async submitForm() {
-        if (!this.validateStep(this.state.currentStep)) return;
-
-        this.elements.loadingModal.style.display = 'flex';
-        setTimeout(() => {
-            this.elements.loadingModal.classList.add('visible');
-        }, 10);
-
-        // Obter userEmail, userPhone e userName do DOM
-        const userEmail = document.getElementById('userEmail')?.value || '';
-        const userPhone = document.getElementById('userPhone')?.value || '';
-        const userName = document.getElementById('userName')?.value || '';
-
-        // Mapear os dados para o formato esperado pelo backend
-        const payload = {
-            email: userEmail,
-            plano: this.state.formData.selectedPlan === 'forever' ? 'para_sempre' : 'anual',
-            conteudo: {
-                cardName: this.state.formData.cardName,
-                cardTitle: this.state.formData.cardTitle,
-                cardMessage: this.state.formData.cardMessage,
-                finalMessage: this.state.formData.finalMessage,
-                bibleVerse: this.state.formData.bibleVerse,
-                images: this.state.formData.images, // URLs temporárias (data:image/...)
-                musicLink: this.state.formData.musicLink || null,
-                userName: userName,
-                userPhone: userPhone
-            }
-        };
-
+    async submitFormData() {
         try {
+            // Obter dados de contato do formulário
+            const userEmail = document.getElementById('userEmail')?.value || '';
+            const userPhone = document.getElementById('userPhone')?.value || '';
+            const userName = document.getElementById('userName')?.value || '';
+
+            // Filtrar apenas as URLs de string das imagens (não objetos)
+            const imageUrls = this.state.formData.images.filter(img => typeof img === 'string');
+
+            // Mapear os dados para o formato esperado pelo backend
+            const payload = {
+                email: userEmail,
+                plano: this.state.formData.selectedPlan === 'forever' ? 'para_sempre' : 'anual',
+                conteudo: {
+                    cardName: this.state.formData.cardName,
+                    cardTitle: this.state.formData.cardTitle,
+                    cardMessage: this.state.formData.cardMessage,
+                    finalMessage: this.state.formData.finalMessage,
+                    bibleVerse: this.state.formData.bibleVerse,
+                    images: imageUrls, // Enviar apenas as URLs, não objetos
+                    musicLink: this.state.formData.musicLink || null,
+                    userName: userName,
+                    userPhone: userPhone
+                }
+            };
+
+            console.log('Enviando payload ao servidor:', payload);
+
+            // Fazer requisição para o backend
             const response = await fetch('http://localhost:3000/cards', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-Email': userEmail
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
 
+            // Verificar se a resposta foi bem-sucedida
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Erro ao criar cartão');
             }
 
-            const result = await response.json();
-            // Armazenar a URL retornada para uso no viewCardBtn e copyCardLinkBtn
-            this.state.formData.cardUrl = result.data.url;
-
+            // Processar resposta bem-sucedida
+            const data = await response.json();
+            
+            // Esconder modal de carregamento e mostrar modal de sucesso
             this.elements.loadingModal.classList.remove('visible');
             setTimeout(() => {
                 this.elements.loadingModal.style.display = 'none';
                 this.elements.successModal.style.display = 'flex';
-                // Atualizar o href do botão "Ver Cartão"
-                this.elements.viewCardBtn.href = result.data.url;
-                // Atualizar o copyCardLinkBtn para copiar a URL correta
-                this.elements.copyCardLinkBtn.dataset.url = result.data.url;
                 setTimeout(() => {
                     this.elements.successModal.classList.add('visible');
                 }, 10);
+                
+                // Configurar botões do modal de sucesso
+                if (this.elements.viewCardBtn) {
+                    this.elements.viewCardBtn.onclick = () => {
+                        window.open(`https://devotly.com/${data.data.url}`, '_blank');
+                    };
+                }
+                
+                if (this.elements.copyCardLinkBtn) {
+                    this.elements.copyCardLinkBtn.onclick = () => {
+                        this.copyToClipboard(`https://devotly.com/${data.data.url}`);
+                        alert('Link copiado para a área de transferência!');
+                    };
+                }
             }, 300);
+
         } catch (error) {
-            console.error('Erro ao enviar:', error);
+            console.error('Erro ao criar cartão:', error);
+            
+            // Esconder modal de carregamento
             this.elements.loadingModal.classList.remove('visible');
             setTimeout(() => {
                 this.elements.loadingModal.style.display = 'none';
-                this.showError(this.elements.form, error.message || 'Erro ao criar cartão. Tente novamente.');
+                alert(`Erro ao criar cartão: ${error.message}`);
             }, 300);
         }
     }
@@ -1588,10 +1681,114 @@ class DevotlyCreator {
     }
 
     saveToLocalStorage() {
+        // Salvar no localStorage sem mostrar a notificação
         localStorage.setItem('devotlyDraft', JSON.stringify(this.state.formData));
         
-        // Mostrar uma notificação sutil
-        this.showSaveNotification();
+        // Remover a linha abaixo para não mostrar a notificação
+        // this.showSaveNotification();
+    }
+
+    validateAllSteps() {
+        // Verificar campos obrigatórios
+        
+        // Nome do cartão
+        const cardName = this.state.formData.cardName;
+        if (!cardName || cardName.length < 3) {
+            return false;
+        }
+        
+        // Título
+        const cardTitle = this.state.formData.cardTitle;
+        if (!cardTitle || cardTitle.length < 3) {
+            return false;
+        }
+        
+        // Mensagem principal
+        const cardMessage = this.state.formData.cardMessage;
+        if (!cardMessage || cardMessage.length < 10) {
+            return false;
+        }
+        
+        // Mensagem final
+        const finalMessage = this.state.formData.finalMessage;
+        if (!finalMessage || finalMessage.length < 5) {
+            return false;
+        }
+        
+        // Versículo (opcional, mas se especificado precisa estar completo)
+        const verse = this.state.formData.bibleVerse;
+        if (verse.book || verse.chapter || verse.verse) {
+            if (!verse.text || !verse.reference) {
+                return false;
+            }
+        }
+        
+        // Imagens (pelo menos uma é obrigatória)
+        if (!this.state.formData.images.length) {
+            return false;
+        }
+        
+        // Dados de contato
+        const userEmail = document.getElementById('userEmail')?.value;
+        if (!userEmail || !this.validateEmail(userEmail)) {
+            return false;
+        }
+        
+        const userPhone = document.getElementById('userPhone')?.value;
+        if (!userPhone || userPhone.length < 10) {
+            return false;
+        }
+        
+        // Plano selecionado
+        if (!this.state.formData.selectedPlan) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Método auxiliar para validar email
+    validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    async uploadAllImages() {
+        // Filtrar apenas as imagens temporárias que precisam ser enviadas
+        const tempImages = this.state.formData.images.filter(img => img.isTemp);
+        
+        if (tempImages.length === 0) {
+            // Se não houver imagens temporárias, retornar uma matriz vazia
+            return [];
+        }
+        
+        try {
+            const uploadedUrls = [];
+            
+            for (const image of tempImages) {
+                // Criar FormData para upload
+                const formData = new FormData();
+                formData.append('file', image.blob, image.fileName);
+
+                // Upload para o servidor
+                const response = await fetch('http://localhost:3000/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro no upload: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                uploadedUrls.push(data.imageUrl);
+            }
+            
+            return uploadedUrls;
+        } catch (error) {
+            console.error('Erro ao fazer upload das imagens:', error);
+            throw error;
+        }
     }
 }
 
