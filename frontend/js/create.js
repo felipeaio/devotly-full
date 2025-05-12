@@ -1244,63 +1244,65 @@ class DevotlyCreator {
     }
 
     async selectPlan(plan) {
-        this.state.formData.selectedPlan = plan;
-        
-        // Remover seleção visual de todos os cards
-        document.querySelectorAll('.plan-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Adicionar seleção visual ao card escolhido
-        const selectedCard = document.querySelector(`.plan-card[data-plan="${plan}"]`);
-        selectedCard.classList.add('selected');
-        
-        // Mostrar animação de seleção
-        selectedCard.classList.add('highlight-pulse');
-        
-        // Remover a animação após 1.5 segundos
-        setTimeout(async () => {
-            selectedCard.classList.remove('highlight-pulse');
+        try {
+            // Mostrar loading
+            document.getElementById('loadingModal').style.display = 'flex';
+
+            // Converter os valores dos planos
+            const planMapping = {
+                'forever': 'para_sempre',
+                'annual': 'anual'
+            };
+
+            const planoPtBr = planMapping[plan] || plan;
             
-            // Validar se podemos finalizar
-            if (this.validateAllSteps()) {
-                // Mostrar o loading
-                this.elements.loadingModal.style.display = 'flex';
-                setTimeout(() => {
-                    this.elements.loadingModal.classList.add('visible');
-                }, 10);
-                
-                try {
-                    // Enviar todas as imagens temporárias primeiro
-                    const uploadedImageUrls = await this.uploadAllImages();
-                    
-                    // Substituir imagens temporárias por URLs permanentes
-                    const updatedImages = this.state.formData.images.map(img => {
-                        if (img.isTemp) {
-                            // Pegar a próxima URL de imagem enviada
-                            return uploadedImageUrls.shift();
-                        }
-                        // Retornar a URL existente para imagens não temporárias
-                        return img;
-                    });
-                    
-                    // Atualizar o estado com as novas URLs
-                    this.state.formData.images = updatedImages;
-                    
-                    // Agora enviar o formulário com as imagens já processadas
-                    await this.submitFormData();
-                } catch (error) {
-                    console.error('Erro ao processar imagens:', error);
-                    this.elements.loadingModal.classList.remove('visible');
-                    setTimeout(() => {
-                        this.elements.loadingModal.style.display = 'none';
-                        alert(`Erro ao processar imagens: ${error.message}`);
-                    }, 300);
-                }
-            } else {
-                alert('Por favor, preencha todos os campos obrigatórios antes de finalizar.');
+            // Atualizar o plano selecionado no state
+            this.state.formData.selectedPlan = planoPtBr;
+
+            // Criar o cartão
+            const response = await this.submitFormData();
+
+            if (!response.success) {
+                throw new Error(response.message || 'Erro ao criar cartão');
             }
-        }, 1500);
+
+            console.log('Cartão criado:', response.data);
+
+            // Criar preferência de pagamento
+            const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    plano: planoPtBr,
+                    email: document.getElementById('userEmail').value,
+                    cardId: response.data.id
+                })
+            });
+
+            console.log('Enviando dados para checkout:', {
+                plano: planoPtBr,
+                email: document.getElementById('userEmail').value,
+                cardId: response.data.id
+            });
+
+            const checkoutData = await checkoutResponse.json();
+
+            if (!checkoutData.success) {
+                throw new Error(checkoutData.error || 'Erro ao criar checkout');
+            }
+
+            console.log('Checkout criado:', checkoutData);
+
+            // Redirecionar para o Checkout do Mercado Pago
+            window.location.href = checkoutData.init_point;
+
+        } catch (error) {
+            console.error('Erro:', error);
+            document.getElementById('loadingModal').style.display = 'none';
+            alert(error.message || 'Erro ao processar pagamento. Tente novamente.');
+        }
     }
 
     navigateCarousel(direction) {
@@ -1541,84 +1543,86 @@ class DevotlyCreator {
 
     async submitFormData() {
         try {
-            // Obter dados de contato do formulário
-            const userEmail = document.getElementById('userEmail')?.value || '';
-            const userPhone = document.getElementById('userPhone')?.value || '';
-            const userName = document.getElementById('userName')?.value || '';
+            // 1. Validar email
+            const email = document.getElementById('userEmail').value.trim();
+            if (!email) {
+                throw new Error('Email é obrigatório');
+            }
 
-            // Filtrar apenas as URLs de string das imagens (não objetos)
-            const imageUrls = this.state.formData.images.filter(img => typeof img === 'string');
+            // 2. Upload das imagens primeiro
+            const uploadPromises = this.state.formData.images.map(async (image) => {
+                // Se já for uma URL, retornar diretamente
+                if (typeof image === 'string' && image.startsWith('http')) {
+                    return image;
+                }
 
-            // Mapear os dados para o formato esperado pelo backend
-            const payload = {
-                email: userEmail,
-                plano: this.state.formData.selectedPlan === 'forever' ? 'para_sempre' : 'anual',
+                // Se for um objeto com tempUrl ou blob, fazer upload
+                if (typeof image === 'object') {
+                    const formData = new FormData();
+                    formData.append('image', image.blob || image);
+
+                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        throw new Error('Erro no upload da imagem');
+                    }
+
+                    const uploadData = await uploadResponse.json();
+                    return uploadData.url;
+                }
+
+                throw new Error('Formato de imagem inválido');
+            });
+
+            // 3. Aguardar todos os uploads
+            const processedImages = await Promise.all(uploadPromises);
+
+            // 4. Construir objeto de dados
+            const formData = {
+                email: email,
+                plano: this.state.formData.selectedPlan,
                 conteudo: {
                     cardName: this.state.formData.cardName,
                     cardTitle: this.state.formData.cardTitle,
                     cardMessage: this.state.formData.cardMessage,
-                    finalMessage: this.state.formData.finalMessage,
+                    finalMessage: this.state.formData.finalMessage || '',
                     bibleVerse: this.state.formData.bibleVerse,
-                    images: imageUrls, // Enviar apenas as URLs, não objetos
-                    musicLink: this.state.formData.musicLink || null,
-                    userName: userName,
-                    userPhone: userPhone
+                    images: processedImages, // Agora são todas URLs
+                    musicLink: this.state.formData.musicLink || '',
+                    userName: document.getElementById('userName').value || '',
+                    userPhone: document.getElementById('userPhone').value || ''
                 }
             };
 
-            console.log('Enviando payload ao servidor:', payload);
-
-            // Fazer requisição para o backend
-            const response = await fetch('http://localhost:3000/cards', {
+            // 5. Enviar dados para o servidor
+            const response = await fetch('http://localhost:3000/api/cards', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(formData)
             });
 
-            // Verificar se a resposta foi bem-sucedida
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Erro ao criar cartão');
+                throw new Error(data.message || 'Erro ao criar cartão');
             }
 
-            // Processar resposta bem-sucedida
-            const data = await response.json();
-            
-            // Esconder modal de carregamento e mostrar modal de sucesso
-            this.elements.loadingModal.classList.remove('visible');
-            setTimeout(() => {
-                this.elements.loadingModal.style.display = 'none';
-                this.elements.successModal.style.display = 'flex';
-                setTimeout(() => {
-                    this.elements.successModal.classList.add('visible');
-                }, 10);
-                
-                // Configurar botões do modal de sucesso
-                if (this.elements.viewCardBtn) {
-                    this.elements.viewCardBtn.onclick = () => {
-                        window.open(`https://devotly.com/${data.data.url}`, '_blank');
-                    };
-                }
-                
-                if (this.elements.copyCardLinkBtn) {
-                    this.elements.copyCardLinkBtn.onclick = () => {
-                        this.copyToClipboard(`https://devotly.com/${data.data.url}`);
-                        alert('Link copiado para a área de transferência!');
-                    };
-                }
-            }, 300);
+            return {
+                success: true,
+                data: data.data
+            };
 
         } catch (error) {
-            console.error('Erro ao criar cartão:', error);
-            
-            // Esconder modal de carregamento
-            this.elements.loadingModal.classList.remove('visible');
-            setTimeout(() => {
-                this.elements.loadingModal.style.display = 'none';
-                alert(`Erro ao criar cartão: ${error.message}`);
-            }, 300);
+            console.error('Erro ao enviar dados:', error);
+            return {
+                success: false,
+                message: error.message
+            };
         }
     }
 
@@ -1749,7 +1753,7 @@ class DevotlyCreator {
 
     // Método auxiliar para validar email
     validateEmail(email) {
-        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
     }
 

@@ -12,9 +12,11 @@ class DevotlyViewer {
             loading: true,
             error: null
         };
-        
+
         // Definir elementos da página
         this.elements = {
+            startViewState: document.getElementById('startViewState'),
+            startViewBtn: document.getElementById('startViewBtn'),
             loadingState: document.getElementById('loadingState'),
             errorState: document.getElementById('errorState'),
             notFoundState: document.getElementById('notFoundState'),
@@ -37,49 +39,64 @@ class DevotlyViewer {
             retryBtn: document.getElementById('retryBtn'),
             checkAgainBtn: document.getElementById('checkAgainBtn')
         };
-        
+
         this.initialize();
     }
-    
-    async initialize() {
-        // Extrair ID do cartão da URL
+
+    initialize() {
+        // Mostrar tela inicial primeiro
+        this.showState('startViewState');
+        
+        // Adicionar evento de clique no botão
+        if (this.elements.startViewBtn) {
+            this.elements.startViewBtn.addEventListener('click', () => {
+                // Adicionar fade-out suave
+                const startScreen = this.elements.startViewState;
+                startScreen.style.opacity = '0';
+                startScreen.style.transition = 'opacity 0.3s ease';
+                
+                // Carregar cartão após transição
+                setTimeout(() => {
+                    startScreen.style.display = 'none';
+                    this.loadCard();
+                }, 300);
+            });
+        }
+    }
+
+    async loadCard() {
+        // Adicionar fade-out suave
+        if (this.elements.startViewState) {
+            this.elements.startViewState.style.opacity = '0';
+            await new Promise(resolve => setTimeout(resolve, 300));
+            this.elements.startViewState.style.display = 'none';
+        }
+        
+        // Extract ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         let cardId = urlParams.get('id');
-        
-        // Verificar se o ID foi passado
+
+        // Check pathname for ID
         if (!cardId) {
-            // Verificar se o ID está no pathname (formato: /view/{id})
             const pathParts = window.location.pathname.split('/');
             cardId = pathParts[pathParts.length - 1];
-            
-            // Se ainda não encontrarmos um ID, mostrar erro
+
             if (!cardId || cardId === 'view' || cardId === 'view.html') {
                 this.showState('notFoundState');
                 return;
             }
         }
-        
+
         this.state.cardId = cardId;
-        
-        // Configurar botões de retry
-        if (this.elements.retryBtn) {
-            this.elements.retryBtn.addEventListener('click', () => this.fetchCardData());
-        }
-        
-        if (this.elements.checkAgainBtn) {
-            this.elements.checkAgainBtn.addEventListener('click', () => this.fetchCardData());
-        }
-        
-        // Buscar dados do cartão
         await this.fetchCardData();
     }
-    
+
     async fetchCardData() {
         this.showState('loadingState');
-        
+
         try {
             const response = await fetch(`http://localhost:3000/api/cards/${this.state.cardId}`);
-            
+
             if (!response.ok) {
                 if (response.status === 404) {
                     this.showState('notFoundState');
@@ -88,71 +105,72 @@ class DevotlyViewer {
                 }
                 return;
             }
-            
+
             const result = await response.json();
-            
+
             if (result.status !== 'success' || !result.data) {
                 this.showState('errorState');
                 return;
             }
-            
+
             this.state.cardData = result.data;
-            
+
             if (this.state.cardData.status_pagamento !== 'aprovado') {
                 this.showState('paymentErrorState');
                 return;
             }
-            
+
             this.renderCard();
             this.setupEventListeners();
             this.setupSectionObserver();
-            
+            this.setupTouchInteractions();
+
         } catch (error) {
             console.error('Erro ao buscar dados do cartão:', error);
             this.showState('errorState');
         }
     }
-    
+
     showState(stateId) {
         // Ocultar todos os estados
-        ['loadingState', 'errorState', 'notFoundState', 'paymentErrorState', 'cardContent'].forEach(state => {
+        ['startViewState', 'loadingState', 'errorState', 'notFoundState', 'paymentErrorState', 'cardContent'].forEach(state => {
             const element = this.elements[state];
             if (element) {
                 element.style.display = 'none';
             }
         });
-        
+
         // Mostrar o estado solicitado
         const stateElement = this.elements[stateId];
         if (stateElement) {
             stateElement.style.display = 'block';
         }
     }
-    
+
     renderCard() {
         if (!this.state.cardData || !this.state.cardData.conteudo) {
             this.showState('errorState');
             return;
         }
-        
+
         const { conteudo } = this.state.cardData;
-        
+
         // Atualizar título da página
         document.title = `${conteudo.cardTitle || 'Mensagem de Fé'} | Devotly`;
-        
+
         // Verificar e atualizar cada elemento
         if (this.elements.cardTitle) {
             this.elements.cardTitle.textContent = conteudo.cardTitle || 'Mensagem de Fé';
         }
-        
+
         if (this.elements.cardMessage) {
             this.elements.cardMessage.textContent = conteudo.cardMessage || '';
         }
-        
+
         if (this.elements.finalMessage) {
             this.elements.finalMessage.textContent = conteudo.finalMessage || '';
         }
-        
+
         // Autor
         if (this.elements.cardAuthor) {
             if (conteudo.userName) {
@@ -162,7 +180,7 @@ class DevotlyViewer {
                 this.elements.cardAuthor.style.display = 'none';
             }
         }
-        
+
         // Versículo
         if (this.elements.verseSection && this.elements.verseText && this.elements.verseRef) {
             if (conteudo.bibleVerse && conteudo.bibleVerse.text) {
@@ -173,34 +191,32 @@ class DevotlyViewer {
                 this.elements.verseSection.style.display = 'none';
             }
         }
-        
+
         // Galeria
         if (this.elements.cardImages) {
             this.renderGallery(conteudo.images);
         }
-        
+
         // Mídia
         if (this.elements.cardMedia) {
             this.renderMedia(conteudo.musicLink);
         }
-        
+
         // QR Code (oculto)
         if (this.elements.qrCodeImage && this.state.cardData.qr_code_url) {
             this.elements.qrCodeImage.src = this.state.cardData.qr_code_url;
         }
-        
+
         // Mostrar o cartão
         this.showState('cardContent');
     }
-    
+
     renderGallery(images) {
         const container = this.elements.cardImages;
         if (!container) return;
-        
-        // Limpar conteúdo existente
+
         container.innerHTML = '';
-        
-        // Se não houver imagens
+
         if (!images || !images.length) {
             container.innerHTML = `
                 <div class="no-images">
@@ -210,48 +226,110 @@ class DevotlyViewer {
             `;
             return;
         }
-        
-        // Adicionar imagens ao carrossel
+
+        // Criar container para as imagens
+        const galleryImages = document.createElement('div');
+        galleryImages.className = 'gallery-images';
+        container.appendChild(galleryImages);
+
+        // Adicionar todas as imagens
         images.forEach((src, index) => {
-            if (!src) return; // Pular imagens sem URL
-            
+            if (!src) return;
+
             const img = document.createElement('img');
             img.src = src;
             img.alt = `Imagem ${index + 1}`;
-            img.classList.toggle('active', index === 0);
-            img.style.display = index === 0 ? 'block' : 'none';
             img.loading = 'lazy';
-            container.appendChild(img);
+            galleryImages.appendChild(img);
         });
-        
-        // Se houver mais de uma imagem, adicionar controles
-        if (images.length > 1) {
-            // Adicionar botões de navegação
-            const controls = document.createElement('div');
-            controls.className = 'carousel-controls';
-            controls.innerHTML = `
-                <button class="carousel-prev" aria-label="Imagem anterior">
-                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                </button>
-                <button class="carousel-next" aria-label="Próxima imagem">
-                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                </button>
-            `;
-            container.appendChild(controls);
-            
-            // Configurar eventos
-            controls.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
-            controls.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
-        }
+
+        // Adicionar indicador de scroll
+        const scrollIndicator = document.createElement('div');
+        scrollIndicator.className = 'gallery-scroll-indicator';
+        container.appendChild(scrollIndicator);
+
+        let autoScrollInterval = null;
+        let isUserInteracting = false;
+
+        // Função de scroll automático refinada
+        const autoScroll = () => {
+            if (isUserInteracting) return;
+
+            const scrollWidth = galleryImages.scrollWidth - container.clientWidth;
+            let currentScroll = container.scrollLeft;
+
+            currentScroll += container.clientWidth;
+
+            if (currentScroll > scrollWidth) {
+                currentScroll = 0;
+            }
+
+            container.scrollTo({
+                left: currentScroll,
+                behavior: 'smooth'
+            });
+        };
+
+        // Iniciar transição automática com 5 segundos
+        const startAutoScroll = () => {
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(autoScroll, 5000); // Alterado para 5 segundos
+        };
+
+        // Parar transição automática
+        const stopAutoScroll = () => {
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
+            }
+        };
+
+        // Eventos de interação do usuário
+        container.addEventListener('touchstart', () => {
+            isUserInteracting = true;
+            stopAutoScroll();
+        }, { passive: true });
+
+        container.addEventListener('mouseenter', () => {
+            isUserInteracting = true;
+            stopAutoScroll();
+        });
+
+        // Reiniciar transição após interação
+        const resetAutoScroll = () => {
+            isUserInteracting = false;
+            // Pequeno delay antes de reiniciar para melhor experiência
+            setTimeout(startAutoScroll, 500);
+        };
+
+        container.addEventListener('touchend', resetAutoScroll);
+        container.addEventListener('mouseleave', resetAutoScroll);
+
+        // Atualizar indicador de scroll
+        container.addEventListener('scroll', () => {
+            const progress = container.scrollLeft / (galleryImages.scrollWidth - container.clientWidth);
+            if (scrollIndicator) {
+                scrollIndicator.style.left = `${(progress * 80) + 10}%`;
+                scrollIndicator.style.opacity = '1';
+
+                clearTimeout(scrollIndicator.timeout);
+                scrollIndicator.timeout = setTimeout(() => {
+                    scrollIndicator.style.opacity = '0';
+                }, 1500);
+            }
+        });
+
+        // Iniciar o autoScroll
+        startAutoScroll();
     }
-    
+
     renderMedia(mediaLink) {
         const container = this.elements.cardMedia;
         if (!container) return;
-        
+
         // Limpar conteúdo existente
         container.innerHTML = '';
-        
+
         // Se não houver link de mídia
         if (!mediaLink) {
             container.innerHTML = `
@@ -262,7 +340,7 @@ class DevotlyViewer {
             `;
             return;
         }
-        
+
         // Determinar tipo de mídia e renderizar
         if (mediaLink.includes('youtube.com') || mediaLink.includes('youtu.be')) {
             const videoId = this.getYouTubeId(mediaLink);
@@ -297,7 +375,7 @@ class DevotlyViewer {
             `;
         }
     }
-    
+
     setupEventListeners() {
         // Configurar os eventos para os indicadores de seção
         this.elements.sectionDots.forEach(dot => {
@@ -310,13 +388,13 @@ class DevotlyViewer {
             });
         });
     }
-    
+
     setupSectionObserver() {
         const previewSections = document.querySelector('.preview-sections');
         const sections = document.querySelectorAll('.preview-section');
-        
+
         if (!previewSections || !sections.length) return;
-        
+
         // Configurar IntersectionObserver para detectar seções visíveis
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -326,7 +404,7 @@ class DevotlyViewer {
                         const isActive = dot.getAttribute('data-section') === entry.target.id;
                         dot.classList.toggle('active', isActive);
                     });
-                    
+
                     // Aplicar efeito de fundo baseado na seção
                     this.applyBackgroundEffect(entry.target.id);
                 }
@@ -335,12 +413,12 @@ class DevotlyViewer {
             root: previewSections,
             threshold: 0.5
         });
-        
+
         // Observar todas as seções
         sections.forEach(section => {
             observer.observe(section);
         });
-        
+
         // Configurar evento de clique nos dots para navegação
         this.elements.sectionDots.forEach(dot => {
             dot.addEventListener('click', () => {
@@ -352,70 +430,96 @@ class DevotlyViewer {
             });
         });
     }
-    
+
     applyBackgroundEffect(sectionId) {
         // Método intencionalmente vazio para não alterar o fundo
         return;
     }
-    
+
     navigateCarousel(direction) {
         const container = this.elements.cardImages;
         if (!container) return;
-        
+
         const images = container.querySelectorAll('img');
         if (images.length <= 1) return;
-        
+
         // Ocultar imagem atual
         images[this.state.currentImageIndex].style.display = 'none';
         images[this.state.currentImageIndex].classList.remove('active');
-        
+
         // Calcular novo índice
         this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
-        
+
         // Mostrar nova imagem
         images[this.state.currentImageIndex].style.display = 'block';
         images[this.state.currentImageIndex].classList.add('active');
     }
-    
+
     getYouTubeId(url) {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     }
-    
+
     getSpotifyId(url) {
         const regExp = /spotify.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/;
         const match = url.match(regExp);
-        
+
         if (match && match[1] && match[2]) {
             return {
                 type: match[1],
                 id: match[2]
             };
         }
-        
+
         return null;
     }
-    
+
     showToast(message, type = 'success') {
         if (!this.elements.toastNotification || !this.elements.toastMessage) return;
-        
+
         // Definir mensagem
         this.elements.toastMessage.textContent = message;
-        
+
         // Remover classes anteriores
         this.elements.toastNotification.className = 'toast-notification';
-        
+
         // Adicionar classe de tipo
         this.elements.toastNotification.classList.add(`toast-${type}`);
-        
+
         // Mostrar notificação
         this.elements.toastNotification.classList.add('visible');
-        
+
         // Ocultar após 3 segundos
         setTimeout(() => {
             this.elements.toastNotification.classList.remove('visible');
         }, 3000);
+    }
+
+    setupTouchInteractions() {
+        let touchStartY;
+        const container = document.querySelector('.preview-sections');
+        
+        container.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        container.addEventListener('touchmove', (e) => {
+            if (!touchStartY) return;
+            
+            const touchY = e.touches[0].clientY;
+            const diff = touchStartY - touchY;
+            
+            // Adicionar feedback visual baseado no gesto
+            if (Math.abs(diff) > 50) {
+                container.style.transform = `translateY(${-diff/10}px)`;
+            }
+        }, { passive: true });
+        
+        container.addEventListener('touchend', () => {
+            container.style.transform = '';
+            touchStartY = null;
+        });
     }
 }
 

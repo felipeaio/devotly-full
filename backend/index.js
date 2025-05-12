@@ -28,6 +28,10 @@ import cardsRouter from './routes/cards.js';
 // Adicionar depois das importações existentes
 import uploadRouter from './routes/upload.js';
 
+import checkoutRouter from './routes/checkout.js';
+
+import webhookRouter from './routes/webhook.js';
+
 // Resolve o caminho do diretório raiz
 const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
@@ -68,7 +72,7 @@ app.set('trust proxy', 1);
 // Middlewares
 app.use(cors({ 
     origin: '*', 
-    methods: ['GET', 'POST'], // Adicionar GET
+    methods: ['GET', 'POST', 'PUT'], // Adicionado PUT para edição
     allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] 
 }));
 app.use(helmet());
@@ -100,6 +104,11 @@ app.use('/api/cards', cardsRouter);
 
 // Adicionar depois das outras rotas
 app.use('/api/upload-image', supabaseMiddleware, uploadRouter);
+
+app.use('/api/checkout', checkoutRouter);
+
+app.use('/webhook', supabaseMiddleware);
+app.use('/webhook', webhookRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {

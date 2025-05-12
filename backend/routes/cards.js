@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 const router = express.Router();
 
+// Atualizar o schema de validação
 const cardSchema = z.object({
   email: z.string().email(),
   plano: z.enum(['para_sempre', 'anual']),
@@ -20,8 +21,11 @@ const cardSchema = z.object({
       text: z.string(),
       reference: z.string()
     }),
-    images: z.array(z.string()),
-    musicLink: z.string().url().nullable(),
+    images: z.array(
+      z.string().url()
+      .or(z.string().startsWith('https://'))
+    ),
+    musicLink: z.string().url().nullish().or(z.literal('')),
     userName: z.string().optional(),
     userPhone: z.string().optional()
   })
@@ -140,6 +144,60 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Adicionar nova rota para busca por email
+router.get('/search', async (req, res) => {
+  try {
+    if (!req.supabase) {
+      console.error(`[${new Date().toISOString()}] Erro: Cliente Supabase não inicializado`);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      });
+    }
+
+    const email = req.query.email;
+    console.log(`[${new Date().toISOString()}] Buscando cartões para o email:`, email);
+
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email não fornecido'
+      });
+    }
+
+    // Buscar cartões pelo email e status de pagamento
+    const { data, error } = await req.supabase
+      .from('cards')
+      .select('*')
+      .eq('email', email)
+      .eq('status_pagamento', 'aprovado')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Erro ao buscar cartões:`, error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro ao buscar cartões'
+      });
+    }
+
+    // Log para debug
+    console.log(`[${new Date().toISOString()}] Cartões encontrados:`, data?.length || 0);
+
+    return res.json({
+      status: 'success',
+      cards: data || []
+    });
+
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao processar requisição:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno no servidor'
+    });
+  }
+});
+
 // Rota para obter um cartão específico pelo ID
 router.get('/:id', async (req, res) => {
   try {
@@ -191,6 +249,96 @@ router.get('/:id', async (req, res) => {
       data: data
     });
     
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao processar requisição:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno no servidor'
+    });
+  }
+});
+
+// Adicionar após as rotas existentes
+// Rota para editar um cartão
+router.put('/:id/edit', async (req, res) => {
+  try {
+    if (!req.supabase) {
+      console.error(`[${new Date().toISOString()}] Erro: Cliente Supabase não inicializado`);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      });
+    }
+
+    const cardId = req.params.id;
+    const { conteudo } = req.body;
+
+    console.log(`[${new Date().toISOString()}] Tentando atualizar cartão:`, {
+      id: cardId,
+      conteudo
+    });
+
+    // 1. Primeiro, buscar o cartão existente
+    const { data: existingCard, error: fetchError } = await req.supabase
+      .from('cards')
+      .select('*')
+      .eq('id', cardId)
+      .single();
+
+    if (fetchError || !existingCard) {
+      console.error(`[${new Date().toISOString()}] Cartão não encontrado:`, fetchError);
+      return res.status(404).json({
+        status: 'error',
+        message: 'Cartão não encontrado'
+      });
+    }
+
+    // 2. Mesclar o conteúdo existente com as atualizações
+    const updatedContent = {
+      ...existingCard.conteudo,
+      cardTitle: conteudo.cardTitle || existingCard.conteudo.cardTitle,
+      cardMessage: conteudo.cardMessage || existingCard.conteudo.cardMessage,
+      finalMessage: conteudo.finalMessage || existingCard.conteudo.finalMessage
+    };
+
+    // 3. Realizar a atualização
+    const { error: updateError } = await req.supabase
+      .from('cards')
+      .update({
+        conteudo: updatedContent,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', cardId);
+
+    if (updateError) {
+      console.error(`[${new Date().toISOString()}] Erro na atualização:`, updateError);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro ao atualizar cartão'
+      });
+    }
+
+    // 4. Buscar o cartão atualizado
+    const { data: updatedCard, error: fetchUpdatedError } = await req.supabase
+      .from('cards')
+      .select('*')
+      .eq('id', cardId)
+      .single();
+
+    if (fetchUpdatedError) {
+      console.error(`[${new Date().toISOString()}] Erro ao buscar cartão atualizado:`, fetchUpdatedError);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Cartão atualizado mas erro ao buscar dados atualizados'
+      });
+    }
+
+    // 5. Retornar sucesso com os dados atualizados
+    return res.json({
+      status: 'success',
+      data: updatedCard
+    });
+
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao processar requisição:`, error);
     res.status(500).json({

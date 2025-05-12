@@ -1,143 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Edite seus cartões personalizados Devotly">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Devotly - Editar Cartão</title>
-    <link rel="preload" href="../style.css" as="style">
-    <link rel="preload" href="../css/edit.css" as="style">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" as="style">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devotly | Editar Cartões</title>
+    <meta name="description" content="Edite seus cartões do Devotly">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/edit.css">
 </head>
-<body class="edit-page">
-    <main class="container">
-        <section class="edit-section flow" id="edit-section" aria-live="polite">
-            <div class="section-header">
-                <h2 class="section-title">Editar Cartões</h2>
-                <p class="section-subtitle">Personalize seus cartões com facilidade</p>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <i class="fas fa-cross"></i>
+                    <span>Devotly</span>
+                </a>
             </div>
-            
-            <!-- Modo Busca -->
-            <div class="search-form card" id="search-form">
-                <form id="email-search-form" class="flow">
-                    <div class="form-group form-group--icon">
-                        <label for="email-input">Digite seu e-mail</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="email-input" name="email" required placeholder="exemplo@dominio.com">
-                        </div>
-                    </div>
-                    <div class="form-actions form-actions--search">
-                        <button type="button" class="btn btn--outline btn--gradient" id="back-button">Voltar</button>
-                        <button type="submit" class="btn btn--primary btn--gradient">Buscar Cartões</button>
-                    </div>
-                </form>
-                <div class="cards-list flow" id="cards-list" style="display: none;"></div>
-            </div>
-            
-            <!-- Modo Edição -->
-            <div class="edit-form card" id="edit-form" style="display: none;">
-                <form id="card-edit-form" class="flow">
-                    <div class="form-group form-group--icon">
-                        <label for="pageName-input">Nome da Página</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-link input-icon"></i>
-                            <input type="text" id="pageName-input" name="pageName" maxlength="30" required placeholder="Nome da página">
-                        </div>
-                        <p class="form-hint">3 a 30 caracteres, usado na URL do cartão</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="title-input">Título do Cartão</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-pencil-alt input-icon"></i>
-                            <input type="text" id="title-input" name="title" maxlength="50" required placeholder="Digite o título">
-                        </div>
-                        <p class="form-hint">3 a 50 caracteres</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="message-input">Mensagem</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-comment input-icon"></i>
-                            <textarea id="message-input" name="message" maxlength="5000" rows="6" required placeholder="Digite sua mensagem"></textarea>
-                        </div>
-                        <div class="textarea-counter" id="message-counter">0/5000</div>
-                        <p class="form-hint">10 a 5000 caracteres</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="verse-book">Versículo Bíblico</label>
-                        <div class="verse-group">
-                            <select id="verse-book" name="verseBook">
-                                <option value="">Selecione o livro</option>
-                                <!-- Preencher com JavaScript -->
-                            </select>
-                            <input type="number" id="verse-chapter" name="verseChapter" placeholder="Capítulo" min="1">
-                            <input type="number" id="verse-number" name="verseNumber" placeholder="Versículo" min="1">
-                            <button type="button" id="fetch-verse" class="btn btn--secondary">Buscar Versículo</button>
-                        </div>
-                        <div id="verse-preview" class="verse-preview"></div>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="image-upload">Imagens (máx. 7)</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-image input-icon"></i>
-                            <input type="file" id="image-upload" name="images" accept="image/*" multiple style="display: none;">
-                            <label for="image-upload" id="upload-label" class="upload-label">Arraste ou clique para adicionar imagens</label>
-                        </div>
-                        <div id="image-preview" class="image-preview"></div>
-                        <p class="form-hint">Formatos suportados: JPG, PNG</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label>Mídia (YouTube ou Spotify)</label>
-                        <div class="media-options">
-                            <button type="button" class="media-option" data-type="video"><i class="fab fa-youtube"></i> YouTube</button>
-                            <button type="button" class="media-option" data-type="audio"><i class="fab fa-spotify"></i> Spotify</button>
-                        </div>
-                        <div class="input-wrapper">
-                            <i class="fas fa-music input-icon"></i>
-                            <input type="url" id="media-url" name="mediaUrl" placeholder="URL da mídia (opcional)">
-                        </div>
-                        <p class="form-hint">Deixe em branco para remover a mídia</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="final-message">Mensagem Final</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-comment input-icon"></i>
-                            <textarea id="final-message" name="finalMessage" maxlength="5000" rows="4" placeholder="Digite uma mensagem final (opcional)"></textarea>
-                        </div>
-                        <div class="textarea-counter" id="final-message-counter">0/5000</div>
-                        <p class="form-hint">Até 5000 caracteres</p>
-                    </div>
-                    
-                    <div class="form-group form-group--icon">
-                        <label for="theme-input">Tema</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-paint-brush input-icon"></i>
-                            <select id="theme-input" name="theme">
-                                <option value="starry">Céu Estrelado</option>
-                                <option value="light">Claro</option>
-                                <option value="nature">Natureza</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" class="btn btn--outline btn--gradient" id="cancel-button">Cancelar</button>
-                        <button type="submit" class="btn btn--primary btn--gradient">Salvar Alterações</button>
-                    </div>
-                </form>
+        </div>
+    </header>
+
+    <main class="edit-container">
+        <!-- Seção de Busca -->
+        <section class="search-section">
+            <div class="container">
+                <h1>Editar Cartões</h1>
+                <p>Digite seu e-mail para buscar seus cartões</p>
+                <div class="search-box">
+                    <input type="email" id="emailSearch" placeholder="Seu e-mail" aria-label="Digite seu e-mail">
+                    <button id="searchBtn" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        Buscar
+                    </button>
+                </div>
             </div>
         </section>
+
+        <!-- Estados de Loading/Erro -->
+        <div id="loadingState" class="state-container" style="display: none;">
+            <div class="spinner">
+                <div class="spinner-circle"></div>
+            </div>
+            <h2>Buscando cartões...</h2>
+            <p>Por favor, aguarde</p>
+        </div>
+
+        <div id="errorState" class="state-container error-state" style="display: none;">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h2>Erro na busca</h2>
+            <p>Não foi possível encontrar cartões com este e-mail.</p>
+        </div>
+
+        <!-- Grid de Cartões -->
+        <section id="cardsGrid" class="cards-grid" style="display: none;">
+            <div class="container">
+                <h2>Seus Cartões</h2>
+                <div class="cards-container" id="cardsContainer">
+                    <!-- Cards serão inseridos aqui via JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal de Edição -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-edit"></i> Editar Cartão</h2>
+                    <button class="close-btn" id="closeModal" aria-label="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <div class="form-group" data-length="0/100">
+                            <label for="cardTitle">
+                                <i class="fas fa-heading"></i> Título
+                            </label>
+                            <input 
+                                type="text" 
+                                id="cardTitle" 
+                                name="cardTitle" 
+                                required
+                                maxlength="100"
+                                placeholder="Digite o título do cartão"
+                            >
+                        </div>
+                        <div class="form-group" data-length="0/500">
+                            <label for="cardMessage">
+                                <i class="fas fa-quote-right"></i> Mensagem Principal
+                            </label>
+                            <textarea 
+                                id="cardMessage" 
+                                name="cardMessage" 
+                                rows="4" 
+                                required
+                                maxlength="500"
+                                placeholder="Digite a mensagem principal do cartão"
+                            ></textarea>
+                        </div>
+                        <div class="form-group" data-length="0/200">
+                            <label for="finalMessage">
+                                <i class="fas fa-heart"></i> Mensagem Final
+                            </label>
+                            <textarea 
+                                id="finalMessage" 
+                                name="finalMessage" 
+                                rows="2"
+                                maxlength="200"
+                                placeholder="Digite uma mensagem de encerramento (opcional)"
+                            ></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelEdit">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toastNotification" class="toast-notification">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage"></span>
+        </div>
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-    <script type="module" src="../js/edit.js"></script>
+
+    <script src="../js/edit.js"></script>
 </body>
+
 </html>

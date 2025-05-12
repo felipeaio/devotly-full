@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Confirmado | Devotly</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="success-container">
+        <i class="fas fa-check-circle"></i>
+        <h1>Pagamento Confirmado!</h1>
+        <p>Seu cartão foi ativado com sucesso.</p>
+        <div class="success-actions">
+            <a href="/edit" class="btn btn-primary">Gerenciar Meus Cartões</a>
+            <a href="/" class="btn btn-secondary">Voltar ao Início</a>
+        </div>
+    </div>
+    <script>
+        // Verificar status do pagamento após alguns segundos
+        setTimeout(async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentId = urlParams.get('payment_id');
+            if (paymentId) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/payment/status/${paymentId}`);
+                    const data = await response.json();
+                    if (data.status === 'approved') {
+                        // Pagamento confirmado
+                        document.querySelector('.success-container').classList.add('payment-confirmed');
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar status:', error);
+                }
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
