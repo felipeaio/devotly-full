@@ -62,7 +62,7 @@ router.post('/create-preference', async (req, res) => {
             anual: 'Plano Anual - Devotly'
         };
 
-        // Criar objeto de preferência
+        // Atualizar o objeto preferenceData:
         const preferenceData = {
             items: [
                 {
@@ -83,10 +83,7 @@ router.post('/create-preference', async (req, res) => {
             },
             external_reference: `${cardId}|${email}|${plano}`,
             notification_url: `${process.env.NGROK_URL}/webhook/mercadopago`,
-            auto_return: 'approved',
-            payment_methods: {
-                installments: 12
-            }
+            auto_return: 'approved'
         };
 
         console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));

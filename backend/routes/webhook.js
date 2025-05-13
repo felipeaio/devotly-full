@@ -1,92 +1,170 @@
 import express from 'express';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
+import { createClient } from '@supabase/supabase-js';
 const router = express.Router();
 
 router.post('/mercadopago', async (req, res) => {
+    console.log('\n=== INÍCIO DO PROCESSAMENTO DO WEBHOOK ===');
+    console.log('Timestamp:', new Date().toISOString());
+
     try {
-        console.log('Webhook recebido:', {
-            query: req.query,
-            body: req.body
+        // Log detalhado da requisição
+        console.log('\n1. Dados da Requisição:');
+        console.log('Headers:', JSON.stringify(req.headers, null, 2));
+        console.log('Query:', JSON.stringify(req.query, null, 2));
+        console.log('Body:', JSON.stringify(req.body, null, 2));
+        console.log('Topic:', req.query.topic || req.body.type);
+        console.log('Action:', req.body.action);
+
+        // Verificar o tipo de notificação
+        const topic = req.query.topic || req.body.type;
+        if (topic === 'merchant_order') {
+            console.log('Notificação de merchant_order ignorada');
+            return res.status(200).send('OK');
+        }
+        if (topic !== 'payment') {
+            console.log(`Notificação ignorada: topic ${topic} não é 'payment'`);
+            return res.status(200).send('OK');
+        }
+
+        // Initialize Supabase
+        console.log('\n2. Inicializando Supabase...');
+        const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY
+        );
+        console.log('Supabase inicializado com', process.env.SUPABASE_SERVICE_KEY ? 'chave de serviço' : 'chave anônima');
+
+        // Get payment ID
+        let paymentId = req.body.data?.id || req.query['data.id'] || req.body.id || req.query.id;
+        console.log('\n3. Identificação do Payment ID:');
+        console.log('Payment ID encontrado:', paymentId);
+        console.log('Fontes possíveis:', {
+            bodyDataId: req.body.data?.id,
+            queryDataId: req.query['data.id'],
+            bodyId: req.body.id,
+            queryId: req.query.id
         });
 
-        const { type, action, data } = req.body;
-        
-        // Primeiro, verificar se é uma notificação de pagamento
-        if ((type === 'payment' || action === 'payment.created') && data?.id) {
-            console.log(`Processando pagamento ID: ${data.id}`);
+        if (!paymentId) {
+            console.log('❌ Nenhum payment_id encontrado');
+            return res.status(200).send('OK');
+        }
 
+        // Configure Mercado Pago client
+        console.log('\n4. Configurando cliente Mercado Pago...');
+        if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+            throw new Error('MERCADO_PAGO_ACCESS_TOKEN não configurado');
+        }
+        const client = new MercadoPagoConfig({
+            accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+            options: { timeout: 5000 }
+        });
+        console.log('Cliente MP configurado');
+
+        const payment = new Payment(client);
+
+        // Get payment info with retry mechanism
+        console.log('\n5. Buscando informações do pagamento...');
+        let paymentInfo = null;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries && !paymentInfo) {
             try {
-                // Configurar cliente do Mercado Pago
-                const client = new MercadoPagoConfig({
-                    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+                console.log(`Tentativa ${retryCount + 1} de buscar pagamento ${paymentId}...`);
+                const response = await payment.get({ id: paymentId });
+                paymentInfo = response; // Usar response diretamente
+                console.log('Resposta do Mercado Pago:', JSON.stringify(paymentInfo, null, 2));
+                break;
+            } catch (error) {
+                console.error(`Erro na tentativa ${retryCount + 1}:`, {
+                    message: error.message,
+                    status: error.status,
+                    cause: error.cause
                 });
-
-                // Criar instância de Payment
-                const payment = new Payment(client);
-
-                // Buscar informações do pagamento - Correção aqui
-                const paymentInfo = await payment.get({
-                    id: data.id // Mudança importante aqui
-                });
-
-                console.log('Informações do pagamento:', paymentInfo);
-
-                // Verificar se o pagamento foi aprovado
-                if (paymentInfo.status === 'approved') {
-                    // Extrair informações do external_reference
-                    const [cardId, email, plano] = paymentInfo.external_reference.split('|');
-
-                    console.log('Atualizando status do cartão:', {
-                        cardId,
-                        email,
-                        plano,
-                        status: 'aprovado'
-                    });
-
-                    // Atualizar status no Supabase
-                    const { error } = await req.supabase
-                        .from('cards')
-                        .update({
-                            status_pagamento: 'aprovado',
-                            payment_id: data.id,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', cardId);
-
-                    if (error) {
-                        console.error('Erro ao atualizar status:', error);
-                        throw error;
-                    }
-
-                    console.log('Status atualizado com sucesso');
-                } else {
-                    console.log(`Status do pagamento: ${paymentInfo.status}`);
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    console.log('Aguardando 1 segundo antes de tentar novamente...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
-            } catch (paymentError) {
-                console.error('Erro ao processar pagamento:', {
-                    message: paymentError.message,
-                    stack: paymentError.stack,
-                    response: paymentError.response?.data
-                });
-                throw paymentError;
             }
         }
 
-        // Sempre retornar 200 para o Mercado Pago
-        res.status(200).json({ success: true });
+        if (!paymentInfo) {
+            throw new Error(`Não foi possível obter informações do pagamento ${paymentId} após ${maxRetries} tentativas`);
+        }
 
+        console.log('\n6. Status do pagamento:', paymentInfo.status);
+
+        if (paymentInfo.status === 'approved') {
+            const externalReference = paymentInfo.external_reference;
+            if (!externalReference) {
+                throw new Error('external_reference não encontrado no pagamento');
+            }
+
+            const [cardId, email, plano] = externalReference.split('|');
+            if (!cardId) {
+                throw new Error('cardId inválido em external_reference');
+            }
+            console.log('\n7. Dados extraídos:', { cardId, email, plano });
+
+            // Verificar se o cartão existe
+            console.log('\n8. Verificando cartão no Supabase...');
+            const { data: card, error: fetchError } = await supabase
+                .from('cards')
+                .select('*')
+                .eq('id', cardId)
+                .single();
+
+            if (fetchError || !card) {
+                console.error('Erro ao buscar cartão:', JSON.stringify(fetchError, null, 2));
+                throw new Error(`Cartão com ID ${cardId} não encontrado`);
+            }
+            console.log('Cartão encontrado:', JSON.stringify(card, null, 2));
+
+            // Atualizar status no Supabase
+            console.log('\n9. Atualizando cartão no Supabase:', {
+                cardId,
+                paymentId,
+                status: 'aprovado'
+            });
+            const { data, error } = await supabase
+                .from('cards')
+                .update({
+                    status_pagamento: 'aprovado',
+                    payment_id: paymentId,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', cardId)
+                .select();
+
+            if (error) {
+                console.error('❌ Erro ao atualizar no Supabase:', JSON.stringify(error, null, 2));
+                throw new Error(`Erro ao atualizar Supabase: ${error.message}`);
+            }
+
+            if (!data || data.length === 0) {
+                console.error('❌ Nenhum registro atualizado no Supabase');
+                console.log('Dados da query:', { table: 'cards', cardId, condition: `id = ${cardId}` });
+                throw new Error(`Nenhum registro atualizado para cardId: ${cardId}`);
+            }
+
+            console.log('\n✅ Status atualizado com sucesso:', JSON.stringify(data, null, 2));
+        } else {
+            console.log(`Status do pagamento não aprovado: ${paymentInfo.status}`);
+        }
+
+        console.log('\n=== FIM DO PROCESSAMENTO DO WEBHOOK ===');
+        return res.status(200).send('OK');
     } catch (error) {
-        console.error('Erro no webhook:', {
+        console.error('\n❌ Erro geral no webhook:', {
             message: error.message,
             stack: error.stack,
-            response: error.response?.data
+            body: req.body,
+            query: req.query
         });
-        
-        // Ainda retornar 200 para o Mercado Pago não retentar
-        res.status(200).json({ 
-            success: false, 
-            error: error.message 
-        });
+        return res.status(200).send('OK');
     }
 });
 

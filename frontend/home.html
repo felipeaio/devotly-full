@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Devotly - Crie cartões digitais cristãos com versículos bíblicos e mensagens de fé. Espalhe a luz de Cristo!">
+    <meta property="og:title" content="Devotly - Cartões Cristãos Inspiradores">
+    <meta property="og:description"
+        content="Crie cartões digitais com a Palavra de Deus para compartilhar bênçãos e esperança.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#d4af37">
+    <title>Devotly - Cartões Cristãos Inspiradores</title>
+    <link rel="preload" href="../css/home.css" as="style">
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500&display=swap"
+        as="style">
+    <link rel="stylesheet" href="../css/home.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preload" href="fonts/clashDisplay.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header__container">
+            <a href="/" class="logo" aria-label="Devotly - Página inicial">
+                <span aria-hidden="true">✝️</span>
+                <h1>Devotly</h1>
+            </a>
+            <button class="nav-toggle" aria-expanded="false" aria-controls="primary-navigation">
+                <span class="sr-only">Menu</span>
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            <nav class="nav" data-state="closed" id="primary-navigation">
+                <ul class="nav__list">
+                    <li><a href="#como-funciona" class="nav__link">Como Funciona</a></li>
+                    <li><a href="#precos" class="nav__link">Planos</a></li>
+                    <li><a href="/demo" class="nav__link">Demonstração</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="container">
+            <div class="mobile-container">
+                <div class="hero__content fade-in">
+                    <span class="badge">NOVO</span>
+                    <h2 class="hero__title">
+                        <span>Cartões</span>
+                        <span class="typed-text" aria-live="polite"></span>
+                    </h2>
+                    <p class="hero__text verse">“Que a vossa luz brilhe diante dos homens.” – Mateus 5:16</p>
+                    <p class="hero__text">Crie cartões digitais cristãos com versículos e mensagens que tocam o coração.
+                    </p>
+                    <div class="hero__actions">
+                        <a href="/busca" class="btn btn--outline">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            Buscar Cartão
+                        </a>
+                        <div class="hero__cta">
+                            <a href="/checkout?plano=para_sempre" class="btn btn--primary">
+                                Criar Agora <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                            <a href="/demo" class="btn btn--outline">
+                                Ver Demonstração <i class="fas fa-eye" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="custom-stats">
+                        <div class="avatars">
+                            <picture class="avatar-frame">
+                                <source srcset="images/avatars/avatar1.webp" type="image/webp">
+                                <source srcset="images/avatars/avatar1.jpg" type="image/jpeg">
+                                <img src="images/avatars/avatar1.jpg" alt="Membro satisfeito" width="40" height="40" loading="lazy" decoding="async">
+                            </picture>
+                            <div class="avatar-frame">
+                                <img src="https://i.pravatar.cc/40?img=2" alt="Membro feliz" width="40" height="40"
+                                    loading="lazy">
+                            </div>
+                            <div class="avatar-frame">
+                                <img src="https://i.pravatar.cc/40?img=3" alt="Membro inspirado" width="40" height="40"
+                                    loading="lazy">
+                            </div>
+                        </div>
+                        <div class="stats-display">
+                            <div class="stars" aria-label="Avaliação de 5 estrelas">★★★★★</div>
+                            <div class="counter">
+                                <span class="number" data-counter="3241">3241</span> cartões criados
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero__preview fade-in">
+                    <div class="preview-card">
+                        <div class="preview-slider" role="region" aria-label="Demonstração de cartões">
+                            <div class="slide active" aria-current="true">
+                                <div class="preview-image"
+                                    style="background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80');"
+                                    role="img" aria-label="Pessoa orando"></div>
+                                <div class="preview-message">"Que Deus te abençoe abundantemente!"</div>
+                            </div>
+                            <div class="slide">
+                                <div class="preview-image"
+                                    style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80');"
+                                    role="img" aria-label="Bíblia aberta"></div>
+                                <div class="preview-message">"O Senhor é meu pastor; de nada terei falta."</div>
+                            </div>
+                            <div class="preview-qrcode">
+                                <div class="qr-code" aria-label="QR Code de exemplo"></div>
+                                <div class="qr-text">Escanear</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Como Funciona -->
+    <section class="how-section" id="como-funciona" aria-labelledby="como-funciona-title">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" id="como-funciona-title">Como Criar Seu Cartão</h2>
+                <p class="section-subtitle">Em apenas 4 passos simples</p>
+            </div>
+            <div class="steps-grid">
+                <article class="step-card">
+                    <div class="step-number" aria-hidden="true">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="step-title">Personalize</h3>
+                    <p class="step-text">Escolha um versículo, adicione mensagens e imagens.</p>
+                </article>
+                <article class="step-card">
+                    <div class="step-number" aria-hidden="true">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-credit-card" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="step-title">Pague</h3>
+                    <p class="step-text">Pagamento seguro via Mercado Pago.</p>
+                </article>
+                <article class="step-card">
+                    <div class="step-number" aria-hidden="true">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-qrcode" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="step-title">Receba</h3>
+                    <p class="step-text">Link único e QR Code personalizado.</p>
+                </article>
+                <article class="step-card">
+                    <div class="step-number" aria-hidden="true">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-share-alt" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="step-title">Compartilhe</h3>
+                    <p class="step-text">Envie por WhatsApp, e-mail ou imprima.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planos -->
+    <section class="pricing-section" id="precos" aria-labelledby="precos-title">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" id="precos-title">Planos e Preços</h2>
+                <p class="section-subtitle">Escolha como espalhar a Palavra de Deus</p>
+            </div>
+            <div class="pricing-grid">
+                <article class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="plan-name">✨ Plano Anual</h3>
+                        <div class="plan-price">
+                            <span class="currency">R$</span>
+                            <span class="amount">8,99</span>
+                            <span class="period">/ano</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle text-success" aria-hidden="true"></i> Versículo personalizado
+                        </li>
+                        <li><i class="fas fa-check-circle text-success" aria-hidden="true"></i> QR Code permanente</li>
+                        <li><i class="fas fa-image text-accent" aria-hidden="true"></i> Até 3 imagens</li>
+                        <li><i class="fas fa-times-circle text-error" aria-hidden="true"></i> Sem música de fundo</li>
+                        <li><i class="fas fa-link text-accent" aria-hidden="true"></i> URL personalizada</li>
+                        <li><i class="fas fa-headset text-accent" aria-hidden="true"></i> Suporte 24h</li>
+                    </ul>
+                    <a href="/checkout?plano=anual" class="btn btn--outline">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i> Selecionar Plano
+                    </a>
+                </article>
+                <article class="pricing-card featured">
+                    <div class="recommended-tag">Mais Popular</div>
+                    <div class="pricing-header">
+                        <h3 class="plan-name">💎 Plano Para Sempre</h3>
+                        <div class="plan-price">
+                            <span class="currency">R$</span>
+                            <span class="amount">17,99</span>
+                            <span class="period">/pagamento único</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle text-success" aria-hidden="true"></i> Versículo personalizado
+                        </li>
+                        <li><i class="fas fa-qrcode text-accent" aria-hidden="true"></i> QR Code estilizado</li>
+                        <li><i class="fas fa-images text-accent" aria-hidden="true"></i> Até 7 imagens</li>
+                        <li><i class="fas fa-music text-accent" aria-hidden="true"></i> Música de fundo</li>
+                        <li><i class="fas fa-link text-accent" aria-hidden="true"></i> URL personalizada</li>
+                        <li><i class="fas fa-headset text-accent" aria-hidden="true"></i> Suporte 24h</li>
+                    </ul>
+                    <a href="/checkout?plano=para_sempre" class="btn btn--primary">Quero esse!</a>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <h3 class="footer__logo">Devotly</h3>
+                    <p class="footer__slogan verse">“Façam tudo para a glória de Deus.” – 1 Coríntios 10:31</p>
+                </div>
+                <div class="footer__actions">
+                    <a href="/termos" class="footer__link">Termos</a>
+                    <a href="/privacidade" class="footer__link">Privacidade</a>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer__copyright">
+                <p>© <span id="current-year">2025</span> Devotly. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/home.js" defer></script>
+    <script defer>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+    <script>
+        // Add to home.js
+        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    observer.unobserve(img);
+                }
+            });
+        });
+        lazyImages.forEach(img => imageObserver.observe(img));
+    </script>
+</body>
+
+</html>

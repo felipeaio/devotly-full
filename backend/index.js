@@ -107,15 +107,17 @@ app.get('/', (req, res) => {
 
 // Rotas para páginas de retorno do Mercado Pago
 app.get('/success', (req, res) => {
-    res.send('<h1>Pagamento Aprovado</h1><p>Seu pagamento foi processado com sucesso!</p>');
+    // Redirecionar para success.html mantendo os parâmetros da URL
+    const params = new URLSearchParams(req.query).toString();
+    res.redirect(`${process.env.FRONTEND_URL}/success.html?${params}`);
 });
 
 app.get('/failure', (req, res) => {
-    res.send('<h1>Pagamento Falhou</h1><p>Ocorreu um erro ao processar seu pagamento. Tente novamente.</p>');
+    res.redirect(`${process.env.FRONTEND_URL}/failure.html`);
 });
 
 app.get('/pending', (req, res) => {
-    res.send('<h1>Pagamento Pendente</h1><p>Seu pagamento está sendo processado. Você será notificado quando concluído.</p>');
+    res.redirect(`${process.env.FRONTEND_URL}/pending.html`);
 });
 
 // Tratamento de erros
