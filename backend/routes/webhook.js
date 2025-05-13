@@ -1,92 +1,92 @@
 import express from 'express';
-import { MercadoPagoConfig } from 'mercadopago';
+import { MercadoPagoConfig, Payment } from 'mercadopago';
 const router = express.Router();
 
-router.post('/webhook/mercadopago', async (req, res) => {
+router.post('/mercadopago', async (req, res) => {
     try {
-        const { type, data } = req.body;
-        console.log('Webhook recebido:', { type, data });
+        console.log('Webhook recebido:', {
+            query: req.query,
+            body: req.body
+        });
 
-        if (!req.supabase) {
-            throw new Error('Cliente Supabase não inicializado');
+        const { type, action, data } = req.body;
+        
+        // Primeiro, verificar se é uma notificação de pagamento
+        if ((type === 'payment' || action === 'payment.created') && data?.id) {
+            console.log(`Processando pagamento ID: ${data.id}`);
+
+            try {
+                // Configurar cliente do Mercado Pago
+                const client = new MercadoPagoConfig({
+                    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+                });
+
+                // Criar instância de Payment
+                const payment = new Payment(client);
+
+                // Buscar informações do pagamento - Correção aqui
+                const paymentInfo = await payment.get({
+                    id: data.id // Mudança importante aqui
+                });
+
+                console.log('Informações do pagamento:', paymentInfo);
+
+                // Verificar se o pagamento foi aprovado
+                if (paymentInfo.status === 'approved') {
+                    // Extrair informações do external_reference
+                    const [cardId, email, plano] = paymentInfo.external_reference.split('|');
+
+                    console.log('Atualizando status do cartão:', {
+                        cardId,
+                        email,
+                        plano,
+                        status: 'aprovado'
+                    });
+
+                    // Atualizar status no Supabase
+                    const { error } = await req.supabase
+                        .from('cards')
+                        .update({
+                            status_pagamento: 'aprovado',
+                            payment_id: data.id,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', cardId);
+
+                    if (error) {
+                        console.error('Erro ao atualizar status:', error);
+                        throw error;
+                    }
+
+                    console.log('Status atualizado com sucesso');
+                } else {
+                    console.log(`Status do pagamento: ${paymentInfo.status}`);
+                }
+            } catch (paymentError) {
+                console.error('Erro ao processar pagamento:', {
+                    message: paymentError.message,
+                    stack: paymentError.stack,
+                    response: paymentError.response?.data
+                });
+                throw paymentError;
+            }
         }
 
-        if (type === 'payment' && data?.id) {
-            const paymentId = data.id;
-            console.log(`Processando pagamento ID: ${paymentId}`);
+        // Sempre retornar 200 para o Mercado Pago
+        res.status(200).json({ success: true });
 
-            // Verificar access token
-            if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
-                throw new Error('MERCADO_PAGO_ACCESS_TOKEN não configurado');
-            }
-            console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
-
-            // Inicializar Mercado Pago
-            const client = new MercadoPagoConfig({
-                accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-                options: { timeout: 5000 }
-            });
-
-            // Buscar informações do pagamento
-            const payment = await client.payment.findById(paymentId);
-            console.log('Pagamento encontrado:', JSON.stringify(payment, null, 2));
-
-            if (payment.status === 'approved') {
-                if (!payment.external_reference) {
-                    throw new Error('external_reference não encontrado no pagamento');
-                }
-
-                const [cardId, email, plano] = payment.external_reference.split('|');
-                if (!cardId) {
-                    throw new Error('cardId inválido em external_reference');
-                }
-                console.log('Dados extraídos:', { cardId, email, plano });
-
-                // Verificar se o cartão existe
-                const { data: card, error: fetchError } = await req.supabase
-                    .from('cards')
-                    .select('*')
-                    .eq('id', cardId)
-                    .single();
-
-                if (fetchError || !card) {
-                    console.error('Erro ao buscar cartão:', JSON.stringify(fetchError, null, 2));
-                    throw new Error(`Cartão com ID ${cardId} não encontrado`);
-                }
-                console.log('Cartão encontrado:', JSON.stringify(card, null, 2));
-
-                // Atualizar status no Supabase
-                const { data, error } = await req.supabase
-                    .from('cards')
-                    .update({
-                        status_pagamento: 'aprovado',
-                        payment_id: paymentId,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', cardId)
-                    .select();
-
-                if (error) {
-                    console.error('Erro ao atualizar status no Supabase:', JSON.stringify(error, null, 2));
-                    throw new Error(`Erro ao atualizar Supabase: ${error.message}`);
-                }
-
-                console.log('Status atualizado no Supabase:', JSON.stringify(data, null, 2));
-            } else {
-                console.log(`Pagamento não aprovado. Status: ${payment.status}`);
-            }
-        } else {
-            console.log('Notificação ignorada: tipo não é payment ou data.id ausente');
-        }
-
-        return res.status(200).send('OK');
     } catch (error) {
         console.error('Erro no webhook:', {
             message: error.message,
             stack: error.stack,
-            body: req.body
+            response: error.response?.data
         });
-        return res.status(500).send('Error');
+        
+        // Ainda retornar 200 para o Mercado Pago não retentar
+        res.status(200).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 

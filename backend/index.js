@@ -97,7 +97,8 @@ app.use('/api/cards', supabaseMiddleware);
 app.use('/api/cards', cardsRouter);
 app.use('/api/upload-image', supabaseMiddleware, uploadRouter);
 app.use('/api/checkout', supabaseMiddleware, checkoutRouter);
-app.use('/webhook', supabaseMiddleware, webhookRouter);
+app.use('/webhook', supabaseMiddleware);
+app.use('/webhook', webhookRouter);
 
 // Rota raiz
 app.get('/', (req, res) => {
