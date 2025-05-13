@@ -1268,35 +1268,37 @@ class DevotlyCreator {
 
             console.log('Cartão criado:', response.data);
 
-            // Criar preferência de pagamento
+            const checkoutData = {
+                plano: planoPtBr,
+                email: document.getElementById('userEmail').value,
+                cardId: response.data.id
+            };
+
+            console.log('Enviando dados para checkout:', checkoutData);
+
             const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    plano: planoPtBr,
-                    email: document.getElementById('userEmail').value,
-                    cardId: response.data.id
-                })
+                body: JSON.stringify(checkoutData)
             });
 
-            console.log('Enviando dados para checkout:', {
-                plano: planoPtBr,
-                email: document.getElementById('userEmail').value,
-                cardId: response.data.id
-            });
-
-            const checkoutData = await checkoutResponse.json();
-
-            if (!checkoutData.success) {
-                throw new Error(checkoutData.error || 'Erro ao criar checkout');
+            if (!checkoutResponse.ok) {
+                const errorData = await checkoutResponse.json();
+                throw new Error(errorData.error || 'Erro ao criar checkout');
             }
 
-            console.log('Checkout criado:', checkoutData);
+            const mpData = await checkoutResponse.json();
+
+            if (!mpData.success) {
+                throw new Error(mpData.error || 'Erro ao criar checkout');
+            }
+
+            console.log('Checkout criado:', mpData);
 
             // Redirecionar para o Checkout do Mercado Pago
-            window.location.href = checkoutData.init_point;
+            window.location.href = mpData.init_point;
 
         } catch (error) {
             console.error('Erro:', error);

@@ -8,123 +8,114 @@ router.post('/create-preference', async (req, res) => {
 
         console.log('Dados recebidos:', { plano, email, cardId });
 
-        // Verificar se todos os dados necessários foram enviados
+        // Validação inicial
         if (!plano || !email || !cardId) {
             return res.status(400).json({
                 success: false,
-                error: 'Dados incompletos'
+                error: 'Dados incompletos: plano, email e cardId são obrigatórios'
             });
         }
 
-        // Inicializar o Mercado Pago com o token de acesso
+        // Validar plano
+        const validPlans = ['para_sempre', 'anual'];
+        if (!validPlans.includes(plano)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Plano inválido'
+            });
+        }
+
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email inválido'
+            });
+        }
+
+        // Verificar access token
+        if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+            throw new Error('MERCADO_PAGO_ACCESS_TOKEN não configurado');
+        }
+        console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
+
+        // Validar NGROK_URL
+        if (!process.env.NGROK_URL || !process.env.NGROK_URL.startsWith('http')) {
+            throw new Error('NGROK_URL inválido: deve começar com http ou https');
+        }
+        console.log('NGROK URL:', process.env.NGROK_URL);
+
+        // Inicializar Mercado Pago
         const client = new MercadoPagoConfig({
-            accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+            accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+            options: { timeout: 5000 }
         });
 
-        // Definir preços e descrições
         const precos = {
-            para_sempre: 297.00,
-            anual: 97.00
+            para_sempre: 17.99,
+            anual: 8.99
         };
 
         const descricoes = {
-            para_sempre: "Plano Para Sempre - Devotly",
-            anual: "Plano Anual - Devotly"
+            para_sempre: 'Plano Para Sempre - Devotly',
+            anual: 'Plano Anual - Devotly'
         };
 
-        // Criar o objeto de preferência
+        // Criar objeto de preferência
         const preferenceData = {
-            items: [{
-                id: cardId.toString(),
-                title: descricoes[plano],
-                unit_price: Number(precos[plano]),
-                quantity: 1,
-                currency_id: 'BRL'
-            }],
+            items: [
+                {
+                    id: String(cardId),
+                    title: descricoes[plano],
+                    unit_price: Number(precos[plano].toFixed(2)),
+                    quantity: 1,
+                    currency_id: 'BRL'
+                }
+            ],
             payer: {
                 email: email
             },
-            payment_methods: {
-                installments: 12,
-                excluded_payment_types: []
-            },
             back_urls: {
-                success: `${process.env.FRONTEND_URL}/success.html`,
-                failure: `${process.env.FRONTEND_URL}/failure.html`,
-                pending: `${process.env.FRONTEND_URL}/pending.html`
+                success: `${process.env.NGROK_URL}/success`,
+                failure: `${process.env.NGROK_URL}/failure`,
+                pending: `${process.env.NGROK_URL}/pending`
             },
-            auto_return: "approved",
             external_reference: `${cardId}|${email}|${plano}`,
-            notification_url: `${process.env.NGROK_URL}/webhook/mercadopago`
+            notification_url: `${process.env.NGROK_URL}/webhook/mercadopago`,
+            auto_return: 'approved',
+            payment_methods: {
+                installments: 12
+            }
         };
 
         console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));
 
-        // Criar a preferência no Mercado Pago
+        // Criar a preferência
         const preference = new Preference(client);
-        const response = await preference.create(preferenceData);
+        const response = await preference.create({ body: preferenceData });
 
         console.log('Resposta do Mercado Pago:', JSON.stringify(response, null, 2));
 
-        // Retornar os dados necessários
-        res.json({
+        // Retornar resposta
+        return res.json({
             success: true,
             init_point: response.init_point,
             sandbox_init_point: response.sandbox_init_point || response.init_point
         });
 
     } catch (error) {
-        console.error('Erro ao criar preferência:', {
+        console.error('Erro ao processar requisição:', {
             message: error.message,
             stack: error.stack,
             response: error.response?.data
         });
-        
-        res.status(500).json({ 
-            success: false, 
+        return res.status(500).json({
+            success: false,
             error: 'Erro ao criar checkout',
-            details: error.message
+            details: error.message,
+            mpResponse: error.response?.data
         });
-    }
-});
-
-// Webhook para receber notificações do Mercado Pago
-router.post('/webhook/mercadopago', async (req, res) => {
-    try {
-        const { type, data } = req.body;
-
-        console.log('Webhook recebido:', { type, data });
-
-        if (type === 'payment') {
-            const paymentId = data.id;
-            
-            // Buscar informações do pagamento
-            const payment = await client.payment.findById(paymentId);
-            
-            if (payment.status === 'approved') {
-                const [cardId, email, plano] = payment.external_reference.split('|'); // Atualizado para cardId|email|plano
-                
-                // Atualizar status no Supabase
-                const { error } = await req.supabase
-                    .from('cards')
-                    .update({ 
-                        status_pagamento: 'aprovado',
-                        payment_id: paymentId,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('email', email);
-
-                if (error) {
-                    console.error('Erro ao atualizar status:', error);
-                }
-            }
-        }
-
-        res.status(200).send('OK');
-
-    } catch (error) {
-        console.error('Erro no webhook:', error);
-        res.status(500).send('Error');
     }
 });
 

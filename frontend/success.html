@@ -16,24 +16,30 @@
             <a href="/" class="btn btn-secondary">Voltar ao Início</a>
         </div>
     </div>
+
     <script>
-        // Verificar status do pagamento após alguns segundos
-        setTimeout(async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const paymentId = urlParams.get('payment_id');
-            if (paymentId) {
-                try {
-                    const response = await fetch(`http://localhost:3000/api/payment/status/${paymentId}`);
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const paymentId = urlParams.get('payment_id');
+                const status = urlParams.get('status');
+
+                if (paymentId && status === 'approved') {
+                    // Aguardar alguns segundos para o webhook processar
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Verificar status do pagamento
+                    const response = await fetch(`${window.location.origin}/api/payment/status/${paymentId}`);
                     const data = await response.json();
+
                     if (data.status === 'approved') {
-                        // Pagamento confirmado
                         document.querySelector('.success-container').classList.add('payment-confirmed');
                     }
-                } catch (error) {
-                    console.error('Erro ao verificar status:', error);
                 }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
             }
-        }, 2000);
+        });
     </script>
 </body>
 </html>
