@@ -83,7 +83,7 @@
                         </div>
                         <div class="step-content">
                             <div class="input-group">
-                                <label for="cardName">Nome do Cartão</label>
+                                <label for="cardName">Nome do Cartão <span class="required-mark">*</span></label>
                                 <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem de fé"
                                     required
                                     title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
@@ -109,7 +109,7 @@
                         </div>
                         <div class="step-content">
                             <div class="input-group">
-                                <label for="cardTitle">Título do Cartão</label>
+                                <label for="cardTitle">Título do Cartão <span class="required-mark">*</span></label>
                                 <input type="text" id="cardTitle" name="cardTitle"
                                     placeholder="ex: Mensagem de Fé para Você" maxlength="60" minlength="3" required>
                                 <div class="input-footer">
@@ -137,7 +137,7 @@
                         </div>
                         <div class="step-content">
                             <div class="input-group">
-                                <label for="cardMessage">Mensagem Principal</label>
+                                <label for="cardMessage">Mensagem Principal <span class="required-mark">*</span></label>
                                 <textarea id="cardMessage" name="cardMessage" placeholder="Escreva sua mensagem aqui..."
                                     maxlength="500" required=""></textarea>
                                 <div class="input-footer">
@@ -304,11 +304,14 @@
                         </div>
                         <div class="step-content">
                             <div class="media-section">
-                                <h3><i class="fas fa-music"></i> Música (Opcional)</h3>
+                                <h3><i class="fas fa-music"></i> Música ou vídeo <span class="required-mark">*</span>
+                                </h3>
                                 <div class="input-group">
-                                    <label for="musicLink">Link do YouTube ou Spotify</label>
-                                    <input type="url" id="musicLink" name="musicLink"
-                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/...">
+                                    <label for="musicLink">Link do YouTube ou Spotify <span
+                                            class="required-mark">*</span></label>
+                                    <input type="url" id="musicLink" name="musicLink" value=""
+                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/..."
+                                        required>
                                     <div class="input-hint">
                                         <i class="fas fa-info-circle"></i>
                                         <span>Adicione um link direto para uma música ou vídeo inspirador</span>
@@ -580,6 +583,55 @@
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
+    <!-- Modifique o script existente no final do arquivo create.html -->
+    <script>
+        // Solução robusta para o problema do 'undefined'
+        document.addEventListener('DOMContentLoaded', function () {
+            // Função para limpar o campo musicLink
+            function clearMusicLinkField() {
+                const musicLinkInput = document.getElementById('musicLink');
+                if (musicLinkInput) {
+                    // Limpar o valor diretamente se for 'undefined' ou começar com 'undefined'
+                    if (musicLinkInput.value === 'undefined' ||
+                        musicLinkInput.value.indexOf('undefined') === 0 ||
+                        musicLinkInput.value === 'null') {
+                        musicLinkInput.value = '';
+                    }
+                }
+            }
+
+            // Limpar imediatamente
+            clearMusicLinkField();
+
+            // Limpar também quando o formulário for carregado completamente
+            setTimeout(clearMusicLinkField, 500);
+
+            // Limpar quando a etapa 6 estiver visível
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('btn-next')) {
+                    if (e.target.dataset.next === '6') {
+                        setTimeout(clearMusicLinkField, 100);
+                    }
+                }
+            });
+
+            // Observar mudanças no DOM para etapa 6
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.type === 'attributes' || mutation.type === 'childList') {
+                        const step6 = document.querySelector('.form-step[data-step="6"]');
+                        if (step6 && step6.classList.contains('active')) {
+                            clearMusicLinkField();
+                        }
+                    }
+                });
+            });
+
+            // Configurar observador
+            const config = { attributes: true, childList: true, subtree: true };
+            observer.observe(document.body, config);
+        });
+    </script>
 </body>
 
 </html>

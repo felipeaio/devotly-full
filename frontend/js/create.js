@@ -126,7 +126,6 @@ class DevotlyCreator {
     }
 
     initializeState() {
-        // Garantir que o estado comece corretamente
         this.state = {
             currentStep: 0,
             totalSteps: 8,
@@ -134,7 +133,7 @@ class DevotlyCreator {
                 cardName: '',
                 cardTitle: '',
                 cardMessage: '',
-                finalMessage: '', // Propriedade para a mensagem final
+                finalMessage: '',
                 bibleVerse: {
                     book: '',
                     chapter: '',
@@ -143,7 +142,7 @@ class DevotlyCreator {
                     reference: ''
                 },
                 images: [],
-                musicLink: '',
+                musicLink: '', // Garantir que começa com string vazia
                 theme: 'stars',
                 selectedPlan: null
             },
@@ -1799,6 +1798,25 @@ class DevotlyCreator {
             throw error;
         }
     }
+
+    // Se estiver carregando de localStorage
+    loadFromLocalStorage() {
+        const savedData = localStorage.getItem('devotlyCardData');
+        if (savedData) {
+            try {
+                const parsedData = JSON.parse(savedData);
+                // Certifique-se de que musicLink existe e não é undefined
+                if (parsedData.formData) {
+                    if (parsedData.formData.musicLink === undefined) {
+                        parsedData.formData.musicLink = '';
+                    }
+                    this.state.formData = {...this.state.formData, ...parsedData.formData};
+                }
+            } catch (e) {
+                console.error('Erro ao carregar dados salvos:', e);
+            }
+        }
+    }
 }
 
 window.addEventListener('load', () => {
@@ -1863,4 +1881,20 @@ class PreviewModal {
 // Initialize after DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new PreviewModal();
+});
+
+// Adicione ao create.js
+document.addEventListener('DOMContentLoaded', () => {
+    const previewButton = document.querySelector('.btn-preview');
+    
+    // Força a remoção de qualquer margem ou padding indesejado
+    if (previewButton) {
+        previewButton.style.setProperty('bottom', '0', 'important');
+        previewButton.style.setProperty('margin', '0', 'important');
+        previewButton.style.setProperty('padding', '0', 'important');
+        
+        // Força recálculo do layout
+        previewButton.offsetHeight;
+        previewButton.offsetHeight;
+    }
 });
