@@ -438,6 +438,10 @@
                         </div>
                     </div>
                 </form>
+                <!-- Move the preview button here, after the form -->
+                <button type="button" id="previewButton" class="btn-preview">
+                    <i class="fas fa-eye"></i> PRÉ-VISUALIZAR
+                </button>
             </section>
             <aside class="card-preview-container">
                 <div class="card-preview">
@@ -561,6 +565,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Add before the closing </body> tag -->
+    <div id="previewModal" class="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-modal-body"></div>
+            <button type="button" id="closePreviewButton" class="btn-close-preview">
+                <i class="fas fa-arrow-left"></i> VOLTAR
+            </button>
+        </div>
+    </div>
+
     <!-- Adicione esta linha antes de seus scripts -->
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>

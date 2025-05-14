@@ -63,6 +63,9 @@ class DevotlyCreator {
         } else {
             this.initialize();
         }
+
+        // Add preview modal instance
+        this.previewModal = new PreviewModal();
     }
 
     // Método para detectar dispositivos de baixo desempenho
@@ -1800,4 +1803,64 @@ class DevotlyCreator {
 
 window.addEventListener('load', () => {
     new DevotlyCreator();
+});
+
+class PreviewModal {
+    constructor() {
+        this.modal = document.getElementById('previewModal');
+        this.modalBody = this.modal.querySelector('.preview-modal-body');
+        this.openButton = document.getElementById('previewButton');
+        this.closeButton = document.getElementById('closePreviewButton');
+        this.previewContent = document.querySelector('.card-preview-container');
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Open modal
+        this.openButton.addEventListener('click', () => this.openModal());
+        
+        // Close modal
+        this.closeButton.addEventListener('click', () => this.closeModal());
+        
+        // Close with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.closeModal();
+            }
+        });
+    }
+
+    openModal() {
+        // Update preview before showing
+        if (window.devotlyCreator) {
+            window.devotlyCreator.updatePreview();
+        }
+        
+        // Move preview content to modal
+        this.modalBody.appendChild(this.previewContent);
+        this.previewContent.style.display = 'block';
+        
+        document.body.style.overflow = 'hidden';
+        this.modal.classList.add('active');
+    }
+
+    closeModal() {
+        this.modal.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // Wait for animation to complete
+        setTimeout(() => {
+            if (!this.modal.classList.contains('active')) {
+                // Move preview content back to original container
+                document.querySelector('.creation-layout').appendChild(this.previewContent);
+                this.previewContent.style.display = 'none';
+            }
+        }, 300);
+    }
+}
+
+// Initialize after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new PreviewModal();
 });
