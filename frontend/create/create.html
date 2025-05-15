@@ -475,28 +475,56 @@
 
                             <!-- Seção 6: Mensagem Final -->
                             <section class="preview-section" id="finalSection">
-                                <div class="section-content">
-                                    <div class="final-message">
-                                        <p>Que esta mensagem toque seu coração</p>
-                                        <div class="preview-url">
-                                            <i class="fas fa-link"></i>
-                                            <span>devotly.com/<span id="previewUrl">seunome</span></span>
+                                <div class="section-content final-section-content">
+                                    <div class="final-message-wrapper">
+                                        <div class="final-message">
+                                            <p class="final-text">Que esta mensagem toque seu coração</p>
+                                            <div class="message-decoration">
+                                                <span class="decoration-line"></span>
+                                                <i class="fas fa-heart pulse-heart"></i>
+                                                <span class="decoration-line"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="preview-url-wrapper">
+                                            <div class="preview-url">
+                                                <div class="url-icon">
+                                                    <i class="fas fa-link"></i>
+                                                </div>
+                                                <span class="url-text">
+                                                    devotly.com/<span id="previewUrl" class="url-highlight">seunome</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <!-- Adicionar dentro da seção finalSection -->
-                                    <div class="preview-share-buttons">
-                                        <button class="preview-share-btn" data-platform="whatsapp">
-                                            <i class="fab fa-whatsapp"></i>
-                                        </button>
-                                        <button class="preview-share-btn" data-platform="facebook">
-                                            <i class="fab fa-facebook-f"></i>
-                                        </button>
-                                        <button class="preview-share-btn" data-platform="twitter">
-                                            <i class="fab fa-twitter"></i>
-                                        </button>
-                                        <button class="preview-share-btn" data-platform="email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
+                                
+                                    <div class="share-section">
+                                        <div class="share-label">
+                                            <span class="share-text">Compartilhe</span>
+                                            <span class="share-decoration"></span>
+                                        </div>
+                                        
+                                        <div class="preview-share-buttons">
+                                            <button class="preview-share-btn whatsapp" data-platform="whatsapp" aria-label="Compartilhar no WhatsApp">
+                                                <i class="fab fa-whatsapp"></i>
+                                                <span class="share-tooltip">WhatsApp</span>
+                                            </button>
+                                            
+                                            <button class="preview-share-btn facebook" data-platform="facebook" aria-label="Compartilhar no Facebook">
+                                                <i class="fab fa-facebook-f"></i>
+                                                <span class="share-tooltip">Facebook</span>
+                                            </button>
+                                            
+                                            <button class="preview-share-btn twitter" data-platform="twitter" aria-label="Compartilhar no Twitter">
+                                                <i class="fab fa-twitter"></i>
+                                                <span class="share-tooltip">Twitter</span>
+                                            </button>
+                                            
+                                            <button class="preview-share-btn email" data-platform="email" aria-label="Compartilhar por Email">
+                                                <i class="fas fa-envelope"></i>
+                                                <span class="share-tooltip">Email</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </section>

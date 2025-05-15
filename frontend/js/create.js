@@ -2061,3 +2061,68 @@ document.addEventListener('click', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     updateStepCounter(0); // Começar da primeira etapa (índice 0)
 });
+
+// Função para gerenciar transições entre seções
+function handleSectionTransition(currentSection, nextSection) {
+    if (currentSection) {
+        // Marcar seção atual para saída
+        currentSection.setAttribute('data-exiting', '');
+        
+        // Remover classe active após animação
+        setTimeout(() => {
+            currentSection.classList.remove('active');
+            currentSection.removeAttribute('data-exiting');
+        }, 600);
+    }
+    
+    if (nextSection) {
+        // Marcar próxima seção para entrada
+        nextSection.setAttribute('data-entering', '');
+        nextSection.classList.add('active');
+        
+        // Remover atributo após animação
+        setTimeout(() => {
+            nextSection.removeAttribute('data-entering');
+        }, 800);
+        
+        // Atualizar background do tema baseado na seção
+        updateThemeBackground(nextSection.id);
+    }
+}
+
+// Função para atualizar background do tema
+function updateThemeBackground(sectionId) {
+    const previewTheme = document.getElementById('previewTheme');
+    const backgrounds = {
+        titleSection: 'rgba(0, 0, 0, 0.95)',
+        messageSection: 'rgba(10, 10, 20, 0.95)',
+        verseSection: 'rgba(20, 20, 30, 0.95)',
+        gallerySection: 'rgba(15, 15, 25, 0.95)',
+        mediaSection: 'rgba(10, 10, 20, 0.95)',
+        finalSection: 'rgba(20, 20, 30, 0.95)'
+    };
+    
+    if (previewTheme && backgrounds[sectionId]) {
+        previewTheme.style.backgroundColor = backgrounds[sectionId];
+    }
+}
+
+// Observador de interseção para detectar seções visíveis
+const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const currentActive = document.querySelector('.preview-section.active');
+            if (currentActive !== entry.target) {
+                handleSectionTransition(currentActive, entry.target);
+            }
+        }
+    });
+}, {
+    root: document.querySelector('.preview-sections'),
+    threshold: 0.5
+});
+
+// Observar todas as seções
+document.querySelectorAll('.preview-section').forEach(section => {
+    sectionObserver.observe(section);
+});
