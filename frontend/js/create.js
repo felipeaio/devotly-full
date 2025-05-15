@@ -780,6 +780,9 @@ class DevotlyCreator {
         
         // Opcional: rolar para o topo do formulário
         this.elements.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Atualizar o contador
+        updateStepCounter(step);
     }
 
     validateStep(step) {
@@ -1897,4 +1900,164 @@ document.addEventListener('DOMContentLoaded', () => {
         previewButton.offsetHeight;
         previewButton.offsetHeight;
     }
+});
+
+// Garantir que o passo atual esteja visível e centralizado no mobile
+function scrollToCurrentStep() {
+    const currentStep = document.querySelector('.step.active');
+    if (currentStep && window.innerWidth <= 768) {
+        currentStep.classList.add('current-view');
+        currentStep.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+        });
+        setTimeout(() => {
+            currentStep.classList.remove('current-view');
+        }, 1000);
+    }
+}
+
+// Chamar quando um passo for ativado
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-next') || e.target.closest('.btn-prev') || e.target.closest('.step')) {
+        setTimeout(scrollToCurrentStep, 100);
+    }
+});
+
+// Chamar no carregamento inicial
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(scrollToCurrentStep, 300);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para centralizar o passo ativo
+    function centerActiveStep() {
+        const activeStep = document.querySelector('.step-item.active');
+        const stepsScroller = document.querySelector('.steps-scroller');
+        
+        if (activeStep && stepsScroller) {
+            // Calcular posição para centralizar
+            const scrollerWidth = stepsScroller.offsetWidth;
+            const stepWidth = activeStep.offsetWidth;
+            const stepLeft = activeStep.offsetLeft;
+            
+            // Posição centralizada
+            const centerPosition = stepLeft - (scrollerWidth / 2) + (stepWidth / 2);
+            
+            // Rolar suavemente
+            stepsScroller.scrollTo({
+                left: centerPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+    
+    // Centralizar inicialmente e ao redimensionar
+    centerActiveStep();
+    window.addEventListener('resize', centerActiveStep);
+    
+    // Centralizar quando um passo é ativado
+    function setupStepListeners() {
+        document.querySelectorAll('.step-item').forEach(step => {
+            step.addEventListener('click', function() {
+                // Código para mudar para este passo (se implementado)
+                
+                // Centralizar após a alteração
+                setTimeout(centerActiveStep, 100);
+            });
+        });
+        
+        // Centralizar quando os botões de próximo/anterior são clicados
+        document.querySelectorAll('.btn-next, .btn-prev').forEach(button => {
+            button.addEventListener('click', function() {
+                setTimeout(centerActiveStep, 100);
+            });
+        });
+    }
+    
+    setupStepListeners();
+});
+
+// Função para centralizar a etapa ativa
+function centerActiveStep() {
+    const activeStep = document.querySelector('.step-item.active');
+    const stepsScroller = document.querySelector('.steps-scroller');
+    
+    if (activeStep && stepsScroller) {
+        // Calcular posição para centralizar
+        const scrollerWidth = stepsScroller.clientWidth;
+        const activeStepWidth = activeStep.offsetWidth;
+        const activeStepLeft = activeStep.offsetLeft;
+        
+        // Posição centralizada
+        const centerPosition = activeStepLeft - (scrollerWidth / 2) + (activeStepWidth / 2);
+        
+        // Aplicar rolagem suave
+        stepsScroller.scrollTo({
+            left: Math.max(0, centerPosition),
+            behavior: 'smooth'
+        });
+    }
+}
+
+// Executar quando um passo é ativado
+document.addEventListener('click', function(e) {
+    const stepItem = e.target.closest('.step-item');
+    const nextButton = e.target.closest('.btn-next');
+    const prevButton = e.target.closest('.btn-prev');
+    
+    if (stepItem || nextButton || prevButton) {
+        // Aguardar atualização do DOM
+        setTimeout(centerActiveStep, 100);
+    }
+});
+
+// Executar na inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    // Executar após qualquer carregamento inicial
+    setTimeout(centerActiveStep, 300);
+    
+    // Executar ao redimensionar a janela
+    window.addEventListener('resize', centerActiveStep);
+});
+
+// Atualizar o progresso
+function updateProgress(currentStep) {
+    const progress = ((currentStep + 1) / 8) * 100;
+    const progressBar = document.querySelector('.progress-fill');
+    const currentStepElement = document.querySelector('.step-counter .current');
+    
+    if (progressBar && currentStepElement) {
+        progressBar.style.width = `${progress}%`;
+        currentStepElement.textContent = currentStep + 1;
+    }
+}
+
+// Função para atualizar o contador de etapas
+function updateStepCounter(currentStep) {
+    const currentElement = document.querySelector('.step-counter .current');
+    const totalElement = document.querySelector('.step-counter .total');
+    
+    if (currentElement && totalElement) {
+        // Adicionar 1 porque os steps começam do 0
+        currentElement.textContent = currentStep + 1;
+        totalElement.textContent = '8'; // Total fixo de etapas
+    }
+}
+
+// Adicionar chamada da função nos eventos de navegação
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-next')) {
+        const nextStep = parseInt(e.target.closest('.btn-next').dataset.next) - 1;
+        updateStepCounter(nextStep);
+    } else if (e.target.closest('.btn-prev')) {
+        const prevStep = parseInt(e.target.closest('.btn-prev').dataset.prev) - 1;
+        updateStepCounter(prevStep);
+    }
+});
+
+// Garantir que o contador está correto no carregamento inicial
+document.addEventListener('DOMContentLoaded', function() {
+    updateStepCounter(0); // Começar da primeira etapa (índice 0)
 });
