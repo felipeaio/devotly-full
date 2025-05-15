@@ -934,53 +934,29 @@ class DevotlyCreator {
     // Modificar o método convertToWebP para dispositivos lentos
     async convertToWebP(file) {
         return new Promise((resolve, reject) => {
+            // Usar worker para processar a imagem em segundo plano
+            if (window.Worker && !this.isLowEndDevice) {
+                try {
+                    // Tentativa de usar Web Workers para processamento em background
+                    const blob = URL.createObjectURL(file);
+                    resolve(blob); // Simplesmente usar o blob original por enquanto
+                    
+                    // Implementar processamento em worker em uma versão futura
+                    return;
+                } catch (err) {
+                    console.warn('Web Worker falhou, usando método síncrono:', err);
+                    // Continuar com método síncrono abaixo
+                }
+            }
+            
+            // Método síncrono simplificado
             const reader = new FileReader();
             reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    // Detectar dispositivos de baixo desempenho
-                    const isLowEnd = this.isLowEndDevice;
-                    
-                    // Definir tamanhos máximos baseados no dispositivo
-                    const MAX_WIDTH = isLowEnd ? 800 : 1600;
-                    const MAX_HEIGHT = isLowEnd ? 600 : 1200;
-                    
-                    // Calcular dimensões mantendo proporção
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > MAX_WIDTH) {
-                        height = Math.round(height * (MAX_WIDTH / width));
-                        width = MAX_WIDTH;
-                    }
-                    
-                    if (height > MAX_HEIGHT) {
-                        width = Math.round(width * (MAX_HEIGHT / height));
-                        height = MAX_HEIGHT;
-                    }
-                    
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    // Desenhar a imagem no canvas
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Usar qualidade menor para dispositivos de baixo desempenho
-                    const quality = isLowEnd ? 0.65 : 0.75;
-                    
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            resolve(blob);
-                        } else {
-                            reject(new Error('Falha ao converter para WebP'));
-                        }
-                    }, 'image/webp', quality);
-                };
+                // Bypass complete image processing for now
+                // Just return the original file to avoid freezing
+                resolve(file);
                 
-                img.onerror = () => reject(new Error('Falha ao carregar imagem'));
-                img.src = e.target.result;
+                // Futuramente, implementar processamento mais leve
             };
             
             reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
@@ -990,88 +966,85 @@ class DevotlyCreator {
 
     async handleImageUpload() {
         const files = Array.from(this.elements.imageUpload.files);
-        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-
         if (!files.length) return;
 
-        // Verificar se excede o limite de 7 imagens
+        // Verificar limite de imagens
         if (this.state.formData.images.length + files.length > 7) {
-            alert('Você pode adicionar no máximo 7 imagens. Por favor, remova algumas antes de adicionar mais.');
+            alert('Você pode adicionar no máximo 7 imagens.');
             return;
         }
 
+        // Mostrar feedback de carregamento
         const uploadArea = document.getElementById('uploadArea');
-        uploadArea.classList.add('loading');
+        if (uploadArea) uploadArea.classList.add('loading');
 
         try {
-            // Array para armazenar as imagens temporárias
-            const tempImages = [];
-
-            // Processar cada arquivo
-            for (const file of files) {
-                // Verificar tamanho (2MB)
+            // Processar apenas 1 imagem por vez para evitar congelamento
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar tamanho
                 if (file.size > 2 * 1024 * 1024) {
-                    alert(`A imagem ${file.name} excede o limite de 2MB. Por favor, escolha uma imagem menor.`);
+                    alert(`A imagem ${file.name} excede o limite de 2MB.`);
                     continue;
                 }
-
-                // Converter para WebP para visualização local
-                const webpBlob = await this.convertToWebP(file);
                 
-                // Criar URL temporária para a imagem
-                const tempUrl = URL.createObjectURL(webpBlob);
+                // Pular processamento pesado - usar diretamente a URL do objeto
+                const tempUrl = URL.createObjectURL(file);
+                const fileName = `${Date.now()}-${i}.webp`;
                 
-                // Adicionar a imagem processada e o blob ao array temporário
-                tempImages.push({
-                    tempUrl: tempUrl,
-                    blob: webpBlob,
-                    fileName: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.webp`
+                // Adicionar ao estado
+                this.state.formData.images.push({
+                    tempUrl, 
+                    blob: file, // Guardar o arquivo original em vez de processar
+                    fileName, 
+                    isTemp: true
                 });
                 
-                // Criar preview local
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'image-preview';
-                previewDiv.innerHTML = `
-                    <img src="${tempUrl}" alt="Imagem ${this.state.formData.images.length + tempImages.length}">
-                    <button class="remove-image" data-index="${this.state.formData.images.length + tempImages.length - 1}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-                imagePreviewContainer.appendChild(previewDiv);
-
-                // Adicionar evento para remover imagem
-                const removeButton = previewDiv.querySelector('.remove-image');
-                removeButton.addEventListener('click', () => {
-                    const index = parseInt(removeButton.dataset.index);
-                    this.removeImage(index);
-                });
+                // Criar preview
+                this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                
+                // Pausar brevemente entre cada imagem para não bloquear a UI
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
-
-            // Adicionar as imagens temporárias ao estado
-            this.state.formData.images = [
-                ...this.state.formData.images, 
-                ...tempImages.map(img => ({ 
-                    tempUrl: img.tempUrl, 
-                    blob: img.blob,
-                    fileName: img.fileName,
-                    isTemp: true  // Marcador para indicar que é uma imagem temporária
-                }))
-            ];
             
-            // Reindexar botões de remoção
+            // Atualizar UI após processar tudo
             this.reindexImages();
-            
-            // Atualizar preview
             this.updatePreview();
             
+            // Inicializar carrossel com atraso
+            setTimeout(setupAutoGallery, 500);
+            
         } catch (error) {
-            console.error('Erro ao processar as imagens:', error);
-            alert('Ocorreu um erro ao processar as imagens. Por favor, tente novamente.');
+            console.error('Erro ao processar imagens:', error);
+            alert('Ocorreu um erro ao processar as imagens.');
         } finally {
-            uploadArea.classList.remove('loading');
-            // Limpar input de upload para permitir selecionar os mesmos arquivos novamente
-            this.elements.imageUpload.value = '';
+            if (uploadArea) uploadArea.classList.remove('loading');
+            if (this.elements.imageUpload) this.elements.imageUpload.value = '';
         }
+    }
+
+    // Função auxiliar para adicionar previews de forma otimizada
+    addImagePreview(url, index) {
+        const container = document.getElementById('imagePreviewContainer');
+        if (!container) return;
+        
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'image-preview';
+        previewDiv.innerHTML = `
+            <img src="${url}" alt="Imagem ${index + 1}">
+            <button class="remove-image" data-index="${index}">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(previewDiv);
+        
+        // Adicionar evento de remoção
+        const removeButton = previewDiv.querySelector('.remove-image');
+        removeButton.addEventListener('click', () => {
+            this.removeImage(parseInt(removeButton.dataset.index));
+        });
     }
 
     reindexImages() {
@@ -2126,3 +2099,120 @@ const sectionObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.preview-section').forEach(section => {
     sectionObserver.observe(section);
 });
+
+// Carrossel simples e ultra-otimizado (sem freezes)
+function setupAutoGallery() {
+    // Limpar qualquer intervalo existente
+    if (window.galleryInterval) {
+        clearInterval(window.galleryInterval);
+        window.galleryInterval = null;
+    }
+    
+    // Referências DOM
+    const galleryContainer = document.querySelector('#gallerySection .gallery-container');
+    if (!galleryContainer) return;
+    
+    // Obter as imagens apenas uma vez (transformar em array para melhor performance)
+    const images = Array.from(galleryContainer.querySelectorAll('img'));
+    if (images.length <= 1) return;
+    
+    // Estado inicial - primeira imagem visível
+    let currentIndex = 0;
+    
+    // Configuração inicial direta (sem loops)
+    images.forEach((img, i) => {
+        img.style.display = i === 0 ? 'block' : 'none';
+        img.classList.toggle('active', i === 0);
+    });
+    
+    // Usar setInterval leve sem sobrecarga
+    window.galleryInterval = setInterval(() => {
+        // Esconder imagem atual
+        if (images[currentIndex]) {
+            images[currentIndex].style.display = 'none';
+            images[currentIndex].classList.remove('active');
+        }
+        
+        // Avançar para a próxima imagem
+        currentIndex = (currentIndex + 1) % images.length;
+        
+        // Mostrar nova imagem
+        if (images[currentIndex]) {
+            images[currentIndex].style.display = 'block';
+            images[currentIndex].classList.add('active');
+        }
+    }, 5000);
+}
+
+// Inicializar com atraso suficiente
+document.addEventListener('DOMContentLoaded', () => {
+    // Atrasar para garantir que tudo já carregou
+    setTimeout(setupAutoGallery, 2000);
+});
+
+// Substituir o observer existente por uma versão mais simples
+// Remover completamente o observer complexo que está causando problemas
+
+// Simplificado e otimizado para melhor performance
+function setupGalleryRotation() {
+    // Limpar intervalo existente
+    if (window.galleryInterval) {
+        clearInterval(window.galleryInterval);
+        window.galleryInterval = null;
+    }
+
+    const galleryContainer = document.querySelector('#gallerySection .gallery-container');
+    if (!galleryContainer) return;
+
+    const images = Array.from(galleryContainer.querySelectorAll('img'));
+    if (images.length <= 1) return;
+
+    let currentIndex = 0;
+
+    // Função para exibir imagem
+    function showImage(index) {
+        images.forEach((img, i) => {
+            img.style.opacity = i === index ? '1' : '0';
+            img.style.zIndex = i === index ? '1' : '0';
+        });
+    }
+
+    // Configuração inicial
+    images.forEach((img, i) => {
+        img.style.position = 'absolute';
+        img.style.top = '0';
+        img.style.left = '0';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.opacity = i === 0 ? '1' : '0';
+        img.style.zIndex = i === 0 ? '1' : '0';
+        img.style.transition = 'opacity 0.5s ease';
+    });
+
+    // Rotação automática
+    window.galleryInterval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+        showImage(currentIndex);
+    }, 5000);
+}
+
+// Inicializar quando necessário
+function initGallery() {
+    // Aguardar um momento para garantir que as imagens foram carregadas
+    setTimeout(setupGalleryRotation, 1000);
+}
+
+// Adicionar aos eventos necessários
+document.addEventListener('DOMContentLoaded', initGallery);
+
+// Reconectar quando houver mudanças nas imagens
+function updateGallery() {
+    // Limpar intervalo existente
+    if (window.galleryInterval) {
+        clearInterval(window.galleryInterval);
+        window.galleryInterval = null;
+    }
+    
+    // Reiniciar com delay para evitar problemas de timing
+    setTimeout(setupGalleryRotation, 500);
+}
