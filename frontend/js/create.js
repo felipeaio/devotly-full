@@ -843,6 +843,17 @@ class DevotlyCreator {
                 }
                 break;
 
+            case 5: // Etapa de mídia/música
+                const musicLink = currentStepElement.querySelector('#musicLink');
+                if (!musicLink || !musicLink.value.trim()) {
+                    this.showError(musicLink, 'Por favor, adicione um link do YouTube ou Spotify');
+                    isValid = false;
+                } else if (!this.isValidMusicLink(musicLink.value)) {
+                    this.showError(musicLink, 'Por favor, insira um link válido do YouTube ou Spotify');
+                    isValid = false;
+                }
+                break;
+
             case 6:
                 const emailInput = currentStepElement.querySelector('#userEmail');
                 if (!emailInput.value.trim()) {
@@ -873,6 +884,14 @@ class DevotlyCreator {
         }
 
         return isValid;
+    }
+
+    // Adicione este método para validar o formato do link
+    isValidMusicLink(url) {
+        const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]{11}$/;
+        const spotifyPattern = /^(https?:\/\/)?(open\.)?spotify\.com\/(track|album|playlist)\/[a-zA-Z0-9]{22}$/;
+        
+        return youtubePattern.test(url) || spotifyPattern.test(url);
     }
 
     showError(input, message) {
@@ -1361,61 +1380,87 @@ class DevotlyCreator {
     }
 
     updatePreview() {
-        document.getElementById('previewCardTitle').textContent =
-            this.state.formData.cardTitle || "Mensagem de Fé para Você";
-
-        const messageElement = document.getElementById('previewCardMessage');
-        let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
-        formattedMessage = formattedMessage
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/_(.*?)_/g, '<em>$1</em>');
-        messageElement.innerHTML = this.sanitizeHTML(formattedMessage);
-
-        document.getElementById('previewVerseText').textContent =
-            this.state.formData.bibleVerse.text
-                ? `"${this.state.formData.bibleVerse.text}"`
-                : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
-        document.getElementById('previewVerseRef').textContent =
-            this.state.formData.bibleVerse.reference || 'João 3:16';
-
-        // Código completamente refeito para a gestão da galeria
-        this.updateGalleryPreview();
-
-        const previewMedia = document.getElementById('previewMedia');
-        const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
-
-        if (embedUrl) {
-            previewMedia.innerHTML = `
-                <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-            `;
-        } else {
-            previewMedia.innerHTML = `
-                <div class="no-media">
-                    <i class="fas fa-music"></i>
-                    <span>Nenhuma mídia selecionada</span>
-                </div>
-            `;
+        const previewCardTitle = document.getElementById('previewCardTitle');
+        if (previewCardTitle) {
+            previewCardTitle.textContent =
+                this.state.formData.cardTitle || "Mensagem de Fé para Você";
         }
 
-        document.getElementById('previewUrl').textContent =
-            this.state.formData.cardName || 'seunome';
+        const messageElement = document.getElementById('previewCardMessage');
+        if (messageElement) {
+            let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
+            formattedMessage = formattedMessage
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/_(.*?)_/g, '<em>$1</em>');
+            messageElement.innerHTML = this.sanitizeHTML(formattedMessage);
+        }
 
-        this.cleanupSectionObserver();
-        this.setupSectionObserver();
+        const previewVerseText = document.getElementById('previewVerseText');
+        if (previewVerseText) {
+            previewVerseText.textContent =
+                this.state.formData.bibleVerse.text
+                    ? `"${this.state.formData.bibleVerse.text}"`
+                    : '"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."';
+        }
 
-        // Atualizar a mensagem final - implementação corrigida
-        const finalMessage = this.state.formData.finalMessage;
-        const finalMessageElement = document.querySelector('.final-message p');
-        
-        if (finalMessageElement) {
-            if (finalMessage && finalMessage.trim()) {
-                finalMessageElement.textContent = finalMessage;
+        const previewVerseRef = document.getElementById('previewVerseRef');
+        if (previewVerseRef) {
+            previewVerseRef.textContent =
+                this.state.formData.bibleVerse.reference || 'João 3:16';
+        }
+
+        const galleryContainer = document.querySelector('#gallerySection .gallery-container');
+        if (galleryContainer) {
+            galleryContainer.innerHTML = '';
+
+            if (this.state.formData.images.length === 0) {
+                galleryContainer.innerHTML = `
+                    <div class="no-images">
+                        <i class="fas fa-image"></i>
+                        <span>Nenhuma imagem selecionada</span>
+                    </div>
+                `;
+                return;
+            }
+
+            this.state.formData.images.forEach((image, index) => {
+                const img = document.createElement('img');
+                img.src = image.isTemp ? image.tempUrl : image;
+                img.alt = `Imagem ${index + 1}`;
+                img.classList.toggle('active', index === this.state.currentImageIndex);
+                img.style.display = index === this.state.currentImageIndex ? 'block' : 'none';
+                galleryContainer.appendChild(img);
+            });
+        }
+
+        const previewMedia = document.getElementById('previewMedia');
+        if (previewMedia) {
+            const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
+
+            if (embedUrl) {
+                previewMedia.innerHTML = `
+                    <iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+                `;
             } else {
-                finalMessageElement.textContent = "Que esta mensagem toque seu coração";
+                previewMedia.innerHTML = `
+                    <div class="no-media">
+                        <i class="fas fa-music"></i>
+                        <span>Nenhuma mídia selecionada</span>
+                    </div>
+                `;
             }
         }
 
-        this.saveToLocalStorage();
+        const previewUrl = document.getElementById('previewUrl');
+        if (previewUrl) {
+            previewUrl.textContent = this.state.formData.cardName || 'seunome';
+        }
+
+        const finalMessageElement = document.querySelector('.final-message p');
+        if (finalMessageElement) {
+            const finalMessage = this.state.formData.finalMessage;
+            finalMessageElement.textContent = finalMessage || "Que esta mensagem toque seu coração";
+        }
     }
 
     // Adicionar este novo método para lidar exclusivamente com a galeria
@@ -2083,7 +2128,7 @@ function updateThemeBackground(sectionId) {
 // Observador de interseção para detectar seções visíveis
 const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-        if (entry.isIntersecting) {
+        if ( entry.isIntersecting) {
             const currentActive = document.querySelector('.preview-section.active');
             if (currentActive !== entry.target) {
                 handleSectionTransition(currentActive, entry.target);
@@ -2216,3 +2261,70 @@ function updateGallery() {
     // Reiniciar com delay para evitar problemas de timing
     setTimeout(setupGalleryRotation, 500);
 }
+
+// Adicione este código ao seu arquivo create.js
+
+function setupSectionTransitions() {
+    const sections = document.querySelectorAll('.preview-section');
+    const sectionDots = document.querySelectorAll('.section-dot');
+    
+    // Função para verificar qual seção está visível
+    function checkVisibleSection() {
+        const viewportHeight = window.innerHeight;
+        const previewContainer = document.querySelector('.preview-sections');
+        const scrollTop = previewContainer.scrollTop;
+        
+        sections.forEach((section, index) => {
+            const rect = section.getBoundingClientRect();
+            const sectionTop = rect.top;
+            const sectionHeight = rect.height;
+            
+            // Se a seção estiver visível
+            if (sectionTop < viewportHeight / 2 && sectionTop > -sectionHeight / 2) {
+                // Ativar a seção e o indicador correspondente
+                section.classList.add('active');
+                
+                if (sectionDots[index]) {
+                    sectionDots.forEach(dot => dot.classList.remove('active'));
+                    sectionDots[index].classList.add('active');
+                }
+                
+                // Adicionar classe de animação
+                section.classList.add('scrolling-in');
+                section.classList.remove('scrolling-out');
+            } else {
+                // Desativar seção
+                section.classList.remove('active');
+                section.classList.remove('scrolling-in');
+                
+                // Se estiver saindo da visualização, adicionar animação de saída
+                if (section.classList.contains('active')) {
+                    section.classList.add('scrolling-out');
+                }
+            }
+        });
+    }
+    
+    // Configurar o ouvinte de rolagem
+    const previewContainer = document.querySelector('.preview-sections');
+    if (previewContainer) {
+        previewContainer.addEventListener('scroll', function() {
+            requestAnimationFrame(checkVisibleSection);
+        });
+        
+        // Verificar inicialmente
+        checkVisibleSection();
+    }
+    
+    // Configurar cliques nos indicadores
+    sectionDots.forEach((dot, index) => {
+        dot.addEventListener('click', function() {
+            if (sections[index]) {
+                sections[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+}
+
+// Chamar esta função após o DOM estar pronto
+document.addEventListener('DOMContentLoaded', setupSectionTransitions);
