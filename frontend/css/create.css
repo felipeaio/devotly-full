@@ -73,7 +73,8 @@ html {
     border-radius: var(--border-radius);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: none; /* Mantido como display: none, conforme original */
+    display: none;
+    /* Mantido como display: none, conforme original */
     position: relative;
     margin-bottom: 2rem;
 }
@@ -143,12 +144,14 @@ html {
     /* Centraliza a imagem */
     opacity: 0;
     transition: opacity 0.6s ease-in-out;
-    transform: scale(1.05); /* Mantido como estava, verificar se é scale ou translate */
+    transform: scale(1.05);
+    /* Mantido como estava, verificar se é scale ou translate */
 }
 
 .preview-images img.active {
     opacity: 1;
-    transform: scale(1); /* Mantido como estava, verificar se é scale ou translate */
+    transform: scale(1);
+    /* Mantido como estava, verificar se é scale ou translate */
 }
 
 .carousel-controls {
@@ -185,37 +188,49 @@ html {
     transform: scale(1.1);
 }
 
-.no-images { /* Mantido pois existe .no-images, .no-media */
+.no-images {
+    /* Mantido pois existe .no-images, .no-media */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%; /* Ou 120px dependendo do contexto original */
+    height: 100%;
+    /* Ou 120px dependendo do contexto original */
     color: var(--color-text);
-    opacity: 0.6; /* Ou 0.5 */
+    opacity: 0.6;
+    /* Ou 0.5 */
     font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
-.no-images i { /* Mantido pois existe .no-images i, .no-media i */
-    font-size: clamp(2rem, 5vw, 2.5rem); /* Ou clamp(1.5rem, 4vw, 1.75rem) */
-    margin-bottom: 0.5rem; /* Ou 0.4rem */
+.no-images i {
+    /* Mantido pois existe .no-images i, .no-media i */
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    /* Ou clamp(1.5rem, 4vw, 1.75rem) */
+    margin-bottom: 0.5rem;
+    /* Ou 0.4rem */
 }
 
 
-.no-media { /* Mantido pois existe .no-images, .no-media */
+.no-media {
+    /* Mantido pois existe .no-images, .no-media */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%; /* Ou 120px */
+    height: 100%;
+    /* Ou 120px */
     color: var(--color-text);
-    opacity: 0.6; /* Ou 0.5 */
+    opacity: 0.6;
+    /* Ou 0.5 */
     font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
-.no-media i { /* Mantido pois existe .no-images i, .no-media i */
-    font-size: clamp(2rem, 5vw, 2.5rem); /* Ou clamp(1.5rem, 4vw, 1.75rem) */
-    margin-bottom: 0.5rem; /* Ou 0.4rem */
+.no-media i {
+    /* Mantido pois existe .no-images i, .no-media i */
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    /* Ou clamp(1.5rem, 4vw, 1.75rem) */
+    margin-bottom: 0.5rem;
+    /* Ou 0.4rem */
 }
 
 /* Cabeçalho */
@@ -249,7 +264,8 @@ html {
 }
 
 /* Progress Container - Versão Aprimorada (Mantendo a última versão encontrada) */
-.progress-header { /* Mantendo a versão mais recente e robusta do progress */
+.progress-header {
+    /* Mantendo a versão mais recente e robusta do progress */
     width: 100%;
     max-width: 800px;
     margin: 0 auto 2.5rem;
@@ -257,14 +273,16 @@ html {
     padding: 0 1.5rem;
 }
 
-.progress-container { /* Mantendo a versão mais recente e robusta do progress */
+.progress-container {
+    /* Mantendo a versão mais recente e robusta do progress */
     display: flex;
     align-items: center;
     gap: 1.5rem;
     /* Aumentado de 1rem para 1.5rem */
 }
 
-.progress-bar-container { /* Mantendo a versão mais recente e robusta do progress */
+.progress-bar-container {
+    /* Mantendo a versão mais recente e robusta do progress */
     position: relative;
     flex: 1;
     height: 12px;
@@ -276,7 +294,8 @@ html {
     /* Adicionado shadow para mais profundidade */
 }
 
-.progress-fill { /* Mantendo a versão mais recente e robusta do progress */
+.progress-fill {
+    /* Mantendo a versão mais recente e robusta do progress */
     position: absolute;
     height: 100%;
     background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
@@ -286,7 +305,8 @@ html {
 
 
 /* Efeito de brilho aprimorado */
-.progress-fill::after { /* Associado ao .progress-fill mantido */
+.progress-fill::after {
+    /* Associado ao .progress-fill mantido */
     content: '';
     position: absolute;
     top: 0;
@@ -302,7 +322,8 @@ html {
 }
 
 /* Novo estilo aprimorado para o contador de etapas */
-.step-counter { /* Mantendo a versão mais recente e robusta do progress */
+.step-counter {
+    /* Mantendo a versão mais recente e robusta do progress */
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -316,7 +337,8 @@ html {
     transition: all 0.3s ease;
 }
 
-.step-counter .current { /* Associado ao .step-counter mantido */
+.step-counter .current {
+    /* Associado ao .step-counter mantido */
     color: var(--color-accent);
     font-size: 1.75rem;
     font-weight: 700;
@@ -326,7 +348,8 @@ html {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.step-counter .separator { /* Associado ao .step-counter mantido */
+.step-counter .separator {
+    /* Associado ao .step-counter mantido */
     color: var(--color-text);
     opacity: 0.5;
     font-size: 1.5rem;
@@ -334,7 +357,8 @@ html {
     margin: 0 0.25rem;
 }
 
-.step-counter .total { /* Associado ao .step-counter mantido */
+.step-counter .total {
+    /* Associado ao .step-counter mantido */
     color: var(--color-text);
     font-size: 1.5rem;
     font-weight: 500;
@@ -343,7 +367,8 @@ html {
     text-align: center;
 }
 
-.step-counter:hover { /* Associado ao .step-counter mantido */
+.step-counter:hover {
+    /* Associado ao .step-counter mantido */
     background: rgba(255, 255, 255, 0.08);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -363,17 +388,21 @@ html {
 
     .step-counter {
         padding: 0.6rem 1rem;
-        font-size: 1.1rem; /* Ajustado do original para manter consistência com o novo .step-counter */
-        min-width: 3.5rem; /* Ajustado do original */
+        font-size: 1.1rem;
+        /* Ajustado do original para manter consistência com o novo .step-counter */
+        min-width: 3.5rem;
+        /* Ajustado do original */
     }
 
     .step-counter .current {
-        font-size: 1.5rem; /* Ajustado do original */
+        font-size: 1.5rem;
+        /* Ajustado do original */
     }
 
     .step-counter .separator,
     .step-counter .total {
-        font-size: 1.25rem; /* Ajustado do original */
+        font-size: 1.25rem;
+        /* Ajustado do original */
     }
 }
 
@@ -381,23 +410,33 @@ html {
     .progress-header {
         padding: 0 0.75rem;
     }
+
     .progress-container {
         gap: 1rem;
     }
+
     .progress-bar-container {
         height: 8px;
     }
+
     .step-counter {
-        padding: 0.5rem 0.875rem; /* Ajustado do original */
-        font-size: 1rem; /* Ajustado do original */
-        min-width: 3rem; /* Ajustado do original */
+        padding: 0.5rem 0.875rem;
+        /* Ajustado do original */
+        font-size: 1rem;
+        /* Ajustado do original */
+        min-width: 3rem;
+        /* Ajustado do original */
     }
+
     .step-counter .current {
-        font-size: 1.25rem; /* Ajustado do original */
+        font-size: 1.25rem;
+        /* Ajustado do original */
     }
+
     .step-counter .separator,
     .step-counter .total {
-        font-size: 1.1rem; /* Ajustado do original */
+        font-size: 1.1rem;
+        /* Ajustado do original */
     }
 }
 
@@ -413,6 +452,7 @@ html {
     .creation-layout {
         padding: 0 0.5rem;
     }
+
     /* Ajuste do formulário para evitar scroll horizontal */
     .creation-form {
         width: 100%;
@@ -427,6 +467,7 @@ html {
     .creation-layout {
         padding: 0 0.25rem;
     }
+
     .creation-form {
         padding: 1rem;
     }
@@ -453,7 +494,8 @@ html {
     display: block;
 }
 
-.step-header { /* Este .step-header é para os passos do formulário, não o preview */
+.step-header {
+    /* Este .step-header é para os passos do formulário, não o preview */
     margin-bottom: 2rem;
     text-align: center;
     padding: 1.5rem;
@@ -661,19 +703,23 @@ html {
     .plan-cards {
         /* A primeira media query para plan-cards foi combinada com a segunda para evitar redundância */
         grid-template-columns: 1fr;
-        gap: 2rem; /* Usando o gap maior da segunda regra */
+        gap: 2rem;
+        /* Usando o gap maior da segunda regra */
     }
 
     .plan-card {
-        padding: 2rem 1.5rem; /* Usando o padding maior da segunda regra */
+        padding: 2rem 1.5rem;
+        /* Usando o padding maior da segunda regra */
     }
 
     .plan-header h3 {
-        font-size: 1.6rem; /* Usando o font-size maior da segunda regra */
+        font-size: 1.6rem;
+        /* Usando o font-size maior da segunda regra */
     }
 
     .discount-price {
-        font-size: 1.8rem; /* Usando o font-size maior da segunda regra */
+        font-size: 1.8rem;
+        /* Usando o font-size maior da segunda regra */
     }
 }
 
@@ -806,7 +852,8 @@ html {
     margin-top: 1rem;
 }
 
-.verse-preview { /* Este é o preview do versículo dentro do formulário */
+.verse-preview {
+    /* Este é o preview do versículo dentro do formulário */
     background-color: var(--color-secondary);
     border: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: var(--border-radius);
@@ -856,25 +903,35 @@ html {
 }
 
 /* Upload de Imagens */
-.media-section { /* Este .media-section é para o formulário */
-    margin-bottom: 1.5rem; /* Ou margin: 2rem 0; */
-    padding: 1rem; /* Adicionado da segunda definição de .media-section */
-    background: rgba(255, 255, 255, 0.03); /* Adicionado da segunda definição de .media-section */
-    border-radius: var(--border-radius); /* Adicionado da segunda definição de .media-section */
+.media-section {
+    /* Este .media-section é para o formulário */
+    margin-bottom: 1.5rem;
+    /* Ou margin: 2rem 0; */
+    padding: 1rem;
+    /* Adicionado da segunda definição de .media-section */
+    background: rgba(255, 255, 255, 0.03);
+    /* Adicionado da segunda definição de .media-section */
+    border-radius: var(--border-radius);
+    /* Adicionado da segunda definição de .media-section */
 }
 
 .media-section h3 {
     display: flex;
     align-items: center;
-    gap: 0.75rem; /* Ou 0.5rem */
-    margin-bottom: 1.5rem; /* Ou 0.75rem */
-    color: var(--gold-light); /* Ou var(--color-light) */
-    font-size: clamp(1.1rem, 3vw, 1.3rem); /* Ou clamp(1rem, 2.5vw, 1.1rem) */
+    gap: 0.75rem;
+    /* Ou 0.5rem */
+    margin-bottom: 1.5rem;
+    /* Ou 0.75rem */
+    color: var(--gold-light);
+    /* Ou var(--color-light) */
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    /* Ou clamp(1rem, 2.5vw, 1.1rem) */
 }
 
 .media-section h3 i {
     color: var(--color-accent);
-    font-size: clamp(1.2rem, 3vw, 1.4rem); /* Adicionado da segunda definição de .media-section h3 i */
+    font-size: clamp(1.2rem, 3vw, 1.4rem);
+    /* Adicionado da segunda definição de .media-section h3 i */
 }
 
 .upload-area {
@@ -1035,7 +1092,8 @@ html {
     margin-top: 1.5rem;
 }
 
-#previewCardMessage { /* Usado no preview do cartão, não relacionado às classes .preview-card removidas */
+#previewCardMessage {
+    /* Usado no preview do cartão, não relacionado às classes .preview-card removidas */
     text-align: center;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -1052,7 +1110,8 @@ html {
 
 @media (max-width: 480px) {
     #previewCardMessage {
-        font-size: clamp(1.3rem, 3vw, 1.3rem); /* Mantido o valor original, pois o outro era clamp(1rem, 3vw, 1.2rem) */
+        font-size: clamp(1.3rem, 3vw, 1.3rem);
+        /* Mantido o valor original, pois o outro era clamp(1rem, 3vw, 1.2rem) */
         padding: 1rem;
         line-height: 1.6;
     }
@@ -1061,7 +1120,8 @@ html {
 /* Responsividade Geral */
 @media (max-width: 1200px) {
     .creation-layout {
-        grid-template-columns: 1fr 400px; /* Mantido, pode ser para o .card-preview-container se ele for reativado */
+        grid-template-columns: 1fr 400px;
+        /* Mantido, pode ser para o .card-preview-container se ele for reativado */
     }
 }
 
@@ -1071,7 +1131,8 @@ html {
         gap: 1.5rem;
     }
 
-    .card-preview-container { /* Estilo para o preview lateral, se reativado */
+    .card-preview-container {
+        /* Estilo para o preview lateral, se reativado */
         position: relative;
         top: 0;
         height: auto;
@@ -1092,22 +1153,26 @@ html {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .input-row {
         flex-direction: column;
-        gap: 0; /* Espaço entre inputs em coluna já tratado por input-group margin */
+        gap: 0;
+        /* Espaço entre inputs em coluna já tratado por input-group margin */
     }
 
     .modal-actions {
         flex-direction: column;
     }
 
-    .card-preview-container { /* Estilo para o preview lateral, se reativado */
+    .card-preview-container {
+        /* Estilo para o preview lateral, se reativado */
         max-width: 500px;
     }
 
-    .plan-cards { /* Já coberto pela regra de 768px anterior para .plan-cards */
-        /* grid-template-columns: 1fr; */ /* Removido por redundância */
+    .plan-cards {
+        /* Já coberto pela regra de 768px anterior para .plan-cards */
+        /* grid-template-columns: 1fr; */
+        /* Removido por redundância */
     }
 }
 
@@ -1120,7 +1185,8 @@ html {
     }
 
     .carousel-prev,
-    .carousel-next { /* Mantido para o carrossel de .preview-images */
+    .carousel-next {
+        /* Mantido para o carrossel de .preview-images */
         width: 36px;
         height: 36px;
         font-size: 1rem;
@@ -1151,26 +1217,32 @@ html {
         padding: 1rem;
     }
 
-    .verse-text { /* Dentro do .verse-preview do formulário */
-        font-size: clamp(1.1rem, 3vw, 1.3rem); /* Mantida a primeira ocorrência, a segunda era muito similar */
+    .verse-text {
+        /* Dentro do .verse-preview do formulário */
+        font-size: clamp(1.1rem, 3vw, 1.3rem);
+        /* Mantida a primeira ocorrência, a segunda era muito similar */
         line-height: 1.6;
         padding: 0.25rem;
     }
 
-    .verse-actions { /* Se existir, não foi fornecido no HTML original */
+    .verse-actions {
+        /* Se existir, não foi fornecido no HTML original */
         justify-content: stretch;
     }
 
-    .action-btn { /* Se existir */
+    .action-btn {
+        /* Se existir */
         flex: 1;
         justify-content: center;
     }
 
-    .btn-text { /* Se existir */
+    .btn-text {
+        /* Se existir */
         display: none;
     }
 
-    .action-btn i { /* Se existir */
+    .action-btn i {
+        /* Se existir */
         margin: 0;
     }
 }
@@ -1209,9 +1281,11 @@ html {
         max-height: calc(100vh - 2rem);
         top: 1rem;
     }
+
     /* .preview-body e outros elementos do preview lateral removidos da lista original */
     .preview-images,
-    .preview-media { /* .preview-media foi removido, mas .preview-images mantido */
+    .preview-media {
+        /* .preview-media foi removido, mas .preview-images mantido */
         min-height: 150px;
     }
 }
@@ -1221,16 +1295,19 @@ html {
         max-height: calc(100vh - 1rem);
         top: 0.5rem;
     }
+
     /* .preview-header, .preview-body removidos */
     .preview-images,
-    .preview-media { /* .preview-media foi removido, mas .preview-images mantido */
+    .preview-media {
+        /* .preview-media foi removido, mas .preview-images mantido */
         min-height: 120px;
     }
 }
 
 /* Novo estilo para a estrutura de preview (scroll-snap) */
 .preview-sections {
-    height: 80vh; /* Pode precisar de ajuste dependendo da intenção */
+    height: 80vh;
+    /* Pode precisar de ajuste dependendo da intenção */
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     background: var(--color-primary);
@@ -1239,13 +1316,17 @@ html {
     -webkit-overflow-scrolling: touch;
     width: 100%;
     transition: background-color 0.5s ease;
-    perspective: 1000px; /* Para transições 3D */
-    transform-style: preserve-3d; /* Para transições 3D */
+    perspective: 1000px;
+    /* Para transições 3D */
+    transform-style: preserve-3d;
+    /* Para transições 3D */
 }
 
 .preview-section {
-    height: 100vh; /* Garante que cada seção ocupe a altura da viewport */
-    min-height: 100vh; /* Garante que cada seção ocupe a altura da viewport */
+    height: 100vh;
+    /* Garante que cada seção ocupe a altura da viewport */
+    min-height: 100vh;
+    /* Garante que cada seção ocupe a altura da viewport */
     scroll-snap-align: start;
     scroll-snap-stop: always;
     position: relative;
@@ -1260,49 +1341,93 @@ html {
     transform: translateY(20px);
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: opacity, transform;
-    backface-visibility: hidden; /* Otimizações para performance */
-    -webkit-backface-visibility: hidden; /* Otimizações para performance */
-    transform-style: preserve-3d; /* Otimizações para performance */
+    backface-visibility: hidden;
+    /* Otimizações para performance */
+    -webkit-backface-visibility: hidden;
+    /* Otimizações para performance */
+    transform-style: preserve-3d;
+    /* Otimizações para performance */
 }
-.preview-section.active { /* Para transições */
+
+.preview-section.active {
+    /* Para transições */
     opacity: 1;
     transform: translateY(0);
 }
 
 /* Transições específicas para cada tipo de seção */
-#titleSection { transition-delay: 0.1s; }
-#messageSection { transition-delay: 0.2s; }
-#verseSection { transition-delay: 0.3s; }
-#gallerySection { transition-delay: 0.4s; }
-#mediaSection { transition-delay: 0.5s; } /* #mediaSection refere-se ao preview-section, não ao .preview-media removido */
-#finalSection { transition-delay: 0.6s; }
+#titleSection {
+    transition-delay: 0.1s;
+}
+
+#messageSection {
+    transition-delay: 0.2s;
+}
+
+#verseSection {
+    transition-delay: 0.3s;
+}
+
+#gallerySection {
+    transition-delay: 0.4s;
+}
+
+#mediaSection {
+    transition-delay: 0.5s;
+}
+
+/* #mediaSection refere-se ao preview-section, não ao .preview-media removido */
+#finalSection {
+    transition-delay: 0.6s;
+}
 
 
 /* Efeitos de entrada personalizados */
 .preview-section[data-entering] {
     animation: sectionEnter 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
 @keyframes sectionEnter {
-    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
+
 /* Efeitos de saída personalizados */
 .preview-section[data-exiting] {
     animation: sectionExit 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
 @keyframes sectionExit {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
 }
 
 
 /* Ajustes responsivos para preview-sections */
-@media (max-width: 1200px), (max-height: 800px) {
-    .preview-sections, .preview-section {
+@media (max-width: 1200px),
+(max-height: 800px) {
+
+    .preview-sections,
+    .preview-section {
         height: 100vh;
         min-height: 100vh;
     }
 }
+
 /* As media queries para 768px e 480px para .preview-sections e .preview-section são idênticas à de 1200px, então foram consolidadas. */
 
 
@@ -1311,17 +1436,23 @@ html {
     max-width: 400px;
     min-height: 150px;
     text-align: center;
-    padding: 0; /* Removido padding original para dar flexibilidade às seções internas */
-    background: transparent; /* Removido background original */
-    box-shadow: none; /* Removido shadow original */
-    border: none; /* Removido border original */
+    padding: 0;
+    /* Removido padding original para dar flexibilidade às seções internas */
+    background: transparent;
+    /* Removido background original */
+    box-shadow: none;
+    /* Removido shadow original */
+    border: none;
+    /* Removido border original */
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin: 0 auto;
     overflow: hidden;
 }
-.section-content > * { /* Garantir que conteúdo interno não estoure */
+
+.section-content>* {
+    /* Garantir que conteúdo interno não estoure */
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -1333,23 +1464,28 @@ html {
         min-height: 180px;
     }
 }
+
 @media (max-width: 480px) {
     .section-content {
         min-height: 160px;
         max-width: 320px;
     }
 }
+
 @media (max-width: 360px) {
     .section-content {
         min-height: 150px;
         max-width: 280px;
-        padding: 0.75rem; /* Retornando um padding mínimo para telas muito pequenas */
+        padding: 0.75rem;
+        /* Retornando um padding mínimo para telas muito pequenas */
     }
 }
 
 /* Title section */
-#titleSection .section-content { /* Estilo específico para o conteúdo da seção de título */
-    background: none; /* Removido da lista de desejos */
+#titleSection .section-content {
+    /* Estilo específico para o conteúdo da seção de título */
+    background: none;
+    /* Removido da lista de desejos */
     box-shadow: none;
     border: none;
     padding: 0;
@@ -1359,6 +1495,7 @@ html {
     justify-content: center;
     align-items: center;
 }
+
 #titleSection h1 {
     font-size: 2.5rem;
     background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
@@ -1390,22 +1527,30 @@ html {
 
 /* Verse section */
 #verseSection .verse-container {
-    text-align: left; /* Alterado de center para left */
-    border-left: 4px solid var(--color-accent); /* Adicionado border-left */
-    padding-left: 1.5rem; /* Adicionado padding-left */
-    border: none; /* Mantido de uma regra anterior */
-    padding: 0; /* Mantido de uma regra anterior, mas o padding-left acima terá precedência */
+    text-align: left;
+    /* Alterado de center para left */
+    border-left: 4px solid var(--color-accent);
+    /* Adicionado border-left */
+    padding-left: 1.5rem;
+    /* Adicionado padding-left */
+    border: none;
+    /* Mantido de uma regra anterior */
+    padding: 0;
+    /* Mantido de uma regra anterior, mas o padding-left acima terá precedência */
 }
+
 #verseSection #previewVerseText {
     font-size: 1.3rem;
     color: var(--color-light);
     margin-bottom: 1rem;
     font-style: italic;
 }
+
 #verseSection #previewVerseRef {
     color: var(--color-accent);
     font-size: 1rem;
-    display: block; /* Mantido para garantir que o comportamento não mude */
+    display: block;
+    /* Mantido para garantir que o comportamento não mude */
 }
 
 /* Media section (para o preview-section, não o .preview-media removido) */
@@ -1413,12 +1558,18 @@ html {
     width: 100%;
     aspect-ratio: 16/9;
     margin: 0 auto;
-    background: rgba(0, 0, 0, 0.2); /* Adicionado da regra posterior */
-    display: flex; /* Adicionado da regra posterior */
-    align-items: center; /* Adicionado da regra posterior */
-    justify-content: center; /* Adicionado da regra posterior */
-    border-radius: var(--border-radius); /* Adicionado da regra posterior */
+    background: rgba(0, 0, 0, 0.2);
+    /* Adicionado da regra posterior */
+    display: flex;
+    /* Adicionado da regra posterior */
+    align-items: center;
+    /* Adicionado da regra posterior */
+    justify-content: center;
+    /* Adicionado da regra posterior */
+    border-radius: var(--border-radius);
+    /* Adicionado da regra posterior */
 }
+
 #mediaSection iframe {
     width: 100%;
     height: 100%;
@@ -1446,12 +1597,16 @@ html {
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 .final-message-wrapper {
     text-align: center;
 }
-.final-message { /* Classe já existente, estilos adicionados/sobrescritos */
+
+.final-message {
+    /* Classe já existente, estilos adicionados/sobrescritos */
     margin-bottom: 2rem;
 }
+
 .final-text {
     font-size: 1.8rem;
     color: var(--color-light);
@@ -1460,6 +1615,7 @@ html {
     margin-bottom: 1rem;
     font-family: var(--font-decorative);
 }
+
 .message-decoration {
     display: flex;
     align-items: center;
@@ -1467,6 +1623,7 @@ html {
     gap: 1rem;
     margin: 1.5rem 0;
 }
+
 .decoration-line {
     height: 1px;
     width: 60px;
@@ -1475,10 +1632,12 @@ html {
             var(--color-accent),
             transparent);
 }
+
 .pulse-heart {
     color: var(--color-accent);
     font-size: 1.2rem;
-    animation: pulse 2s infinite; /* Animação 'pulse' já definida, esta pode sobrescrever ou coexistir */
+    animation: pulse 2s infinite;
+    /* Animação 'pulse' já definida, esta pode sobrescrever ou coexistir */
 }
 
 
@@ -1487,6 +1646,7 @@ html {
     margin-top: 1rem;
     text-align: center;
 }
+
 .share-label {
     margin-bottom: 1rem;
     position: relative;
@@ -1495,6 +1655,7 @@ html {
     justify-content: center;
     gap: 1rem;
 }
+
 .share-text {
     color: var(--color-light);
     font-size: 1rem;
@@ -1506,48 +1667,73 @@ html {
 .preview-share-buttons {
     display: flex;
     justify-content: center;
-    gap: 1rem; /* Ou 15px */
-    margin-top: 1.5rem; /* Ou 20px */
+    gap: 1rem;
+    /* Ou 15px */
+    margin-top: 1.5rem;
+    /* Ou 20px */
 }
+
 .preview-share-btn {
-    width: 40px; /* Ou 45px */
-    height: 40px; /* Ou 45px */
+    width: 40px;
+    /* Ou 45px */
+    height: 40px;
+    /* Ou 45px */
     border-radius: 50%;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.1rem; /* Ou 1.2rem */
+    font-size: 1.1rem;
+    /* Ou 1.2rem */
     cursor: pointer;
-    transition: all 0.3s ease; /* Ou cubic-bezier(0.4, 0, 0.2, 1) */
-    position: relative; /* Adicionado para tooltip */
-    overflow: hidden; /* Adicionado para tooltip */
+    transition: all 0.3s ease;
+    /* Ou cubic-bezier(0.4, 0, 0.2, 1) */
+    position: relative;
+    /* Adicionado para tooltip */
+    overflow: hidden;
+    /* Adicionado para tooltip */
 }
-.preview-share-btn[data-platform="whatsapp"], .preview-share-btn.whatsapp { /* Combinando seletores */
+
+.preview-share-btn[data-platform="whatsapp"],
+.preview-share-btn.whatsapp {
+    /* Combinando seletores */
     background-color: #25D366;
-    background: linear-gradient(135deg, #25D366, #128C7E); /* Priorizando o gradiente */
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    /* Priorizando o gradiente */
 }
-.preview-share-btn[data-platform="facebook"], .preview-share-btn.facebook {
+
+.preview-share-btn[data-platform="facebook"],
+.preview-share-btn.facebook {
     background-color: #1877F2;
     background: linear-gradient(135deg, #1877F2, #166FE5);
 }
-.preview-share-btn[data-platform="twitter"], .preview-share-btn.twitter {
+
+.preview-share-btn[data-platform="twitter"],
+.preview-share-btn.twitter {
     background-color: #1DA1F2;
     background: linear-gradient(135deg, #1DA1F2, #0C85D0);
 }
-.preview-share-btn[data-platform="email"], .preview-share-btn.email {
+
+.preview-share-btn[data-platform="email"],
+.preview-share-btn.email {
     background-color: #D44638;
     background: linear-gradient(135deg, #D44638, #B23121);
 }
+
 .preview-share-btn:hover {
     transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Ou 0 6px 16px */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    /* Ou 0 6px 16px */
 }
-.preview-share-btn:active { /* Adicionado */
+
+.preview-share-btn:active {
+    /* Adicionado */
     transform: translateY(0) scale(0.95);
 }
-.share-tooltip { /* Adicionado */
+
+.share-tooltip {
+    /* Adicionado */
     position: absolute;
     bottom: -30px;
     left: 50%;
@@ -1562,7 +1748,9 @@ html {
     transition: all 0.3s ease;
     white-space: nowrap;
 }
-.preview-share-btn:hover .share-tooltip { /* Adicionado */
+
+.preview-share-btn:hover .share-tooltip {
+    /* Adicionado */
     opacity: 1;
     visibility: visible;
     bottom: -40px;
@@ -1571,53 +1759,99 @@ html {
 
 /* Responsive adjustments for final section and share buttons */
 @media (max-width: 768px) {
-    #titleSection h1 { font-size: 2rem; }
+    #titleSection h1 {
+        font-size: 2rem;
+    }
+
     #messageSection .message-container,
     #verseSection #previewVerseText,
-    #finalSection .final-message { font-size: 1.1rem; }
+    #finalSection .final-message {
+        font-size: 1.1rem;
+    }
 
-    .final-section-content { padding: 1.5rem; }
-    .final-text { font-size: 1.5rem; }
-    .preview-share-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+    .final-section-content {
+        padding: 1.5rem;
+    }
+
+    .final-text {
+        font-size: 1.5rem;
+    }
+
+    .preview-share-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
 }
 
 @media (max-width: 480px) {
-    #titleSection h1 { font-size: 1.75rem; }
+    #titleSection h1 {
+        font-size: 1.75rem;
+    }
+
     #messageSection .message-container,
     #verseSection #previewVerseText,
-    #finalSection .final-message { font-size: 1rem; }
+    #finalSection .final-message {
+        font-size: 1rem;
+    }
 
-    .final-section-content { padding: 1rem; }
-    .final-text { font-size: 1.3rem; }
-    .preview-share-btn { width: 35px; height: 35px; font-size: 1rem; }
+    .final-section-content {
+        padding: 1rem;
+    }
+
+    .final-text {
+        font-size: 1.3rem;
+    }
+
+    .preview-share-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
 }
+
 @media (max-width: 360px) {
-    #titleSection h1 { font-size: 1.5rem; }
+    #titleSection h1 {
+        font-size: 1.5rem;
+    }
 }
 
 
 /* Enhanced Gallery Section */
 #gallerySection .section-content {
     padding: 0;
-    border-radius: 16px; /* Adicionado para consistência */
-    overflow: hidden; /* Adicionado para consistência */
-    background: transparent; /* Já definido, mas reforçado */
-    min-height: 200px; /* Adicionado de uma regra específica anterior */
+    border-radius: 16px;
+    /* Adicionado para consistência */
+    overflow: hidden;
+    /* Adicionado para consistência */
+    background: transparent;
+    /* Já definido, mas reforçado */
+    min-height: 200px;
+    /* Adicionado de uma regra específica anterior */
 }
-.gallery-container { /* Esta classe é usada dentro de #gallerySection */
+
+.gallery-container {
+    /* Esta classe é usada dentro de #gallerySection */
     position: relative;
     width: 100%;
-    min-height: 300px; /* Ou 150px, 200px, 250px dependendo da media query */
-    background: rgba(0, 0, 0, 0.3); /* Ou var(--color-dark) */
-    border-radius: 16px; /* Ou var(--border-radius) */
+    min-height: 300px;
+    /* Ou 150px, 200px, 250px dependendo da media query */
+    background: rgba(0, 0, 0, 0.3);
+    /* Ou var(--color-dark) */
+    border-radius: 16px;
+    /* Ou var(--border-radius) */
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(10px); /* Adicionado */
-    -webkit-backdrop-filter: blur(10px); /* Adicionado */
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Adicionado */
-    padding-bottom: 100%; /* Para manter proporção quadrada, da versão mais recente */
+    backdrop-filter: blur(10px);
+    /* Adicionado */
+    -webkit-backdrop-filter: blur(10px);
+    /* Adicionado */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Adicionado */
+    padding-bottom: 100%;
+    /* Para manter proporção quadrada, da versão mais recente */
 }
 
 /* Gallery Images */
@@ -1627,37 +1861,55 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ou contain */
+    object-fit: cover;
+    /* Ou contain */
     opacity: 0;
-    transition: opacity 0.5s ease, transform 0.5s ease; /* Ou 0.3s ease */
-    transform: translateX(100%); /* Efeito de slide da versão mais recente */
-    display: none; /* Para controle do carrossel JS */
-    will-change: opacity, transform; /* Otimização */
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    /* Ou 0.3s ease */
+    transform: translateX(100%);
+    /* Efeito de slide da versão mais recente */
+    display: none;
+    /* Para controle do carrossel JS */
+    will-change: opacity, transform;
+    /* Otimização */
 }
+
 #gallerySection .gallery-container img.active {
     opacity: 1;
-    transform: translateX(0); /* Efeito de slide da versão mais recente */
-    display: block !important; /* Forçar visibilidade */
-    z-index: 2; /* Para sobrepor a imagem saindo */
+    transform: translateX(0);
+    /* Efeito de slide da versão mais recente */
+    display: block !important;
+    /* Forçar visibilidade */
+    z-index: 2;
+    /* Para sobrepor a imagem saindo */
 }
-#gallerySection .gallery-container img.leaving { /* Para efeito de slide */
-    opacity: 0.3; /* Ou 0 */
+
+#gallerySection .gallery-container img.leaving {
+    /* Para efeito de slide */
+    opacity: 0.3;
+    /* Ou 0 */
     transform: translateX(-100%);
     z-index: 1;
-    display: block; /* Precisa estar block durante a transição de saída */
+    display: block;
+    /* Precisa estar block durante a transição de saída */
 }
-#gallerySection .gallery-container img:first-child { /* Para garantir que a primeira imagem apareça se JS falhar ou antes de iniciar */
+
+#gallerySection .gallery-container img:first-child {
+    /* Para garantir que a primeira imagem apareça se JS falhar ou antes de iniciar */
     /* opacity: 1;  Esta regra foi removida pois o JS controlará a imagem ativa */
 }
 
 
 /* Gallery Controls (Carousel) - Removido da lista, mas os estilos de .carousel-controls já existem acima */
-#gallerySection .carousel-controls { /* Sobrescrevendo para esconder se for carrossel automático */
-     display: none; /* Escondido para o carrossel automático */
+#gallerySection .carousel-controls {
+    /* Sobrescrevendo para esconder se for carrossel automático */
+    display: none;
+    /* Escondido para o carrossel automático */
 }
 
 /* Image Counter / Indicators */
-.image-counter { /* Mantido da versão "Enhanced Gallery" */
+.image-counter {
+    /* Mantido da versão "Enhanced Gallery" */
     position: absolute;
     bottom: 1rem;
     left: 50%;
@@ -1672,12 +1924,17 @@ html {
     border: 1px solid rgba(255, 255, 255, 0.1);
     opacity: 0;
     transition: opacity 0.3s ease;
-    z-index: 5; /* Para ficar sobre as imagens */
+    z-index: 5;
+    /* Para ficar sobre as imagens */
 }
-.gallery-container:hover .image-counter { /* Mantido */
+
+.gallery-container:hover .image-counter {
+    /* Mantido */
     opacity: 1;
 }
-.gallery-indicators { /* Adicionado da versão mais recente */
+
+.gallery-indicators {
+    /* Adicionado da versão mais recente */
     position: absolute;
     bottom: 15px;
     left: 0;
@@ -1687,7 +1944,9 @@ html {
     gap: 8px;
     z-index: 5;
 }
-.gallery-indicator { /* Adicionado da versão mais recente */
+
+.gallery-indicator {
+    /* Adicionado da versão mais recente */
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -1695,15 +1954,19 @@ html {
     cursor: pointer;
     transition: all 0.3s ease;
 }
-.gallery-indicator.active { /* Adicionado da versão mais recente */
+
+.gallery-indicator.active {
+    /* Adicionado da versão mais recente */
     background: var(--color-accent);
     transform: scale(1.2);
 }
 
 
 /* Enhanced No Images State (Dentro da Gallery) */
-#gallerySection .no-images { /* Especificidade aumentada */
-    position: absolute; /* Para centralizar dentro do gallery-container */
+#gallerySection .no-images {
+    /* Especificidade aumentada */
+    position: absolute;
+    /* Para centralizar dentro do gallery-container */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -1714,17 +1977,23 @@ html {
     padding: 2rem;
     text-align: center;
     animation: fadeIn 0.5s ease;
-    color: var(--color-text); /* Herda de .no-images geral */
-    opacity: 0.5; /* Herda de .no-images geral */
-    width: 100%; /* Para ocupar o espaço do container */
-    height: 100%; /* Para ocupar o espaço do container */
+    color: var(--color-text);
+    /* Herda de .no-images geral */
+    opacity: 0.5;
+    /* Herda de .no-images geral */
+    width: 100%;
+    /* Para ocupar o espaço do container */
+    height: 100%;
+    /* Para ocupar o espaço do container */
 }
+
 #gallerySection .no-images i {
     font-size: 3rem;
     color: rgba(255, 255, 255, 0.2);
     margin-bottom: 1rem;
     animation: float 3s ease-in-out infinite;
 }
+
 #gallerySection .no-images span {
     font-size: 1.1rem;
     color: rgba(255, 255, 255, 0.5);
@@ -1733,26 +2002,65 @@ html {
 
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
-@keyframes fadeIn { /* Já definido, esta é uma redefinição */
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+@keyframes fadeIn {
+
+    /* Já definido, esta é uma redefinição */
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive Adjustments for Gallery */
 @media (max-width: 768px) {
-    .gallery-container { min-height: 250px; padding-bottom: 75%;} /* 4:3 ratio */
-    #gallerySection .no-images i { font-size: 2.5rem; }
-    #gallerySection .no-images span { font-size: 1rem; }
+    .gallery-container {
+        min-height: 250px;
+        padding-bottom: 75%;
+    }
+
+    /* 4:3 ratio */
+    #gallerySection .no-images i {
+        font-size: 2.5rem;
+    }
+
+    #gallerySection .no-images span {
+        font-size: 1rem;
+    }
 }
+
 @media (max-width: 480px) {
-    .gallery-container { min-height: 200px; padding-bottom: 56.25%;} /* 16:9 ratio */
-    .image-counter { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+    .gallery-container {
+        min-height: 200px;
+        padding-bottom: 56.25%;
+    }
+
+    /* 16:9 ratio */
+    .image-counter {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
 }
+
 @media (max-width: 360px) {
-    .gallery-container { min-height: 180px; }
+    .gallery-container {
+        min-height: 180px;
+    }
 }
 
 
@@ -1764,6 +2072,7 @@ html {
     border-radius: var(--border-radius);
     border: 1px solid rgba(212, 175, 55, 0.1);
 }
+
 .verse-suggestions h4 {
     color: var(--gold-light);
     margin-bottom: 1rem;
@@ -1772,18 +2081,22 @@ html {
     align-items: center;
     gap: 0.5rem;
 }
+
 .verse-suggestions h4::before {
-    content: '\f02e'; /* book icon */
+    content: '\f02e';
+    /* book icon */
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 0.9rem;
     color: var(--color-accent);
 }
+
 .suggestion-list.verse-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.75rem;
 }
+
 .suggestion-item.verse-item {
     background-color: rgba(212, 175, 55, 0.05);
     color: var(--color-light);
@@ -1798,23 +2111,28 @@ html {
     align-items: center;
     gap: 0.5rem;
 }
+
 .suggestion-item.verse-item:hover {
     background-color: rgba(212, 175, 55, 0.1);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .suggestion-item.verse-item i {
     color: var(--gold-light);
     font-size: 0.85rem;
 }
+
 .suggestion-item.verse-item:active {
     transform: scale(0.98);
 }
+
 @media (max-width: 768px) {
     .suggestion-list.verse-list {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
+
 @media (max-width: 480px) {
     .suggestion-list.verse-list {
         grid-template-columns: 1fr 1fr;
@@ -1826,7 +2144,8 @@ html {
    pois a lógica de mostrar/esconder deve ser controlada por JS com base na imagem ativa.
    A remoção física do botão não é feita por CSS aqui. */
 #gallerySection .remove-image {
-    display: none; /* Escondido por padrão, JS mostra o relevante */
+    display: none;
+    /* Escondido por padrão, JS mostra o relevante */
 }
 
 
@@ -1839,9 +2158,11 @@ html {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 50; /* Acima das seções, abaixo de modais talvez */
+    z-index: 50;
+    /* Acima das seções, abaixo de modais talvez */
     pointer-events: auto;
 }
+
 .section-dot {
     width: 10px;
     height: 10px;
@@ -1852,25 +2173,34 @@ html {
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
+
 .section-dot::before {
     content: '';
     position: absolute;
-    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
     border-radius: 50%;
     transition: all 0.3s ease;
 }
+
 .section-dot:hover {
     background-color: rgba(212, 175, 55, 0.5);
     transform: scale(1.2);
 }
+
 .section-dot:hover::before {
     background-color: rgba(212, 175, 55, 0.1);
 }
+
 .section-dot.active {
     background-color: var(--color-accent);
     transform: scale(1.3);
 }
-.section-dot::after { /* Label para os indicadores */
+
+.section-dot::after {
+    /* Label para os indicadores */
     content: attr(data-label);
     position: absolute;
     right: 20px;
@@ -1886,17 +2216,31 @@ html {
     transition: all 0.3s ease;
     pointer-events: none;
 }
+
 .section-dot:hover::after {
     opacity: 1;
     transform: translateX(0);
 }
+
 @media (max-width: 768px) {
-    .section-indicators { right: 10px; }
-    .section-dot { width: 8px; height: 8px; }
+    .section-indicators {
+        right: 10px;
+    }
+
+    .section-dot {
+        width: 8px;
+        height: 8px;
+    }
 }
+
 @media (max-width: 480px) {
-    .section-indicators { right: 5px; }
-    .section-dot::after { display: none; }
+    .section-indicators {
+        right: 5px;
+    }
+
+    .section-dot::after {
+        display: none;
+    }
 }
 
 
@@ -1914,35 +2258,61 @@ html {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 100; /* Acima dos indicadores de seção */
+    z-index: 100;
+    /* Acima dos indicadores de seção */
     transition: all 0.3s ease;
 }
+
 .preview-fullscreen-btn:hover {
     background-color: var(--color-accent);
     transform: scale(1.1);
 }
+
 .preview-sections.fullscreen-mode {
-    background-color: var(--color-dark); /* Fundo mais escuro em tela cheia */
-    padding: 20px; /* Espaçamento interno */
+    background-color: var(--color-dark);
+    /* Fundo mais escuro em tela cheia */
+    padding: 20px;
+    /* Espaçamento interno */
 }
+
 .preview-sections.fullscreen-mode .section-content {
-    max-width: 600px; /* Conteúdo pode ser um pouco maior */
+    max-width: 600px;
+    /* Conteúdo pode ser um pouco maior */
     min-height: 250px;
 }
-.preview-sections.fullscreen-mode #titleSection h1 { font-size: 3.5rem; }
-.preview-sections.fullscreen-mode #messageSection .message-container { font-size: 1.5rem; }
-.preview-sections.fullscreen-mode #gallerySection .gallery-container { min-height: 300px; }
+
+.preview-sections.fullscreen-mode #titleSection h1 {
+    font-size: 3.5rem;
+}
+
+.preview-sections.fullscreen-mode #messageSection .message-container {
+    font-size: 1.5rem;
+}
+
+.preview-sections.fullscreen-mode #gallerySection .gallery-container {
+    min-height: 300px;
+}
 
 
 @keyframes highlightPulse {
-    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+    }
 }
+
 .highlight-pulse {
     animation: highlightPulse 1.5s infinite;
     border-color: var(--color-accent) !important;
 }
+
 .required-mark {
     color: var(--color-accent);
     font-weight: bold;
@@ -1953,6 +2323,7 @@ html {
     min-height: 80px;
     border-color: rgba(212, 175, 55, 0.15);
 }
+
 #cardFinalMessage:focus {
     border-color: var(--color-accent);
 }
@@ -1960,22 +2331,30 @@ html {
 /* Preview Modal (para o botão de preview grande) */
 .preview-modal {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.95);
-    z-index: 1000; /* Mesmo z-index do .modal-overlay, verificar se há conflito */
-    display: none; /* Controlado por JS */
+    z-index: 1000;
+    /* Mesmo z-index do .modal-overlay, verificar se há conflito */
+    display: none;
+    /* Controlado por JS */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
+
 .preview-modal.active {
-    display: flex; /* Ou o display apropriado para o conteúdo */
+    display: flex;
+    /* Ou o display apropriado para o conteúdo */
     opacity: 1;
 }
+
 .preview-modal-content {
     width: 100%;
     height: 100%;
-    max-width: 500px; /* Ou o tamanho desejado para o conteúdo do modal */
+    max-width: 500px;
+    /* Ou o tamanho desejado para o conteúdo do modal */
     margin: 0 auto;
     padding: 2rem;
     display: flex;
@@ -1983,6 +2362,7 @@ html {
     gap: 1.5rem;
     /* Aqui dentro iria o .preview-sections ou similar */
 }
+
 .preview-modal-body {
     flex: 1;
     overflow-y: auto;
@@ -1999,7 +2379,8 @@ html {
     justify-content: center;
     gap: 0.75rem;
     cursor: pointer;
-    z-index: 1000; /* Mesmo z-index de outros modais/overlays */
+    z-index: 1000;
+    /* Mesmo z-index de outros modais/overlays */
     border: none;
     transition: all 0.3s ease;
 }
@@ -2012,52 +2393,70 @@ html {
         transform: translateX(-50%);
         width: auto;
         min-width: 500px;
-        padding: 2.5rem 5rem; /* Padding original era 1.5rem 3rem, depois 2.5rem 5rem */
+        padding: 2.5rem 5rem;
+        /* Padding original era 1.5rem 3rem, depois 2.5rem 5rem */
         border-radius: 50px;
-        font-size: 1.6rem; /* Original 1.2rem, depois 1.4rem, depois 1.6rem */
+        font-size: 1.6rem;
+        /* Original 1.2rem, depois 1.4rem, depois 1.6rem */
         box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
         letter-spacing: 0.5px;
     }
+
     .btn-preview i {
-        font-size: 1.8rem; /* Original 1.3rem, depois 1.5rem, depois 1.8rem */
+        font-size: 1.8rem;
+        /* Original 1.3rem, depois 1.5rem, depois 1.8rem */
     }
+
     .btn-preview:hover {
         transform: translateX(-50%) translateY(-4px);
         box-shadow: 0 8px 35px rgba(212, 175, 55, 0.5);
         background: linear-gradient(45deg, var(--gold-dark), var(--color-accent));
     }
+
     .btn-preview:active {
         transform: translateX(-50%) translateY(-2px);
         box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
     }
+
     /* Ajuste de padding no .creation-flow para acomodar o botão */
     .creation-flow {
-         padding-bottom: calc(4rem + 60px); /* (altura do botão + margem) */
-         /* A regra anterior era calc(2.5rem + 80px), esta é a mais recente */
+        padding-bottom: calc(4rem + 60px);
+        /* (altura do botão + margem) */
+        /* A regra anterior era calc(2.5rem + 80px), esta é a mais recente */
     }
 }
 
 /* Mobile styles for .btn-preview */
 @media (max-width: 768px) {
     .btn-preview {
-        bottom: 0; /* Originalmente 1rem, depois 0 */
+        bottom: 0;
+        /* Originalmente 1rem, depois 0 */
         left: 0;
         width: 100%;
-        height: 65px; /* Originalmente padding, depois height 60px, depois 65px */
-        padding: 0; /* Removido padding para usar height */
+        height: 65px;
+        /* Originalmente padding, depois height 60px, depois 65px */
+        padding: 0;
+        /* Removido padding para usar height */
         margin: 0;
         border-radius: 0;
-        font-size: 1.3rem; /* Original 0.9rem, depois 1.1rem, depois 1.3rem */
+        font-size: 1.3rem;
+        /* Original 0.9rem, depois 1.1rem, depois 1.3rem */
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
     }
+
     .btn-preview i {
-        font-size: 1.4rem; /* Original 1rem, depois 1.2rem, depois 1.4rem */
+        font-size: 1.4rem;
+        /* Original 1rem, depois 1.2rem, depois 1.4rem */
     }
-     /* Ajuste de padding no .creation-flow para acomodar o botão */
+
+    /* Ajuste de padding no .creation-flow para acomodar o botão */
     .creation-flow {
-        padding-bottom: 60px; /* Altura do botão no mobile */
+        padding-bottom: 60px;
+        /* Altura do botão no mobile */
     }
-    .preview-modal-content { /* Para o modal de preview em mobile */
+
+    .preview-modal-content {
+        /* Para o modal de preview em mobile */
         padding: 1rem;
     }
 }
@@ -2068,13 +2467,15 @@ html {
         height: 60px;
         font-size: 1.2rem;
     }
+
     .btn-preview i {
         font-size: 1.3rem;
     }
 }
 
 
-.btn-close-preview { /* Para fechar o .preview-modal */
+.btn-close-preview {
+    /* Para fechar o .preview-modal */
     width: 100%;
     padding: 1rem;
     background: var(--color-secondary);
@@ -2090,6 +2491,7 @@ html {
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
 .btn-close-preview:hover {
     background: var(--color-accent);
     color: var(--color-dark);
@@ -2101,6 +2503,7 @@ html {
 
 /* Forçar conteúdo a ficar dentro dos limites */
 * {
-    max-width: 100vw; /* Cuidado com esta regra global, pode ter efeitos colaterais */
+    max-width: 100vw;
+    /* Cuidado com esta regra global, pode ter efeitos colaterais */
     box-sizing: border-box;
 }

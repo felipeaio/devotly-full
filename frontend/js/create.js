@@ -23,7 +23,7 @@ class DevotlyCreator {
     constructor() {
         // Detectar dispositivos de baixo desempenho
         this.isLowEndDevice = this.detectLowEndDevice();
-        
+
         // Garantir que o DOM está carregado
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.initialize());
@@ -40,25 +40,25 @@ class DevotlyCreator {
         // Verificar hardware
         const lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 4;
         const lowCPU = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
-        
+
         // Verificar se é um dispositivo Android antigo
-        const isOldAndroid = /Android/.test(navigator.userAgent) && 
-                             (/Android 4\./.test(navigator.userAgent) || 
-                              /Android 5\./.test(navigator.userAgent));
-        
+        const isOldAndroid = /Android/.test(navigator.userAgent) &&
+            (/Android 4\./.test(navigator.userAgent) ||
+                /Android 5\./.test(navigator.userAgent));
+
         return lowMemory || lowCPU || isOldAndroid;
     }
 
     initialize() {
         // Inicializar elementos
         this.initializeElements();
-        
+
         // Inicializar estado
         this.initializeState();
-        
+
         // Setup event listeners
         this.setupEventListeners();
-        
+
         // Outras inicializações
         this.init();
     }
@@ -109,7 +109,7 @@ class DevotlyCreator {
                     reference: ''
                 },
                 images: [],
-                musicLink: '', 
+                musicLink: '',
                 theme: 'stars', // Default theme
                 selectedPlan: null
             },
@@ -150,10 +150,10 @@ class DevotlyCreator {
             // Adicionar o novo listener
             newInput.addEventListener('input', (e) => {
                 const text = e.target.value;
-                
+
                 // 1. Atualizar contador
                 finalMessageCounter.textContent = text.length;
-                
+
                 // 2. Atualizar preview
                 finalMessagePreview.textContent = text || "Que esta mensagem toque seu coração";
                 // Also update state.formData.finalMessage if this is the primary handler
@@ -170,12 +170,12 @@ class DevotlyCreator {
         counter.textContent = initialText.length;
         preview.textContent = initialText || "Que esta mensagem toque seu coração";
     }
-    
+
 
     init() {
         // Estado inicial
         this.showStep(this.state.currentStep);
-        
+
         // Resto do código de inicialização...
         this.setupEventListeners(); // Called again
         this.showStep(this.state.currentStep); // Called again
@@ -184,10 +184,10 @@ class DevotlyCreator {
         // Inicializar contadores
         const titleCounter = document.getElementById('titleCounter');
         if (titleCounter) titleCounter.textContent = '0';
-        
+
         const messageCounter = document.getElementById('messageCounter');
         if (messageCounter) messageCounter.textContent = '0';
-        
+
         // Garantir que o contador da mensagem final seja inicializado
         const finalMessageValue = document.getElementById('cardFinalMessage')?.value || '';
         const finalMessageCounterElem = document.getElementById('finalMessageCounter');
@@ -225,7 +225,7 @@ class DevotlyCreator {
         setTimeout(() => {
             // this.cleanupSectionObserver(); // Method removed
             this.setupSectionObserver(); // Called again
-            
+
             const previewSectionsContainer = document.querySelector('.preview-sections');
             if (previewSectionsContainer) {
                 previewSectionsContainer.scrollBy(0, 1);
@@ -238,7 +238,7 @@ class DevotlyCreator {
         document.querySelector('.preview-section#titleSection')?.classList.add('active');
 
         this.updateProgress(); // Calls the method within this class
-        
+
         window.scrollTo(0, 0);
 
         if (!this.state.formData.finalMessage) {
@@ -253,11 +253,11 @@ class DevotlyCreator {
             const finalMsgCounter = document.getElementById('finalMessageCounter');
             if (finalMsgCounter) finalMsgCounter.textContent = this.state.formData.finalMessage.length;
         }
-        
+
         if (this.elements.finalMessageInput) { //This block seems redundant with the one above
-             this.elements.finalMessageInput.value = this.state.formData.finalMessage;
-             if(this.elements.finalMessageCounter) this.elements.finalMessageCounter.textContent = this.state.formData.finalMessage.length;
-             this.updateFinalMessagePreview(); // Ensure this method exists or is defined
+            this.elements.finalMessageInput.value = this.state.formData.finalMessage;
+            if (this.elements.finalMessageCounter) this.elements.finalMessageCounter.textContent = this.state.formData.finalMessage.length;
+            this.updateFinalMessagePreview(); // Ensure this method exists or is defined
         }
     }
 
@@ -275,7 +275,7 @@ class DevotlyCreator {
         const sections = document.querySelectorAll('.preview-section');
 
         if (!previewSectionsContainer || !sections.length) return;
-        
+
         // Disconnect previous observer if it exists to prevent multiple observers
         if (this.sectionObserver) {
             this.sectionObserver.disconnect();
@@ -283,19 +283,19 @@ class DevotlyCreator {
 
         const observerOptions = {
             root: previewSectionsContainer,
-            threshold: 0.3, 
-            rootMargin: '0px' 
+            threshold: 0.3,
+            rootMargin: '0px'
         };
 
         const observerCallback = (entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    console.log('Seção visível:', entry.target.id); 
-                    
+                    console.log('Seção visível:', entry.target.id);
+
                     document.querySelectorAll('.section-dot').forEach(dot => {
                         dot.classList.toggle('active', dot.dataset.section === entry.target.id);
                     });
-                    
+
                     // Apply visual effect for the active section background
                     this.applyBackgroundEffect(entry.target.id);
 
@@ -308,9 +308,9 @@ class DevotlyCreator {
 
                 } else {
                     // Handle exiting elements if needed for transitions
-                     entry.target.classList.remove('active'); // Ensure non-intersecting are not active
-                     // entry.target.setAttribute('data-exiting', '');
-                     // setTimeout(() => entry.target.removeAttribute('data-exiting'), 600);
+                    entry.target.classList.remove('active'); // Ensure non-intersecting are not active
+                    // entry.target.setAttribute('data-exiting', '');
+                    // setTimeout(() => entry.target.removeAttribute('data-exiting'), 600);
                 }
             });
         };
@@ -319,7 +319,7 @@ class DevotlyCreator {
 
         sections.forEach(section => {
             this.sectionObserver.observe(section);
-            console.log('Observando seção:', section.id); 
+            console.log('Observando seção:', section.id);
         });
 
         setTimeout(() => {
@@ -333,12 +333,12 @@ class DevotlyCreator {
         if (!previewThemeContainer) return;
 
         previewThemeContainer.classList.remove('bg-title', 'bg-message', 'bg-verse', 'bg-gallery', 'bg-media', 'bg-final');
-        
+
         const sectionClass = sectionId.replace('Section', '');
         if (['title', 'message', 'verse', 'gallery', 'media', 'final'].includes(sectionClass)) {
             previewThemeContainer.classList.add(`bg-${sectionClass}`);
         }
-        
+
         previewThemeContainer.style.transition = 'background-color 0.8s ease'; // Ensure this transition is desired
 
         // Additional effects (optional)
@@ -385,18 +385,18 @@ class DevotlyCreator {
                 const cursorPosition = e.target.selectionStart;
                 const originalValue = e.target.value;
                 let friendlyValue = originalValue.replace(/\s+/g, '-');
-                
+
                 e.target.value = friendlyValue;
-                
+
                 const lengthDifference = friendlyValue.length - originalValue.length;
                 e.target.setSelectionRange(cursorPosition + lengthDifference, cursorPosition + lengthDifference);
-                
+
                 let urlFriendlyValue = friendlyValue
                     .toLowerCase()
-                    .replace(/[^\w\-]+/g, '')  
-                    .replace(/\-\-+/g, '-')    
-                    .replace(/^-+|-+$/g, '');   
-                
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/\-\-+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+
                 this.state.formData.cardName = urlFriendlyValue;
                 const urlPreviewElem = document.getElementById('urlPreview');
                 if (urlPreviewElem) urlPreviewElem.textContent = urlFriendlyValue || 'seunome';
@@ -405,7 +405,7 @@ class DevotlyCreator {
                 this.updatePreview();
             });
         }
-        
+
         const musicLinkInput = document.getElementById('musicLink');
         if (musicLinkInput) {
             const newMusicLinkInput = musicLinkInput.cloneNode(true);
@@ -442,7 +442,7 @@ class DevotlyCreator {
             const newImageUpload = this.elements.imageUpload.cloneNode(true);
             this.elements.imageUpload.parentNode.replaceChild(newImageUpload, this.elements.imageUpload);
             this.elements.imageUpload = newImageUpload;
-            
+
             // Adiciona um único listener
             this.elements.imageUpload.addEventListener('change', (e) => {
                 e.preventDefault();
@@ -502,7 +502,7 @@ class DevotlyCreator {
                 e.preventDefault();
             });
         }
-        
+
         // Define handleFormSubmit if it's meant to be used, or remove the removeEventListener call
         // this.handleFormSubmit = (e) => { e.preventDefault(); /* ... */ };
 
@@ -519,7 +519,7 @@ class DevotlyCreator {
                 const originalText = this.elements.copyCardLinkBtn.innerHTML;
                 this.elements.copyCardLinkBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                 setTimeout(() => {
-                    if(this.elements.copyCardLinkBtn) this.elements.copyCardLinkBtn.innerHTML = originalText;
+                    if (this.elements.copyCardLinkBtn) this.elements.copyCardLinkBtn.innerHTML = originalText;
                 }, 2000);
             });
         }
@@ -546,7 +546,7 @@ class DevotlyCreator {
                 if (bibleChapterElem) bibleChapterElem.value = chapter;
                 const bibleVerseElem = document.getElementById('bibleVerse');
                 if (bibleVerseElem) bibleVerseElem.value = verse;
-                
+
                 this.fetchBibleVerse();
             });
         });
@@ -566,7 +566,7 @@ class DevotlyCreator {
                 if (!document.fullscreenElement) {
                     if (previewSectionsContainer.requestFullscreen) {
                         previewSectionsContainer.requestFullscreen().then(() => {
-                           fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
                         }).catch(err => console.error("Error attempting to enable full-screen mode:", err));
                     }
                 } else {
@@ -578,7 +578,7 @@ class DevotlyCreator {
                 }
             });
         }
-        
+
         // Fullscreen change listener should target the new preview container
         document.addEventListener('fullscreenchange', () => {
             const previewSectionsContainer = document.querySelector('.preview-sections');
@@ -600,18 +600,18 @@ class DevotlyCreator {
             newUserPhoneInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, '');
                 if (value.length > 11) value = value.slice(0, 11);
-                
+
                 if (value.length > 2 && value.length <= 6) {
                     value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
                 } else if (value.length > 6) {
                     value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
                 }
-                
+
                 e.target.value = value;
                 this.state.formData.userPhone = value;
             });
         }
-        
+
         // Centralized input handlers
         const inputHandlers = {
             'cardName': (e) => { /* Already handled above with cloning, this is a duplicate setup */ },
@@ -637,8 +637,8 @@ class DevotlyCreator {
                 if (finalMessageCounterElem) finalMessageCounterElem.textContent = text.length;
                 const finalMessagePreviewElem = document.querySelector('#finalSection .final-message'); // More specific selector for preview
                 if (finalMessagePreviewElem) { // Check if the element exists
-                     const pElement = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem; // Handle if p is direct child or the element itself
-                     pElement.textContent = text || "Que esta mensagem toque seu coração";
+                    const pElement = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem; // Handle if p is direct child or the element itself
+                    pElement.textContent = text || "Que esta mensagem toque seu coração";
                 }
                 this.state.formData.finalMessage = text;
             }
@@ -668,13 +668,13 @@ class DevotlyCreator {
                 const targetSectionId = newIndicator.dataset.section;
                 const targetSection = document.getElementById(targetSectionId);
                 const previewSectionsContainer = document.querySelector('.preview-sections');
-                
+
                 if (targetSection && previewSectionsContainer) {
                     previewSectionsContainer.scrollTo({
                         top: targetSection.offsetTop,
-                        behavior: 'auto' 
+                        behavior: 'auto'
                     });
-                    
+
                     // Manually update active dot for immediate feedback
                     document.querySelectorAll('.section-dot').forEach(dot => dot.classList.remove('active'));
                     newIndicator.classList.add('active');
@@ -690,7 +690,7 @@ class DevotlyCreator {
 
     handleNextStep() {
         if (this.validateStep(this.state.currentStep)) {
-            if (this.state.currentStep < this.state.totalSteps -1 ) { // Prevent going beyond last step
+            if (this.state.currentStep < this.state.totalSteps - 1) { // Prevent going beyond last step
                 this.state.currentStep++;
                 this.updateStepUI();
             }
@@ -721,12 +721,12 @@ class DevotlyCreator {
         // Scroll form into view, not the whole page
         const activeStepElement = this.elements.formSteps[stepIndex];
         if (activeStepElement) {
-             activeStepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            activeStepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
             this.elements.form?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
-    
+
     // This is the class method, the global one was removed
     updateStepCounter() {
         const currentElement = document.querySelector('.step-counter .current');
@@ -741,11 +741,11 @@ class DevotlyCreator {
     updateProgress() {
         const progressPercentage = ((this.state.currentStep + 1) / this.state.totalSteps) * 100;
         const progressBarFill = document.querySelector('.progress-header .progress-fill'); // More specific selector for the new progress bar
-        
+
         if (progressBarFill) {
             progressBarFill.style.width = `${progressPercentage}%`;
         } else if (this.elements.progressBar) { // Fallback to old progress bar if new one not found
-             this.elements.progressBar.style.width = `${progressPercentage}%`;
+            this.elements.progressBar.style.width = `${progressPercentage}%`;
         }
 
 
@@ -753,7 +753,7 @@ class DevotlyCreator {
         // This part might need adjustment if the HTML structure of step indicators changed significantly
         const stepIndicators = document.querySelectorAll('.progress-header .step'); // Adjust selector if needed
         if (stepIndicators.length > 0) {
-             stepIndicators.forEach((indicator, index) => {
+            stepIndicators.forEach((indicator, index) => {
                 indicator.classList.remove('active', 'completed');
                 if (index === this.state.currentStep) {
                     indicator.classList.add('active');
@@ -897,7 +897,7 @@ class DevotlyCreator {
             setTimeout(() => errorElement.remove(), 300);
         }, 5000);
     }
-    
+
     async convertToWebP(file) { // Simplified as per original logic
         return new Promise((resolve, reject) => {
             if (window.Worker && !this.isLowEndDevice) {
@@ -917,14 +917,13 @@ class DevotlyCreator {
         });
     }
 
-
     async handleImageUpload() {
         if (!this.elements.imageUpload || !this.elements.imageUpload.files.length) return;
-        
+
         // Previne múltiplos uploads do mesmo conjunto de arquivos
         const files = Array.from(this.elements.imageUpload.files);
         this.elements.imageUpload.value = ''; // Limpa o input após pegar os arquivos
-        
+
         if (this.state.formData.images.length + files.length > 7) {
             alert('Você pode adicionar no máximo 7 imagens.'); // Consider using a custom modal/toast
             return;
@@ -940,24 +939,24 @@ class DevotlyCreator {
                     alert(`A imagem ${file.name} excede o limite de 2MB.`);
                     continue;
                 }
-                
+
                 const tempUrl = URL.createObjectURL(file); // Use object URL for immediate preview
                 const fileName = `${Date.now()}-${i}.${file.name.split('.').pop() || 'webp'}`; // Keep original extension or default to webp
-                
+
                 this.state.formData.images.push({
-                    tempUrl, 
-                    blob: file, 
-                    fileName, 
+                    tempUrl,
+                    blob: file,
+                    fileName,
                     isTemp: true // Mark as temporary, needs upload
                 });
-                
+
                 this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
                 await new Promise(resolve => setTimeout(resolve, 50)); // Small delay
             }
-            
+
             this.reindexImages(); // Re-index data attributes on remove buttons
             this.updatePreview(); // Update the main preview sections
-            
+
             // setupAutoGallery was removed, if gallery needs auto-play, it needs new logic.
             // For now, manual navigation will work if controls are present.
 
@@ -973,7 +972,7 @@ class DevotlyCreator {
     addImagePreview(url, index) {
         const container = document.getElementById('imagePreviewContainer');
         if (!container) return;
-        
+
         const previewDiv = document.createElement('div');
         previewDiv.className = 'image-preview';
         previewDiv.innerHTML = `
@@ -982,9 +981,9 @@ class DevotlyCreator {
                 <i class="fas fa-times"></i>
             </button>
         `;
-        
+
         container.appendChild(previewDiv);
-        
+
         const removeButton = previewDiv.querySelector('.remove-image');
         removeButton.addEventListener('click', () => {
             this.removeImage(parseInt(removeButton.dataset.index));
@@ -1002,7 +1001,7 @@ class DevotlyCreator {
     // New gallery in updateGalleryPreview handles its own controls.
 
     loadBibleBooks() {
-        const books = [ /* Same book list */ 
+        const books = [ /* Same book list */
             { value: 'genesis', text: 'Gênesis' }, { value: 'exodus', text: 'Êxodo' },
             { value: 'psalms', text: 'Salmos' }, { value: 'proverbs', text: 'Provérbios' },
             { value: 'isaiah', text: 'Isaías' }, { value: 'matthew', text: 'Mateus' },
@@ -1048,9 +1047,9 @@ class DevotlyCreator {
                 if (verseRefElem) verseRefElem.textContent = this.state.formData.bibleVerse.reference;
                 this.updatePreview(); // Update main preview
             } else {
-                 this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
-                 this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' }; // Clear verse
-                 this.updatePreview();
+                this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
+                this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' }; // Clear verse
+                this.updatePreview();
             }
         } catch (error) {
             console.error('Erro ao buscar versículo:', error);
@@ -1063,13 +1062,13 @@ class DevotlyCreator {
             setTimeout(() => {
                 const verses = {
                     genesis: { 1: { 1: "No princípio, criou Deus os céus e a terra.", 2: "A terra era sem forma e vazia...", 3: "Disse Deus: Haja luz..." } },
-                    exodus: { 14: { 14: "O SENHOR pelejará por vós, e vós vos calareis." }, 20: {12: "Honra teu pai e tua mãe..."}},
-                    psalms: { 23: { 1: "O SENHOR é o meu pastor; nada me faltará.", 2: "Ele me faz repousar...", 3: "Refrigera-me a alma..." }, 91: {1: "Aquele que habita...", 2: "Direi do SENHOR..."}},
-                    proverbs: { 3: { 5: "Confia no SENHOR de todo o teu coração...", 6: "Reconhece-o em todos os teus caminhos..."}},
-                    isaiah: { 41: { 10: "Não temas, porque eu sou contigo..."}},
-                    matthew: { 6: { 33: "Buscai, pois, em primeiro lugar, o seu reino..." }, 28: {20: "Ensinando-os a guardar todas as coisas..."}},
-                    john: { 3: { 16: "Porque Deus amou o mundo de tal maneira..." }, 14: {6: "Respondeu Jesus: Eu sou o caminho...", 27: "Deixo-vos a paz..."}},
-                    romans: { 8: { 28: "Sabemos que todas as coisas cooperam para o bem...", 31: "Que diremos, pois, à vista destas coisas?" }, 12: {12: "Alegrai-vos na esperança..."}}
+                    exodus: { 14: { 14: "O SENHOR pelejará por vós, e vós vos calareis." }, 20: { 12: "Honra teu pai e tua mãe..." } },
+                    psalms: { 23: { 1: "O SENHOR é o meu pastor; nada me faltará.", 2: "Ele me faz repousar...", 3: "Refrigera-me a alma..." }, 91: { 1: "Aquele que habita...", 2: "Direi do SENHOR..." } },
+                    proverbs: { 3: { 5: "Confia no SENHOR de todo o teu coração...", 6: "Reconhece-o em todos os teus caminhos..." } },
+                    isaiah: { 41: { 10: "Não temas, porque eu sou contigo..." } },
+                    matthew: { 6: { 33: "Buscai, pois, em primeiro lugar, o seu reino..." }, 28: { 20: "Ensinando-os a guardar todas as coisas..." } },
+                    john: { 3: { 16: "Porque Deus amou o mundo de tal maneira..." }, 14: { 6: "Respondeu Jesus: Eu sou o caminho...", 27: "Deixo-vos a paz..." } },
+                    romans: { 8: { 28: "Sabemos que todas as coisas cooperam para o bem...", 31: "Que diremos, pois, à vista destas coisas?" }, 12: { 12: "Alegrai-vos na esperança..." } }
                 };
                 const verseText = verses[book]?.[chapter]?.[verse];
                 resolve({ text: verseText || "Versículo não encontrado" });
@@ -1090,7 +1089,7 @@ class DevotlyCreator {
     async selectPlan(plan) {
         const loadingModal = document.getElementById('loadingModal');
         if (loadingModal) loadingModal.style.display = 'flex';
-        
+
         try {
             const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
             const planoPtBr = planMapping[plan] || plan;
@@ -1105,7 +1104,7 @@ class DevotlyCreator {
             const checkoutData = {
                 plano: planoPtBr,
                 email: document.getElementById('userEmail')?.value,
-                cardId: cardCreationResponse.data.id 
+                cardId: cardCreationResponse.data.id
             };
             console.log('Enviando dados para checkout:', checkoutData);
 
@@ -1116,7 +1115,7 @@ class DevotlyCreator {
             });
 
             if (!checkoutResponse.ok) {
-                const errorData = await checkoutResponse.json().catch(() => ({error: 'Erro desconhecido no checkout'}));
+                const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
                 throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
             }
             const mpData = await checkoutResponse.json();
@@ -1148,7 +1147,7 @@ class DevotlyCreator {
             currentImage.style.display = 'none'; // Or use opacity/transform for transitions
         }
         if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
-             indicators[this.state.currentImageIndex].classList.remove('active');
+            indicators[this.state.currentImageIndex].classList.remove('active');
         }
 
 
@@ -1159,7 +1158,7 @@ class DevotlyCreator {
             nextImage.classList.add('active');
             nextImage.style.display = 'block'; // Or use opacity/transform
         }
-         if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
+        if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
             indicators[this.state.currentImageIndex].classList.add('active');
         }
     }
@@ -1243,9 +1242,9 @@ class DevotlyCreator {
         // Update Verse Section
         const previewVerseTextElem = document.querySelector('#verseSection #previewVerseText');
         if (previewVerseTextElem) {
-            previewVerseTextElem.textContent = this.state.formData.bibleVerse.text ? 
-                                             `"${this.state.formData.bibleVerse.text}"` : 
-                                             '"Porque Deus amou o mundo de tal maneira..."';
+            previewVerseTextElem.textContent = this.state.formData.bibleVerse.text ?
+                `"${this.state.formData.bibleVerse.text}"` :
+                '"Porque Deus amou o mundo de tal maneira..."';
         }
         const previewVerseRefElem = document.querySelector('#verseSection #previewVerseRef');
         if (previewVerseRefElem) {
@@ -1269,14 +1268,14 @@ class DevotlyCreator {
                     </div>`;
             }
         }
-        
+
         // Update Final Message Section
         const finalMessagePreviewElem = document.querySelector('#finalSection .final-message'); // Target the p inside if structure is .final-message > p
         if (finalMessagePreviewElem) {
-             const pElem = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem;
-             pElem.innerHTML = this.sanitizeHTML(this.state.formData.finalMessage || "Que esta mensagem toque seu coração");
+            const pElem = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem;
+            pElem.innerHTML = this.sanitizeHTML(this.state.formData.finalMessage || "Que esta mensagem toque seu coração");
         }
-        
+
         // Update URL in Final Section (if it exists there)
         const finalSectionUrlElem = document.querySelector('#finalSection .preview-url .url-text'); // Example selector
         if (finalSectionUrlElem) {
@@ -1324,7 +1323,7 @@ class DevotlyCreator {
                 indicatorsContainer.appendChild(indicatorDot);
             }
         });
-        
+
         // Add carousel controls if more than one image and not already present
         if (this.state.formData.images.length > 1 && !galleryContainer.querySelector('.carousel-controls')) {
             const controlsHTML = `
@@ -1340,7 +1339,7 @@ class DevotlyCreator {
             if (controls) controls.remove();
         }
     }
-    
+
     goToImage(index) { // For indicator clicks
         const galleryContainer = document.querySelector('#gallerySection .gallery-container');
         if (!galleryContainer) return;
@@ -1376,20 +1375,20 @@ class DevotlyCreator {
         if (imageToRemove.isTemp && imageToRemove.tempUrl) {
             URL.revokeObjectURL(imageToRemove.tempUrl); // Clean up object URL
         }
-        
+
         this.state.formData.images.splice(indexToRemove, 1);
-        
+
         if (this.state.currentImageIndex >= this.state.formData.images.length) {
             this.state.currentImageIndex = Math.max(0, this.state.formData.images.length - 1);
         }
-        
+
         // Remove from the form's image preview list
         const imagePreviewContainerForm = document.getElementById('imagePreviewContainer');
         const formImagePreviews = imagePreviewContainerForm?.querySelectorAll('.image-preview');
         if (formImagePreviews && formImagePreviews[indexToRemove]) {
             formImagePreviews[indexToRemove].remove();
         }
-        
+
         this.reindexImages(); // Re-index data attributes on form remove buttons
         this.updatePreview(); // Update the main preview sections (which calls updateGalleryPreview)
     }
@@ -1428,7 +1427,7 @@ class DevotlyCreator {
                         body: imageFormData
                     });
                     if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json().catch(()=>({message: 'Erro desconhecido no upload'}));
+                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
                         throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
                     }
                     const uploadData = await uploadResponse.json();
@@ -1436,11 +1435,11 @@ class DevotlyCreator {
                 } else if (typeof imageObj === 'string' && imageObj.startsWith('http')) { // Already an URL
                     uploadedImageUrls.push(imageObj);
                 } else if (imageObj.url) { // If imageObj has a URL property from previous uploads
-                     uploadedImageUrls.push(imageObj.url);
+                    uploadedImageUrls.push(imageObj.url);
                 }
                 // If it's an object without blob and not a string URL, it's an issue.
             }
-            
+
             const dataToSubmit = {
                 email: email,
                 plano: this.state.formData.selectedPlan,
@@ -1450,7 +1449,7 @@ class DevotlyCreator {
                     cardMessage: this.state.formData.cardMessage,
                     finalMessage: this.state.formData.finalMessage || '',
                     bibleVerse: this.state.formData.bibleVerse,
-                    images: uploadedImageUrls, 
+                    images: uploadedImageUrls,
                     musicLink: this.state.formData.musicLink || '',
                     userName: document.getElementById('userName')?.value || '',
                     userPhone: document.getElementById('userPhone')?.value || ''
@@ -1548,16 +1547,18 @@ class PreviewModal {
         this.modalBody = this.modal.querySelector('.preview-modal-body');
         this.openButton = document.getElementById('previewButton'); // The big preview button
         this.closeButton = document.getElementById('closePreviewButton'); // Button inside the modal to close it
-        
+
         // The actual preview content that will be moved
         // This should be the '.preview-sections' container if that's the new full preview
-        this.previewContentContainer = document.querySelector('.preview-sections'); 
+        this.previewContentContainer = document.querySelector('.preview-sections');
         this.originalParent = this.previewContentContainer?.parentNode; // Store original parent
 
         if (!this.modalBody || !this.openButton || !this.closeButton || !this.previewContentContainer) {
-            console.error("One or more PreviewModal critical elements are missing:", 
-                          {modalBody: !!this.modalBody, openButton: !!this.openButton, 
-                           closeButton: !!this.closeButton, previewContent: !!this.previewContentContainer});
+            console.error("One or more PreviewModal critical elements are missing:",
+                {
+                    modalBody: !!this.modalBody, openButton: !!this.openButton,
+                    closeButton: !!this.closeButton, previewContent: !!this.previewContentContainer
+                });
             return;
         }
         this.setupEventListeners();
@@ -1577,14 +1578,14 @@ class PreviewModal {
         if (window.devotlyCreator && typeof window.devotlyCreator.updatePreview === 'function') {
             window.devotlyCreator.updatePreview(); // Ensure preview is up-to-date
         }
-        
+
         if (this.previewContentContainer && this.modalBody) {
             this.modalBody.appendChild(this.previewContentContainer); // Move preview into modal
             this.previewContentContainer.style.display = 'block'; // Ensure it's visible
             // Potentially adjust styles for modal view, e.g., height
             this.previewContentContainer.style.height = 'calc(100vh - 4rem - 60px)'; // Example: full height minus padding and close button
         }
-        
+
         document.body.style.overflow = 'hidden';
         this.modal.classList.add('active');
     }
@@ -1592,12 +1593,12 @@ class PreviewModal {
     closeModal() {
         this.modal.classList.remove('active');
         document.body.style.overflow = '';
-        
+
         // Move preview content back to its original place if it was moved
         if (this.previewContentContainer && this.originalParent && !this.originalParent.contains(this.previewContentContainer)) {
-             this.originalParent.appendChild(this.previewContentContainer);
-             this.previewContentContainer.style.height = ''; // Reset height or to original
-             // this.previewContentContainer.style.display = 'block'; // Or original display style
+            this.originalParent.appendChild(this.previewContentContainer);
+            this.previewContentContainer.style.height = ''; // Reset height or to original
+            // this.previewContentContainer.style.display = 'block'; // Or original display style
         }
         // If the preview was inside .card-preview-container and that was hidden:
         // const oldPreviewContainer = document.querySelector('.card-preview-container');
