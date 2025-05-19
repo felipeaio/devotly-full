@@ -27,6 +27,7 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "purgecss": "^7.0.2"
   }
 }

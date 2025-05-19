@@ -73,7 +73,7 @@ html {
     border-radius: var(--border-radius);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: none;
+    display: none; /* Mantido como display: none, conforme original */
     position: relative;
     margin-bottom: 2rem;
 }
@@ -105,84 +105,6 @@ html {
     100% {
         opacity: 0.3;
     }
-}
-
-.preview-theme {
-    position: relative;
-    /* Certifique-se que está relativo */
-    height: 100%;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-}
-
-.preview-card {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-primary);
-    border: 1px solid rgba(212, 175, 55, 0.15);
-    border-radius: var(--border-radius);
-    height: auto;
-    min-height: auto;
-}
-
-.preview-header {
-    padding: 1.5rem;
-    background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
-    color: white;
-    text-align: center;
-    border-bottom: 3px solid var(--color-accent-hover);
-}
-
-.preview-header h3 {
-    margin: 0;
-    font-size: clamp(1.25rem, 3vw, 1.5rem);
-    font-family: var(--font-decorative);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.preview-body {
-    flex: 0 1 auto;
-    /* Alterado de flex: 1 para flex: 0 1 auto */
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    background-color: rgba(255, 255, 255, 0.03);
-}
-
-.preview-card p {
-    line-height: 1.7;
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    color: var(--color-light);
-    text-align: center;
-}
-
-.preview-verse {
-    padding: 1.5rem;
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), transparent);
-    border-radius: var(--border-radius);
-    border-left: 5px solid var(--color-accent);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.preview-verse p {
-    font-family: 'Montserrat', sans-serif;
-    margin-bottom: 0.75rem;
-    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-    color: var(--color-light);
-    line-height: 1.6;
-    letter-spacing: 0.01em;
-}
-
-.preview-verse .verse-reference {
-    text-align: right;
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    color: var (--gold-light);
-    font-style: italic;
-    font-family: 'Montserrat', sans-serif;
 }
 
 .preview-images {
@@ -221,12 +143,12 @@ html {
     /* Centraliza a imagem */
     opacity: 0;
     transition: opacity 0.6s ease-in-out;
-    transform: scale(1.05);
+    transform: scale(1.05); /* Mantido como estava, verificar se é scale ou translate */
 }
 
 .preview-images img.active {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1); /* Mantido como estava, verificar se é scale ou translate */
 }
 
 .carousel-controls {
@@ -263,124 +185,37 @@ html {
     transform: scale(1.1);
 }
 
-.no-images {
+.no-images { /* Mantido pois existe .no-images, .no-media */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 100%; /* Ou 120px dependendo do contexto original */
     color: var(--color-text);
-    opacity: 0.6;
+    opacity: 0.6; /* Ou 0.5 */
     font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
-.no-images i {
-    font-size: clamp(2rem, 5vw, 2.5rem);
-    margin-bottom: 0.5rem;
+.no-images i { /* Mantido pois existe .no-images i, .no-media i */
+    font-size: clamp(2rem, 5vw, 2.5rem); /* Ou clamp(1.5rem, 4vw, 1.75rem) */
+    margin-bottom: 0.5rem; /* Ou 0.4rem */
 }
 
-.preview-media {
-    position: relative;
-    min-height: 120px;
-    background-color: var(--color-dark);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
-.preview-media iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-.media-controls {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    gap: 0.5rem;
-}
-
-.media-toggle {
-    background: var(--color-accent);
-    border: none;
-    color: var(--color-dark);
-    padding: 0.75rem;
-    cursor: pointer;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.media-toggle:hover {
-    background: var(--color-accent-hover);
-    transform: scale(1.1);
-}
-
-.no-media {
+.no-media { /* Mantido pois existe .no-images, .no-media */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 100%; /* Ou 120px */
     color: var(--color-text);
-    opacity: 0.6;
+    opacity: 0.6; /* Ou 0.5 */
     font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
-.no-media i {
-    font-size: clamp(2rem, 5vw, 2.5rem);
-    margin-bottom: 0.5rem;
-}
-
-.preview-footer {
-    padding: 1rem;
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), transparent);
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.preview-url {
-    font-size: clamp(0.85rem, 2vw, 0.95rem);
-    color: var(--color-accent);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: color 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.preview-url:hover {
-    color: var(--color-accent-hover);
-}
-
-.preview-url i {
-    font-size: 1rem;
-    color: var(--gold-light);
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
+.no-media i { /* Mantido pois existe .no-images i, .no-media i */
+    font-size: clamp(2rem, 5vw, 2.5rem); /* Ou clamp(1.5rem, 4vw, 1.75rem) */
+    margin-bottom: 0.5rem; /* Ou 0.4rem */
 }
 
 /* Cabeçalho */
@@ -413,205 +248,171 @@ html {
     font-size: clamp(1.5rem, 3.5vw, 1.8rem);
 }
 
-/* Progress Container - Versão Aprimorada */
-.progress-container {
+/* Progress Container - Versão Aprimorada (Mantendo a última versão encontrada) */
+.progress-header { /* Mantendo a versão mais recente e robusta do progress */
     width: 100%;
     max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
+    margin: 0 auto 2.5rem;
+    /* Aumentado de 2rem para 2.5rem */
+    padding: 0 1.5rem;
 }
 
-/* Ajustes para o container de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-    overflow: hidden;
-    /* Conter overflow */
+.progress-container { /* Mantendo a versão mais recente e robusta do progress */
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    /* Aumentado de 1rem para 1.5rem */
 }
 
-/* Barra de progresso */
-.progress-track {
-    width: 100%;
-    height: 6px;
+.progress-bar-container { /* Mantendo a versão mais recente e robusta do progress */
+    position: relative;
+    flex: 1;
+    height: 12px;
+    /* Aumentado de 8px para 12px */
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
+    border-radius: 999px;
     overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    /* Adicionado shadow para mais profundidade */
 }
 
-.progress-fill {
+.progress-fill { /* Mantendo a versão mais recente e robusta do progress */
+    position: absolute;
     height: 100%;
     background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 4px;
-    transition: width 0.4s ease;
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Container das etapas */
-.steps-wrapper {
-    position: relative;
-    overflow-x: hidden;
-    width: 100%;
-    margin: 0 auto;
-}
 
-/* Ajuste do wrapper dos passos */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Ajuste do scroller dos passos */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin: 0;
-    padding: 0 1rem;
-}
-
-.steps-scroller {
-    overflow-x: auto;
-    padding: 0 5px;
-    margin: 0 -5px;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE */
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome/Safari/Edge */
-}
-
-/* Lista de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0 10px;
-    margin: 1rem 0;
-    position: relative;
-}
-
-/* Line connector */
-.steps-list::before {
+/* Efeito de brilho aprimorado */
+.progress-fill::after { /* Associado ao .progress-fill mantido */
     content: '';
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: 1;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
 }
 
-/* Etapas individuais */
-.step-item {
-    position: relative;
-    z-index: 2;
-    padding: 0;
-    margin: 0;
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-
-/* Número da etapa */
-.step-circle {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--color-secondary);
-    color: var(--color-text);
+/* Novo estilo aprimorado para o contador de etapas */
+.step-counter { /* Mantendo a versão mais recente e robusta do progress */
     display: flex;
     align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    min-width: 5rem;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    border: 2px solid var(--color-dark);
     transition: all 0.3s ease;
 }
 
-/* Active state */
-.step-item.active .step-circle {
-    background: var(--color-accent);
-    color: var (--color-dark);
-    transform: scale(1.2);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+.step-counter .current { /* Associado ao .step-counter mantido */
+    color: var(--color-accent);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    min-width: 1.5ch;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Mobile optimizations */
-@media (max-width: 480px) {
-    .steps-list {
-        padding: 0 5px;
-    }
-
-    .step-circle {
-        width: 20px;
-        height: 20px;
-        font-size: 10px;
-    }
+.step-counter .separator { /* Associado ao .step-counter mantido */
+    color: var(--color-text);
+    opacity: 0.5;
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin: 0 0.25rem;
 }
 
-/* Extra small screens */
-@media (max-width: 360px) {
-    .step-circle {
-        width: 18px;
-        height: 18px;
-        font-size: 9px;
-    }
+.step-counter .total { /* Associado ao .step-counter mantido */
+    color: var(--color-text);
+    font-size: 1.5rem;
+    font-weight: 500;
+    opacity: 0.8;
+    min-width: 1.5ch;
+    text-align: center;
 }
 
-/* Ajustes para dispositivos móveis */
+.step-counter:hover { /* Associado ao .step-counter mantido */
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Responsividade para o contador de etapas e barra de progresso */
 @media (max-width: 768px) {
-    .steps-list {
-        justify-content: flex-start;
+    .progress-header {
+        margin: 0 auto 2rem;
+        padding: 0 1rem;
     }
 
-    .step-item {
-        min-width: 70px;
+    .progress-bar-container {
+        height: 10px;
     }
 
-    .step-bubble {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
+    .step-counter {
+        padding: 0.6rem 1rem;
+        font-size: 1.1rem; /* Ajustado do original para manter consistência com o novo .step-counter */
+        min-width: 3.5rem; /* Ajustado do original */
     }
 
-    .step-name {
-        font-size: 0.7rem;
+    .step-counter .current {
+        font-size: 1.5rem; /* Ajustado do original */
+    }
+
+    .step-counter .separator,
+    .step-counter .total {
+        font-size: 1.25rem; /* Ajustado do original */
     }
 }
 
-/* Ajustes responsivos */
+@media (max-width: 480px) {
+    .progress-header {
+        padding: 0 0.75rem;
+    }
+    .progress-container {
+        gap: 1rem;
+    }
+    .progress-bar-container {
+        height: 8px;
+    }
+    .step-counter {
+        padding: 0.5rem 0.875rem; /* Ajustado do original */
+        font-size: 1rem; /* Ajustado do original */
+        min-width: 3rem; /* Ajustado do original */
+    }
+    .step-counter .current {
+        font-size: 1.25rem; /* Ajustado do original */
+    }
+    .step-counter .separator,
+    .step-counter .total {
+        font-size: 1.1rem; /* Ajustado do original */
+    }
+}
+
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Ajustes responsivos gerais */
 @media (max-width: 768px) {
     .creation-layout {
         padding: 0 0.5rem;
     }
-
-    .progress-container {
-        padding: 0 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .steps-list {
-        justify-content: flex-start;
-        width: max-content;
-        padding: 0 0.5rem;
-    }
-
-    .step-item {
-        min-width: 45px;
-        margin: 0 0.3rem;
-    }
-
     /* Ajuste do formulário para evitar scroll horizontal */
     .creation-form {
         width: 100%;
@@ -622,24 +423,12 @@ html {
     }
 }
 
-@media (max-width: 480px) {
-    .step-item {
-        min-width: 60px;
-        padding: 0 5px;
+@media (max-width: 360px) {
+    .creation-layout {
+        padding: 0 0.25rem;
     }
-
-    .step-bubble {
-        width: 24px;
-        height: 24px;
-        font-size: 0.7rem;
-    }
-
-    .step-name {
-        font-size: 0.65rem;
-    }
-
-    .step-item::after {
-        top: 12px;
+    .creation-form {
+        padding: 1rem;
     }
 }
 
@@ -655,25 +444,6 @@ html {
     border: 1px solid rgba(212, 175, 55, 0.1);
 }
 
-@media (max-width: 360px) {
-    .creation-layout {
-        padding: 0 0.25rem;
-    }
-
-    .progress-container {
-        padding: 0 0.25rem;
-    }
-
-    .step-item {
-        min-width: 40px;
-        margin: 0 0.2rem;
-    }
-
-    .creation-form {
-        padding: 1rem;
-    }
-}
-
 .form-step {
     display: none;
     animation: fadeIn 0.5s ease-out forwards;
@@ -683,7 +453,7 @@ html {
     display: block;
 }
 
-.step-header {
+.step-header { /* Este .step-header é para os passos do formulário, não o preview */
     margin-bottom: 2rem;
     text-align: center;
     padding: 1.5rem;
@@ -694,7 +464,7 @@ html {
 .step-header h2 {
     font-size: clamp(1.5rem, 3vw, 1.8rem);
     margin-bottom: 0.8rem;
-    color: var (--gold-light);
+    color: var(--gold-light);
 }
 
 .step-header p {
@@ -886,60 +656,39 @@ html {
     content: '✓ ';
 }
 
-/* Responsividade */
+/* Responsividade dos Planos */
 @media (max-width: 768px) {
     .plan-cards {
-        gap: 1rem;
+        /* A primeira media query para plan-cards foi combinada com a segunda para evitar redundância */
+        grid-template-columns: 1fr;
+        gap: 2rem; /* Usando o gap maior da segunda regra */
     }
 
     .plan-card {
-        padding: 1.2rem;
+        padding: 2rem 1.5rem; /* Usando o padding maior da segunda regra */
     }
 
     .plan-header h3 {
-        font-size: 1.3rem;
+        font-size: 1.6rem; /* Usando o font-size maior da segunda regra */
     }
 
     .discount-price {
-        font-size: 1.5rem;
-    }
-}
-
-/* Responsividade para telas menores */
-@media (max-width: 768px) {
-    .plan-cards {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .plan-card {
-        padding: 2rem 1.5rem;
-    }
-
-    .plan-card h3 {
-        font-size: 1.6rem;
-    }
-
-    .discount-price {
-        font-size: 1.8rem;
+        font-size: 1.8rem; /* Usando o font-size maior da segunda regra */
     }
 }
 
 /* Componentes de Formulário */
 .input-group {
     margin-bottom: 0.5rem;
-    /* Reduzido de 1rem para 0.5rem */
 }
 
 .input-group+.input-group {
     margin-top: 0;
-    /* Remove o espaço entre grupos consecutivos */
 }
 
 #cardMessage,
 #cardFinalMessage {
     margin-bottom: 0.25rem;
-    /* Ajuste fino para o espaçamento dos textareas */
 }
 
 .input-group label {
@@ -958,9 +707,9 @@ html {
     border: 2px solid rgba(212, 175, 55, 0.2);
     border-radius: var(--border-radius);
     background-color: rgba(255, 255, 255, 0.05);
-    color: var (--color-light);
+    color: var(--color-light);
     font-size: 1.1rem;
-    transition: var (--transition);
+    transition: var(--transition);
 }
 
 .input-group input:focus,
@@ -982,9 +731,9 @@ html {
     border: 2px solid rgba(212, 175, 55, 0.2);
     border-radius: var(--border-radius);
     background-color: var(--color-secondary);
-    color: var (--color-light);
+    color: var(--color-light);
     font-size: 1.1rem;
-    transition: var (--transition);
+    transition: var(--transition);
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23D4AF37' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
@@ -1005,10 +754,9 @@ html {
     padding: 0.5rem;
 }
 
-/* Hover state for options */
 .input-group select option:hover {
     background-color: var(--color-accent);
-    color: var (--color-dark);
+    color: var(--color-dark);
 }
 
 .input-hint {
@@ -1016,29 +764,22 @@ html {
     align-items: center;
     gap: 0.4rem;
     margin-top: 0.25rem;
-    /* Reduzido de 0.4rem para 0.25rem */
     font-size: 0.95rem;
-    /* Aumentado de 0.85rem para 0.95rem */
     color: var(--color-text);
     opacity: 0.8;
-    /* Aumentado de 0.7 para 0.8 para melhor legibilidade */
 }
 
 .input-hint i {
     font-size: 1rem;
-    /* Aumentado de 0.9rem para 1rem */
 }
 
 .input-hint strong {
     color: var(--color-light);
-    /* Adicionar mais contraste ao texto forte */
 }
 
-/* Ajuste responsivo */
 @media (max-width: 768px) {
     .input-hint {
         font-size: 0.9rem;
-        /* Tamanho mínimo em dispositivos móveis */
     }
 }
 
@@ -1058,7 +799,6 @@ html {
     justify-content: flex-end;
     align-items: center;
     margin-top: 0.25rem;
-    /* Reduzido de 0.4rem para 0.25rem */
 }
 
 /* Seletor de Versículo */
@@ -1066,10 +806,10 @@ html {
     margin-top: 1rem;
 }
 
-.verse-preview {
+.verse-preview { /* Este é o preview do versículo dentro do formulário */
     background-color: var(--color-secondary);
     border: 1px solid rgba(212, 175, 55, 0.1);
-    border-radius: var (--border-radius);
+    border-radius: var(--border-radius);
     padding: 1.5rem;
     margin: 1rem 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -1097,7 +837,6 @@ html {
 
 .verse-text {
     font-family: 'Montserrat', sans-serif;
-    /* Alterado de 'Crimson Pro' para 'Montserrat' */
     color: var(--color-light);
     font-size: clamp(1.1rem, 2.5vw, 1.3rem);
     line-height: 1.8;
@@ -1117,21 +856,25 @@ html {
 }
 
 /* Upload de Imagens */
-.media-section {
-    margin-bottom: 1.5rem;
+.media-section { /* Este .media-section é para o formulário */
+    margin-bottom: 1.5rem; /* Ou margin: 2rem 0; */
+    padding: 1rem; /* Adicionado da segunda definição de .media-section */
+    background: rgba(255, 255, 255, 0.03); /* Adicionado da segunda definição de .media-section */
+    border-radius: var(--border-radius); /* Adicionado da segunda definição de .media-section */
 }
 
 .media-section h3 {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--color-light);
-    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    gap: 0.75rem; /* Ou 0.5rem */
+    margin-bottom: 1.5rem; /* Ou 0.75rem */
+    color: var(--gold-light); /* Ou var(--color-light) */
+    font-size: clamp(1.1rem, 3vw, 1.3rem); /* Ou clamp(1rem, 2.5vw, 1.1rem) */
 }
 
 .media-section h3 i {
     color: var(--color-accent);
+    font-size: clamp(1.2rem, 3vw, 1.4rem); /* Adicionado da segunda definição de .media-section h3 i */
 }
 
 .upload-area {
@@ -1144,7 +887,7 @@ html {
     border-radius: var(--border-radius);
     text-align: center;
     cursor: pointer;
-    transition: var (--transition);
+    transition: var(--transition);
     margin-bottom: 0.75rem;
     background-color: rgba(212, 175, 55, 0.05);
 }
@@ -1219,28 +962,11 @@ html {
     cursor: pointer;
     border: none;
     opacity: 0;
-    transition: var (--transition);
+    transition: var(--transition);
 }
 
 .image-preview:hover .remove-image {
     opacity: 1;
-}
-
-.no-images,
-.no-media {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 120px;
-    color: var(--color-text);
-    opacity: 0.5;
-}
-
-.no-images i,
-.no-media i {
-    font-size: clamp(1.5rem, 4vw, 1.75rem);
-    margin-bottom: 0.4rem;
 }
 
 /* Modais */
@@ -1309,7 +1035,7 @@ html {
     margin-top: 1.5rem;
 }
 
-#previewCardMessage {
+#previewCardMessage { /* Usado no preview do cartão, não relacionado às classes .preview-card removidas */
     text-align: center;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -1318,230 +1044,24 @@ html {
     padding: 1.25rem;
     line-height: 1.8;
     font-size: clamp(1.2rem, 2.5vw, 1.4rem);
-    /* Aumentado o tamanho da fonte */
     color: var(--color-light);
     font-family: var(--font-accent);
     font-weight: 400;
     letter-spacing: 0.02em;
 }
 
-/* Ajuste responsivo para telas menores */
 @media (max-width: 480px) {
     #previewCardMessage {
-        font-size: clamp(1.3rem, 3vw, 1.3rem);
+        font-size: clamp(1.3rem, 3vw, 1.3rem); /* Mantido o valor original, pois o outro era clamp(1rem, 3vw, 1.2rem) */
         padding: 1rem;
         line-height: 1.6;
     }
 }
 
-/* Estilos para Efeitos no Preview */
-.theme-stars .star {
-    position: absolute;
-    background-color: white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    animation: twinkle linear infinite;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.theme-stars .star.visible {
-    opacity: 1;
-}
-
-.theme-stars .star:hover {
-    transform: translate(-50%, -50%) scale(1.5);
-}
-
-.theme-stars .star.small {
-    width: 1px;
-    height: 1px;
-}
-
-.theme-stars .star.medium {
-    width: 2px;
-    height: 2px;
-}
-
-.theme-stars .star.large {
-    width: 3px;
-    height: 3px;
-    box-shadow: 0 0 5px white;
-}
-
-@keyframes twinkle {
-
-    0%,
-    100% {
-        opacity: 0.2;
-    }
-
-    50% {
-        opacity: 1;
-    }
-}
-
-.theme-clouds .cloud {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    animation: moveCloud linear infinite;
-    left: -200px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.theme-clouds .cloud.visible {
-    opacity: 1;
-}
-
-@keyframes moveCloud {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(calc(100% + 200px));
-    }
-}
-
-.theme-light .holy-light {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    animation: pulse 8s ease infinite alternate;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.theme-light .holy-light.visible {
-    opacity: 1;
-}
-
-.theme-light .light-ray {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(to top, transparent, rgba(255, 255, 255, 0.15), transparent);
-    transform-origin: top center;
-    animation: rayGlow 4s ease infinite alternate;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.theme-light .light-ray.visible {
-    opacity: 1;
-}
-
-@keyframes pulse {
-    0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 0.5;
-    }
-
-    100% {
-        transform: translate(-50%, -50%) scale(1.2);
-        opacity: 0.8;
-    }
-}
-
-@keyframes rayGlow {
-
-    0%,
-    100% {
-        opacity: 0.1;
-    }
-
-    50% {
-        opacity: 0.3;
-    }
-}
-
-/* Efeitos das estrelas */
-.star {
-    position: absolute;
-    background-color: #fff;
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.star.visible {
-    opacity: 1;
-}
-
-.star.small {
-    width: 2px;
-    height: 2px;
-}
-
-.star.medium {
-    width: 3px;
-    height: 3px;
-}
-
-.star.large {
-    width: 4px;
-    height: 4px;
-}
-
-/* Efeitos das nuvens */
-.cloud {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 50px;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.cloud.visible {
-    opacity: 1;
-}
-
-/* Efeito de luz divina */
-.holy-light {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.holy-light.visible {
-    opacity: 1;
-}
-
-.light-ray {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 100%);
-    transform-origin: left center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.light-ray.visible {
-    opacity: 1;
-}
-
-/* Responsividade */
+/* Responsividade Geral */
 @media (max-width: 1200px) {
     .creation-layout {
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: 1fr 400px; /* Mantido, pode ser para o .card-preview-container se ele for reativado */
     }
 }
 
@@ -1551,16 +1071,12 @@ html {
         gap: 1.5rem;
     }
 
-    .card-preview-container {
+    .card-preview-container { /* Estilo para o preview lateral, se reativado */
         position: relative;
         top: 0;
         height: auto;
         max-height: none;
         margin: 0 auto;
-    }
-
-    .preview-card {
-        min-height: auto;
     }
 }
 
@@ -1576,67 +1092,22 @@ html {
         flex-direction: column;
         gap: 0.75rem;
     }
-
-    .progress-container {
-        flex-direction: row;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.5rem;
-        background-color: rgba(255, 255, 255, 0.05);
-        border-radius: var(--border-radius);
-    }
-
-    .progress-bar {
-        flex: 1;
-        height: 4px;
-        margin: 0;
-    }
-
-    .step-indicators {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .step {
-        flex: none;
-        max-width: none;
-        width: clamp(24px, 6vw, 26px);
-    }
-
-    .step-number {
-        width: clamp(24px, 6vw, 26px);
-        height: clamp(24px, 6vw, 26px);
-        font-size: clamp(0.7rem, 1.8vw, 0.8rem);
-    }
-
-    .step-label {
-        display: none;
-    }
-
-    .step::before {
-        display: none;
-    }
-
-    .step:hover {
-        transform: none;
-    }
-
+    
     .input-row {
         flex-direction: column;
-        gap: 0;
+        gap: 0; /* Espaço entre inputs em coluna já tratado por input-group margin */
     }
 
     .modal-actions {
         flex-direction: column;
     }
 
-    .card-preview-container {
+    .card-preview-container { /* Estilo para o preview lateral, se reativado */
         max-width: 500px;
     }
 
-    .plan-cards {
-        grid-template-columns: 1fr;
+    .plan-cards { /* Já coberto pela regra de 768px anterior para .plan-cards */
+        /* grid-template-columns: 1fr; */ /* Removido por redundância */
     }
 }
 
@@ -1648,37 +1119,8 @@ html {
         width: calc(100% - 1rem);
     }
 
-    .progress-container {
-        padding: 0.4rem;
-    }
-
-    .step-indicators {
-        gap: 0.4rem;
-    }
-
-    .step-number {
-        width: clamp(20px, 5vw, 22px);
-        height: clamp(20px, 5vw, 22px);
-        font-size: clamp(0.65rem, 1.6vw, 0.75rem);
-    }
-
-    .theme-option {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .theme-info {
-        text-align: center;
-    }
-
-    .preview-card {
-        font-size: 0.8rem;
-        min-height: 500px;
-    }
-
     .carousel-prev,
-    .carousel-next,
-    .media-toggle {
+    .carousel-next { /* Mantido para o carrossel de .preview-images */
         width: 36px;
         height: 36px;
         font-size: 1rem;
@@ -1703,169 +1145,35 @@ html {
     box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
 }
 
-/* Seção de Mídia e Temas */
-.media-section {
-    margin: 2rem 0;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--border-radius);
-}
-
-.media-section h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    font-size: clamp(1.1rem, 3vw, 1.3rem);
-    color: var (--gold-light);
-}
-
-.media-section h3 i {
-    color: var(--color-accent);
-    font-size: clamp(1.2rem, 3vw, 1.4rem);
-}
-
-/* Seletor de Temas Responsivo */
-.theme-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.theme-option {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid transparent;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    content: '';
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--color-accent);
-    border-radius: 50%;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.theme-option.selected::before {
-    opacity: 1;
-    background-color: var(--color-accent);
-}
-
-/* Estilos para o tema "Nenhum" */
-.theme-none {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-none::after {
-    content: '×';
-    font-size: 1.5rem;
-    color: var(--color-text);
-    opacity: 0.5;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .theme-selector {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        max-width: 600px;
-    }
-
-    .theme-option {
-        height: auto;
-    }
-
-    .theme-preview {
-        height: 80px;
-    }
-}
-
-@media (max-width: 480px) {
-    .media-section {
-        padding: 0.75rem;
-        margin: 1rem 0;
-    }
-
-    .theme-selector {
-        grid-template-columns: 1fr;
-        max-width: 100%;
-    }
-
-    .theme-option {
-        flex-direction: row;
-        height: 70px;
-    }
-
-    .theme-preview {
-        width: 70px;
-        height: 70px;
-    }
-
-    .theme-info {
-        padding: 0.75rem;
-    }
-
-    .theme-option::before {
-        top: 0.25rem;
-        right: 0.25rem;
-        width: 16px;
-        height: 16px;
-    }
-}
-
-/* Melhorias de Acessibilidade */
-.theme-option:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--color-accent);
-}
-
-.theme-option:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Responsiveness */
+/* Responsividade para verse-preview (do formulário) e step-actions */
 @media (max-width: 640px) {
     .verse-preview {
         padding: 1rem;
     }
 
-    .verse-text {
-        font-size: clamp(1.1rem, 3vw, 1.3rem);
+    .verse-text { /* Dentro do .verse-preview do formulário */
+        font-size: clamp(1.1rem, 3vw, 1.3rem); /* Mantida a primeira ocorrência, a segunda era muito similar */
         line-height: 1.6;
         padding: 0.25rem;
     }
 
-    .verse-actions {
+    .verse-actions { /* Se existir, não foi fornecido no HTML original */
         justify-content: stretch;
     }
 
-    .action-btn {
+    .action-btn { /* Se existir */
         flex: 1;
         justify-content: center;
     }
 
-    .btn-text {
+    .btn-text { /* Se existir */
         display: none;
     }
 
-    .action-btn i {
+    .action-btn i { /* Se existir */
         margin: 0;
     }
 }
-
-/* Adicione ao final do seu arquivo create.css ou dentro de uma media query para dispositivos móveis */
 
 @media (max-width: 480px) {
     .step-actions {
@@ -1881,16 +1189,6 @@ html {
     }
 }
 
-/* Ajuste responsivo */
-/* Ajuste responsivo */
-@media (max-width: 480px) {
-    .verse-text {
-        font-size: clamp(1rem, 3vw, 1.2rem);
-        line-height: 1.6;
-        padding: 0.25rem;
-    }
-}
-
 /* Estilo para o botão de buscar versículo */
 #fetchVerse {
     display: block;
@@ -1898,7 +1196,6 @@ html {
     min-width: 200px;
 }
 
-/* Ajuste responsivo */
 @media (max-width: 480px) {
     #fetchVerse {
         width: 100%;
@@ -1906,20 +1203,15 @@ html {
     }
 }
 
-/* Ajuste apenas para responsividade vertical */
+/* Ajuste apenas para responsividade vertical (para o preview lateral, se reativado) */
 @media (max-height: 800px) {
     .card-preview-container {
         max-height: calc(100vh - 2rem);
         top: 1rem;
     }
-
-    .preview-body {
-        gap: 1rem;
-        padding: 1rem;
-    }
-
+    /* .preview-body e outros elementos do preview lateral removidos da lista original */
     .preview-images,
-    .preview-media {
+    .preview-media { /* .preview-media foi removido, mas .preview-images mantido */
         min-height: 150px;
     }
 }
@@ -1929,178 +1221,204 @@ html {
         max-height: calc(100vh - 1rem);
         top: 0.5rem;
     }
-
-    .preview-header {
-        padding: 1rem;
-    }
-
-    .preview-body {
-        gap: 0.75rem;
-        padding: 0.75rem;
-    }
-
+    /* .preview-header, .preview-body removidos */
     .preview-images,
-    .preview-media {
+    .preview-media { /* .preview-media foi removido, mas .preview-images mantido */
         min-height: 120px;
     }
 }
 
-/* Novo estilo para a estrutura de preview */
+/* Novo estilo para a estrutura de preview (scroll-snap) */
 .preview-sections {
-    height: 80vh;
+    height: 80vh; /* Pode precisar de ajuste dependendo da intenção */
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     background: var(--color-primary);
     scroll-behavior: auto;
-    /* Alterado de 'smooth' para 'auto' */
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    /* Garantir largura */
     transition: background-color 0.5s ease;
+    perspective: 1000px; /* Para transições 3D */
+    transform-style: preserve-3d; /* Para transições 3D */
 }
 
 .preview-section {
-    height: 100vh;
-    min-height: 100vh;
+    height: 100vh; /* Garante que cada seção ocupe a altura da viewport */
+    min-height: 100vh; /* Garante que cada seção ocupe a altura da viewport */
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    /* Adicionado para forçar paradas de rolagem */
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    /* Reduzido de 2rem para 1.5rem */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
-    /* Garantir largura */
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    /* Transições suaves entre seções */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+    backface-visibility: hidden; /* Otimizações para performance */
+    -webkit-backface-visibility: hidden; /* Otimizações para performance */
+    transform-style: preserve-3d; /* Otimizações para performance */
+}
+.preview-section.active { /* Para transições */
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* Ajustes responsivos */
-@media (max-width: 1200px),
-(max-height: 800px) {
+/* Transições específicas para cada tipo de seção */
+#titleSection { transition-delay: 0.1s; }
+#messageSection { transition-delay: 0.2s; }
+#verseSection { transition-delay: 0.3s; }
+#gallerySection { transition-delay: 0.4s; }
+#mediaSection { transition-delay: 0.5s; } /* #mediaSection refere-se ao preview-section, não ao .preview-media removido */
+#finalSection { transition-delay: 0.6s; }
 
-    .preview-sections,
-    .preview-section {
+
+/* Efeitos de entrada personalizados */
+.preview-section[data-entering] {
+    animation: sectionEnter 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes sectionEnter {
+    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Efeitos de saída personalizados */
+.preview-section[data-exiting] {
+    animation: sectionExit 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes sectionExit {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-30px) scale(0.95); }
+}
+
+
+/* Ajustes responsivos para preview-sections */
+@media (max-width: 1200px), (max-height: 800px) {
+    .preview-sections, .preview-section {
         height: 100vh;
         min-height: 100vh;
     }
 }
+/* As media queries para 768px e 480px para .preview-sections e .preview-section são idênticas à de 1200px, então foram consolidadas. */
 
-@media (max-width: 768px) {
 
-    .preview-sections,
-    .preview-section {
-        height: 100vh;
-        min-height: 100vh;
-    }
-}
-
-@media (max-width: 480px) {
-
-    .preview-sections,
-    .preview-section {
-        height: 100vh;
-        min-height: 100vh;
-    }
-}
-
-/* Manter conteúdo centralizado */
 .section-content {
     width: 100%;
     max-width: 400px;
     min-height: 150px;
-    /* Reduzido para melhor visualização */
     text-align: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--border-radius);
+    padding: 0; /* Removido padding original para dar flexibilidade às seções internas */
+    background: transparent; /* Removido background original */
+    box-shadow: none; /* Removido shadow original */
+    border: none; /* Removido border original */
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin: 0 auto;
     overflow: hidden;
-    /* Evita que o conteúdo ultrapasse o container */
+}
+.section-content > * { /* Garantir que conteúdo interno não estoure */
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-/* Ajustes responsivos */
+
 @media (max-width: 768px) {
     .section-content {
         min-height: 180px;
-        /* Reduzido de 240px para 180px */
     }
 }
-
 @media (max-width: 480px) {
     .section-content {
         min-height: 160px;
-        /* Reduzido de 200px para 160px */
         max-width: 320px;
     }
 }
-
 @media (max-width: 360px) {
     .section-content {
         min-height: 150px;
-        /* Reduzido de 340px para 150px */
         max-width: 280px;
-        padding: 0.75rem;
+        padding: 0.75rem; /* Retornando um padding mínimo para telas muito pequenas */
     }
 }
 
-/* Remove background and adjust spacing for all section content */
-.section-content {
-    background: transparent;
+/* Title section */
+#titleSection .section-content { /* Estilo específico para o conteúdo da seção de título */
+    background: none; /* Removido da lista de desejos */
     box-shadow: none;
     border: none;
     padding: 0;
+    margin: 0;
+    min-height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-
-/* Title section */
 #titleSection h1 {
     font-size: 2.5rem;
-    color: white;
+    background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     margin: 0;
+    padding: 0;
     line-height: 1.2;
     text-align: center;
+    font-weight: 600;
+    text-shadow: none;
+    width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
+/* Message section */
 #messageSection .message-container {
     font-size: 1.2rem;
     line-height: 1.8;
     color: var(--color-light);
     text-align: center;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Verse section */
 #verseSection .verse-container {
-    text-align: center;
-    border: none;
-    padding: 0;
+    text-align: left; /* Alterado de center para left */
+    border-left: 4px solid var(--color-accent); /* Adicionado border-left */
+    padding-left: 1.5rem; /* Adicionado padding-left */
+    border: none; /* Mantido de uma regra anterior */
+    padding: 0; /* Mantido de uma regra anterior, mas o padding-left acima terá precedência */
 }
-
 #verseSection #previewVerseText {
     font-size: 1.3rem;
     color: var(--color-light);
     margin-bottom: 1rem;
     font-style: italic;
 }
-
 #verseSection #previewVerseRef {
     color: var(--color-accent);
     font-size: 1rem;
-    display: block;
+    display: block; /* Mantido para garantir que o comportamento não mude */
 }
 
-/* Media section */
+/* Media section (para o preview-section, não o .preview-media removido) */
 #mediaSection .media-container {
     width: 100%;
     aspect-ratio: 16/9;
     margin: 0 auto;
+    background: rgba(0, 0, 0, 0.2); /* Adicionado da regra posterior */
+    display: flex; /* Adicionado da regra posterior */
+    align-items: center; /* Adicionado da regra posterior */
+    justify-content: center; /* Adicionado da regra posterior */
+    border-radius: var(--border-radius); /* Adicionado da regra posterior */
 }
-
 #mediaSection iframe {
     width: 100%;
     height: 100%;
@@ -2114,209 +1432,329 @@ html {
     font-size: 1.2rem;
 }
 
-.preview-url {
-    margin-top: 1rem;
-    color: var(--color-accent);
-    opacity: 0.8;
+/* Final Section Enhanced Styles */
+.final-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.03),
+            rgba(212, 175, 55, 0.05));
+    border-radius: 1.5rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
-
-.preview-share-buttons {
-    margin-top: 1.5rem;
-    gap: 1rem;
+.final-message-wrapper {
+    text-align: center;
 }
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    #titleSection h1 {
-        font-size: 2rem;
-    }
-
-    #messageSection .message-container,
-    #verseSection #previewVerseText,
-    #finalSection .final-message {
-        font-size: 1.1rem;
-    }
+.final-message { /* Classe já existente, estilos adicionados/sobrescritos */
+    margin-bottom: 2rem;
 }
-
-@media (max-width: 480px) {
-    #titleSection h1 {
-        font-size: 1.75rem;
-    }
-
-    #messageSection .message-container,
-    #verseSection #previewVerseText,
-    #finalSection .final-message {
-        font-size: 1rem;
-    }
-}
-
-#titleSection .section-content {
-    background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
-}
-
-#titleSection h1 {
-    font-size: 2.5rem;
-    color: white;
-    margin: 0;
-    line-height: 1.2;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    max-width: 100%;
-}
-
-#messageSection .message-container {
-    font-size: 1.2rem;
-    line-height: 1.8;
+.final-text {
+    font-size: 1.8rem;
     color: var(--color-light);
-    max-width: 100%;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-#verseSection .verse-container {
-    border-left: 4px solid var(--color-accent);
-    padding-left: 1.5rem;
-    text-align: left;
-}
-
-#verseSection #previewVerseText {
-    font-size: 1.3rem;
-    color: var(--color-light);
+    font-weight: 500;
+    line-height: 1.4;
     margin-bottom: 1rem;
-    font-style: italic;
+    font-family: var(--font-decorative);
 }
-
-#verseSection #previewVerseRef {
-    color: var(--color-accent);
-    font-size: 1rem;
-}
-
-#gallerySection .gallery-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 9/16;
-    /* Mantém proporção vertical consistente */
-    min-height: 180px;
-    /* Reduzido de 200px para 180px */
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    background: var(--color-dark);
+.message-decoration {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.decoration-line {
+    height: 1px;
+    width: 60px;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--color-accent),
+            transparent);
+}
+.pulse-heart {
+    color: var(--color-accent);
+    font-size: 1.2rem;
+    animation: pulse 2s infinite; /* Animação 'pulse' já definida, esta pode sobrescrever ou coexistir */
 }
 
+
+/* Share Section Styles */
+.share-section {
+    margin-top: 1rem;
+    text-align: center;
+}
+.share-label {
+    margin-bottom: 1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+.share-text {
+    color: var(--color-light);
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+
+.preview-share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem; /* Ou 15px */
+    margin-top: 1.5rem; /* Ou 20px */
+}
+.preview-share-btn {
+    width: 40px; /* Ou 45px */
+    height: 40px; /* Ou 45px */
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem; /* Ou 1.2rem */
+    cursor: pointer;
+    transition: all 0.3s ease; /* Ou cubic-bezier(0.4, 0, 0.2, 1) */
+    position: relative; /* Adicionado para tooltip */
+    overflow: hidden; /* Adicionado para tooltip */
+}
+.preview-share-btn[data-platform="whatsapp"], .preview-share-btn.whatsapp { /* Combinando seletores */
+    background-color: #25D366;
+    background: linear-gradient(135deg, #25D366, #128C7E); /* Priorizando o gradiente */
+}
+.preview-share-btn[data-platform="facebook"], .preview-share-btn.facebook {
+    background-color: #1877F2;
+    background: linear-gradient(135deg, #1877F2, #166FE5);
+}
+.preview-share-btn[data-platform="twitter"], .preview-share-btn.twitter {
+    background-color: #1DA1F2;
+    background: linear-gradient(135deg, #1DA1F2, #0C85D0);
+}
+.preview-share-btn[data-platform="email"], .preview-share-btn.email {
+    background-color: #D44638;
+    background: linear-gradient(135deg, #D44638, #B23121);
+}
+.preview-share-btn:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Ou 0 6px 16px */
+}
+.preview-share-btn:active { /* Adicionado */
+    transform: translateY(0) scale(0.95);
+}
+.share-tooltip { /* Adicionado */
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+.preview-share-btn:hover .share-tooltip { /* Adicionado */
+    opacity: 1;
+    visibility: visible;
+    bottom: -40px;
+}
+
+
+/* Responsive adjustments for final section and share buttons */
+@media (max-width: 768px) {
+    #titleSection h1 { font-size: 2rem; }
+    #messageSection .message-container,
+    #verseSection #previewVerseText,
+    #finalSection .final-message { font-size: 1.1rem; }
+
+    .final-section-content { padding: 1.5rem; }
+    .final-text { font-size: 1.5rem; }
+    .preview-share-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+}
+
+@media (max-width: 480px) {
+    #titleSection h1 { font-size: 1.75rem; }
+    #messageSection .message-container,
+    #verseSection #previewVerseText,
+    #finalSection .final-message { font-size: 1rem; }
+
+    .final-section-content { padding: 1rem; }
+    .final-text { font-size: 1.3rem; }
+    .preview-share-btn { width: 35px; height: 35px; font-size: 1rem; }
+}
+@media (max-width: 360px) {
+    #titleSection h1 { font-size: 1.5rem; }
+}
+
+
+/* Enhanced Gallery Section */
+#gallerySection .section-content {
+    padding: 0;
+    border-radius: 16px; /* Adicionado para consistência */
+    overflow: hidden; /* Adicionado para consistência */
+    background: transparent; /* Já definido, mas reforçado */
+    min-height: 200px; /* Adicionado de uma regra específica anterior */
+}
+.gallery-container { /* Esta classe é usada dentro de #gallerySection */
+    position: relative;
+    width: 100%;
+    min-height: 300px; /* Ou 150px, 200px, 250px dependendo da media query */
+    background: rgba(0, 0, 0, 0.3); /* Ou var(--color-dark) */
+    border-radius: 16px; /* Ou var(--border-radius) */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px); /* Adicionado */
+    -webkit-backdrop-filter: blur(10px); /* Adicionado */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Adicionado */
+    padding-bottom: 100%; /* Para manter proporção quadrada, da versão mais recente */
+}
+
+/* Gallery Images */
 #gallerySection .gallery-container img {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    /* Força a imagem a cobrir todo o container */
-    object-position: center;
-    /* Centraliza a imagem */
+    object-fit: cover; /* Ou contain */
     opacity: 0;
-    transition: opacity 0.5s ease;
-    display: none;
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Ou 0.3s ease */
+    transform: translateX(100%); /* Efeito de slide da versão mais recente */
+    display: none; /* Para controle do carrossel JS */
+    will-change: opacity, transform; /* Otimização */
 }
-
-#gallerySection img.active {
+#gallerySection .gallery-container img.active {
     opacity: 1;
-    display: block;
+    transform: translateX(0); /* Efeito de slide da versão mais recente */
+    display: block !important; /* Forçar visibilidade */
+    z-index: 2; /* Para sobrepor a imagem saindo */
+}
+#gallerySection .gallery-container img.leaving { /* Para efeito de slide */
+    opacity: 0.3; /* Ou 0 */
+    transform: translateX(-100%);
+    z-index: 1;
+    display: block; /* Precisa estar block durante a transição de saída */
+}
+#gallerySection .gallery-container img:first-child { /* Para garantir que a primeira imagem apareça se JS falhar ou antes de iniciar */
+    /* opacity: 1;  Esta regra foi removida pois o JS controlará a imagem ativa */
 }
 
-/* Ajustes responsivos */
-@media (max-width: 768px) {
-    #gallerySection .gallery-container {
-        min-height: 250px;
-    }
+
+/* Gallery Controls (Carousel) - Removido da lista, mas os estilos de .carousel-controls já existem acima */
+#gallerySection .carousel-controls { /* Sobrescrevendo para esconder se for carrossel automático */
+     display: none; /* Escondido para o carrossel automático */
 }
 
-@media (max-width: 480px) {
-    #gallerySection .gallery-container {
-        min-height: 200px;
-    }
-}
-
-@media (max-width: 360px) {
-    #gallerySection .gallery-container {
-        min-height: 180px;
-    }
-}
-
-#mediaSection .media-container {
-    aspect-ratio: 16/9;
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--border-radius);
-}
-
-#finalSection .final-message {
-    color: var(--color-light);
-    font-size: 1.2rem;
-}
-
-/* Ajustes responsivos */
-@media (max-width: 480px) {
-    #titleSection h1 {
-        font-size: 2rem;
-    }
-}
-
-/* Corrigir galeria de imagens */
-#gallerySection .gallery-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 150px;
-    /* Altura mínima reduzida */
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    background: var(--color-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-
-#gallerySection img {
+/* Image Counter / Indicators */
+.image-counter { /* Mantido da versão "Enhanced Gallery" */
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    /* Alterado para contain para garantir visualização completa */
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: white;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 5; /* Para ficar sobre as imagens */
 }
-
-#gallerySection img.active {
+.gallery-container:hover .image-counter { /* Mantido */
     opacity: 1;
-    display: block !important;
-    /* Forçar visibilidade */
+}
+.gallery-indicators { /* Adicionado da versão mais recente */
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    z-index: 5;
+}
+.gallery-indicator { /* Adicionado da versão mais recente */
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.gallery-indicator.active { /* Adicionado da versão mais recente */
+    background: var(--color-accent);
+    transform: scale(1.2);
 }
 
-/* Adicionar isso para garantir que as imagens apareçam */
-.preview-section#gallerySection .section-content {
-    min-height: 200px;
-    /* Altura maior específica para a galeria */
+
+/* Enhanced No Images State (Dentro da Gallery) */
+#gallerySection .no-images { /* Especificidade aumentada */
+    position: absolute; /* Para centralizar dentro do gallery-container */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+    color: var(--color-text); /* Herda de .no-images geral */
+    opacity: 0.5; /* Herda de .no-images geral */
+    width: 100%; /* Para ocupar o espaço do container */
+    height: 100%; /* Para ocupar o espaço do container */
+}
+#gallerySection .no-images i {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.2);
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+#gallerySection .no-images span {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
 }
 
-/* Garantir que todo conteúdo interno das seções seja ajustado corretamente */
 
-/* Para todas as seções */
-.section-content>* {
-    max-width: 100%;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
+@keyframes fadeIn { /* Já definido, esta é uma redefinição */
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Adjustments for Gallery */
+@media (max-width: 768px) {
+    .gallery-container { min-height: 250px; padding-bottom: 75%;} /* 4:3 ratio */
+    #gallerySection .no-images i { font-size: 2.5rem; }
+    #gallerySection .no-images span { font-size: 1rem; }
+}
+@media (max-width: 480px) {
+    .gallery-container { min-height: 200px; padding-bottom: 56.25%;} /* 16:9 ratio */
+    .image-counter { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+}
+@media (max-width: 360px) {
+    .gallery-container { min-height: 180px; }
+}
+
 
 /* Estilos refinados para as sugestões de versículos */
 .verse-suggestions {
@@ -2326,7 +1764,6 @@ html {
     border-radius: var(--border-radius);
     border: 1px solid rgba(212, 175, 55, 0.1);
 }
-
 .verse-suggestions h4 {
     color: var(--gold-light);
     margin-bottom: 1rem;
@@ -2335,21 +1772,18 @@ html {
     align-items: center;
     gap: 0.5rem;
 }
-
 .verse-suggestions h4::before {
-    content: '\f02e';
+    content: '\f02e'; /* book icon */
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 0.9rem;
     color: var(--color-accent);
 }
-
 .suggestion-list.verse-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.75rem;
 }
-
 .suggestion-item.verse-item {
     background-color: rgba(212, 175, 55, 0.05);
     color: var(--color-light);
@@ -2364,84 +1798,50 @@ html {
     align-items: center;
     gap: 0.5rem;
 }
-
 .suggestion-item.verse-item:hover {
     background-color: rgba(212, 175, 55, 0.1);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
 .suggestion-item.verse-item i {
     color: var(--gold-light);
     font-size: 0.85rem;
 }
-
-/* Adicionar animação ao clicar */
 .suggestion-item.verse-item:active {
     transform: scale(0.98);
 }
-
 @media (max-width: 768px) {
     .suggestion-list.verse-list {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
-
 @media (max-width: 480px) {
     .suggestion-list.verse-list {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-/* Estilo para os botões de remoção no preview */
-#gallerySection .image-actions {
-    display: none;
-    /* Esconder completamente */
-}
-
+/* Estilo para os botões de remoção no preview (da galeria) */
+/* As regras para #gallerySection .image-actions e .remove-image foram simplificadas,
+   pois a lógica de mostrar/esconder deve ser controlada por JS com base na imagem ativa.
+   A remoção física do botão não é feita por CSS aqui. */
 #gallerySection .remove-image {
-    display: none;
-    /* Esconder completamente */
+    display: none; /* Escondido por padrão, JS mostra o relevante */
 }
 
-/* Isso permite que apenas o botão da imagem atual seja visível */
-#gallerySection .remove-image {
-    display: none;
-}
 
-#gallerySection .remove-image[data-index="0"] {
-    display: none;
-}
-
-/* Quando os botões de navegação do carrossel são clicados, 
-   mostrar o botão de remoção correspondente à imagem atual */
-#gallerySection img.active+.image-actions .remove-image,
-#gallerySection img.active~.image-actions .remove-image[data-index="0"] {
-    display: none;
-}
-
-/* Estilo para os indicadores de seção */
+/* Estilo para os indicadores de seção (scroll-snap preview) */
 .section-indicators {
     position: absolute;
-    /* Alterado de fixed para absolute */
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 50;
+    z-index: 50; /* Acima das seções, abaixo de modais talvez */
     pointer-events: auto;
-    /* Garantir que os cliques funcionem */
 }
-
-/* Garantir que o contêiner pai tenha posição relativa */
-.preview-theme {
-    position: relative;
-    /* Importante para posicionamento absoluto dos filhos */
-}
-
-/* Melhorar aparência dos indicadores */
 .section-dot {
     width: 10px;
     height: 10px;
@@ -2452,34 +1852,25 @@ html {
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
-
 .section-dot::before {
     content: '';
     position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
     border-radius: 50%;
     transition: all 0.3s ease;
 }
-
 .section-dot:hover {
     background-color: rgba(212, 175, 55, 0.5);
     transform: scale(1.2);
 }
-
 .section-dot:hover::before {
     background-color: rgba(212, 175, 55, 0.1);
 }
-
 .section-dot.active {
     background-color: var(--color-accent);
     transform: scale(1.3);
 }
-
-/* Adicionar labels para os indicadores */
-.section-dot::after {
+.section-dot::after { /* Label para os indicadores */
     content: attr(data-label);
     position: absolute;
     right: 20px;
@@ -2495,50 +1886,19 @@ html {
     transition: all 0.3s ease;
     pointer-events: none;
 }
-
 .section-dot:hover::after {
     opacity: 1;
     transform: translateX(0);
 }
-
-/* Ajustes responsivos para os indicadores */
 @media (max-width: 768px) {
-    .section-indicators {
-        right: 10px;
-    }
-
-    .section-dot {
-        width: 8px;
-        height: 8px;
-    }
+    .section-indicators { right: 10px; }
+    .section-dot { width: 8px; height: 8px; }
 }
-
 @media (max-width: 480px) {
-    .section-indicators {
-        right: 5px;
-    }
-
-    .section-dot::after {
-        display: none;
-        /* Remover labels em telas muito pequenas */
-    }
+    .section-indicators { right: 5px; }
+    .section-dot::after { display: none; }
 }
 
-/* Adicionando efeito sutil durante rolagem */
-.preview-section.scrolling-up {
-    transform: translateY(-20px);
-    opacity: 0.8;
-}
-
-.preview-section.scrolling-down {
-    transform: translateY(20px);
-    opacity: 0.8;
-}
-
-.preview-section.active {
-    transform: translateY(0);
-    opacity: 1;
-}
 
 .preview-fullscreen-btn {
     position: absolute;
@@ -2554,207 +1914,97 @@ html {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 100;
+    z-index: 100; /* Acima dos indicadores de seção */
     transition: all 0.3s ease;
 }
-
 .preview-fullscreen-btn:hover {
     background-color: var(--color-accent);
     transform: scale(1.1);
 }
-
 .preview-sections.fullscreen-mode {
-    background-color: var(--color-dark);
-    padding: 20px;
+    background-color: var(--color-dark); /* Fundo mais escuro em tela cheia */
+    padding: 20px; /* Espaçamento interno */
 }
-
 .preview-sections.fullscreen-mode .section-content {
-    max-width: 600px;
+    max-width: 600px; /* Conteúdo pode ser um pouco maior */
     min-height: 250px;
 }
+.preview-sections.fullscreen-mode #titleSection h1 { font-size: 3.5rem; }
+.preview-sections.fullscreen-mode #messageSection .message-container { font-size: 1.5rem; }
+.preview-sections.fullscreen-mode #gallerySection .gallery-container { min-height: 300px; }
 
-.preview-sections.fullscreen-mode #titleSection h1 {
-    font-size: 3.5rem;
-}
-
-.preview-sections.fullscreen-mode #messageSection .message-container {
-    font-size: 1.5rem;
-}
-
-.preview-sections.fullscreen-mode #gallerySection .gallery-container {
-    min-height: 300px;
-}
-
-/* Estilos de fundo baseados na seção ativa */
-#previewTheme.bg-title {
-    background-color: rgba(0, 0, 0, 0.9);
-}
-
-#previewTheme.bg-message {
-    background-color: rgba(10, 10, 20, 0.9);
-}
-
-#previewTheme.bg-verse {
-    background-color: rgba(20, 20, 30, 0.9);
-}
-
-#previewTheme.bg-gallery {
-    background-color: rgba(15, 15, 25, 0.95);
-}
-
-#previewTheme.bg-media {
-    background-color: rgba(10, 10, 20, 0.9);
-}
-
-#previewTheme.bg-final {
-    background-color: rgba(20, 20, 30, 0.9);
-}
-
-.preview-share-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.preview-share-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.preview-share-btn[data-platform="whatsapp"] {
-    background-color: #25D366;
-}
-
-.preview-share-btn[data-platform="facebook"] {
-    background-color: #1877F2;
-}
-
-.preview-share-btn[data-platform="twitter"] {
-    background-color: #1DA1F2;
-}
-
-.preview-share-btn[data-platform="email"] {
-    background-color: #D44638;
-}
-
-.preview-share-btn:hover {
-    transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
 
 @keyframes highlightPulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-    }
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
 }
-
 .highlight-pulse {
     animation: highlightPulse 1.5s infinite;
     border-color: var(--color-accent) !important;
 }
-
 .required-mark {
     color: var(--color-accent);
     font-weight: bold;
 }
 
-@media (max-width: 768px) {
-    .step-number {
-        width: 26px;
-        height: 26px;
-        font-size: 12px;
-    }
-
-    .step-label {
-        font-size: 9px;
-    }
-}
-
-@media (max-width: 480px) {
-    .step-label {
-        display: none;
-    }
-}
-
 /* Estilos específicos para o campo de mensagem final */
 #cardFinalMessage {
     min-height: 80px;
-    /* Altura menor que a mensagem principal */
     border-color: rgba(212, 175, 55, 0.15);
-    /* Borda mais sutil */
+}
+#cardFinalMessage:focus {
+    border-color: var(--color-accent);
 }
 
-/* Preview Modal */
+/* Preview Modal (para o botão de preview grande) */
 .preview-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.95);
-    z-index: 1000;
-    display: none;
+    z-index: 1000; /* Mesmo z-index do .modal-overlay, verificar se há conflito */
+    display: none; /* Controlado por JS */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
-
 .preview-modal.active {
-    display: flex;
+    display: flex; /* Ou o display apropriado para o conteúdo */
     opacity: 1;
 }
-
 .preview-modal-content {
     width: 100%;
     height: 100%;
-    max-width: 500px;
+    max-width: 500px; /* Ou o tamanho desejado para o conteúdo do modal */
     margin: 0 auto;
     padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    /* Aqui dentro iria o .preview-sections ou similar */
 }
-
 .preview-modal-body {
     flex: 1;
     overflow-y: auto;
 }
 
-/* Preview Button */
+/* Preview Button (botão grande fixo) */
 .btn-preview {
     position: fixed;
     background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
     color: var(--color-dark);
-    font-size: 1.1rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
     cursor: pointer;
-    z-index: 1000;
+    z-index: 1000; /* Mesmo z-index de outros modais/overlays */
     border: none;
     transition: all 0.3s ease;
 }
 
-/* Desktop styles (screen wider than 768px) */
+/* Desktop styles for .btn-preview */
 @media (min-width: 769px) {
     .btn-preview {
         bottom: 2rem;
@@ -2762,92 +2012,69 @@ html {
         transform: translateX(-50%);
         width: auto;
         min-width: 500px;
-        /* Increased from 400px to 500px */
-        padding: 2.5rem 5rem;
-        /* Increased padding */
+        padding: 2.5rem 5rem; /* Padding original era 1.5rem 3rem, depois 2.5rem 5rem */
         border-radius: 50px;
-        font-size: 1.6rem;
-        /* Increased from 1.4rem to 1.6rem */
-        font-weight: 600;
+        font-size: 1.6rem; /* Original 1.2rem, depois 1.4rem, depois 1.6rem */
         box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
-        background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
         letter-spacing: 0.5px;
     }
-
     .btn-preview i {
-        font-size: 1.8rem;
-        /* Increased from 1.5rem to 1.8rem */
+        font-size: 1.8rem; /* Original 1.3rem, depois 1.5rem, depois 1.8rem */
     }
-
     .btn-preview:hover {
         transform: translateX(-50%) translateY(-4px);
-        /* More pronounced hover effect */
         box-shadow: 0 8px 35px rgba(212, 175, 55, 0.5);
-        background: linear-gradient(45deg, var (--gold-dark), var(--color-accent));
+        background: linear-gradient(45deg, var(--gold-dark), var(--color-accent));
     }
-
-    /* Click effect */
     .btn-preview:active {
         transform: translateX(-50%) translateY(-2px);
         box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
     }
-
-    /* Adjust content padding to accommodate larger button */
+    /* Ajuste de padding no .creation-flow para acomodar o botão */
     .creation-flow {
-        padding-bottom: calc(2.5rem + 80px);
+         padding-bottom: calc(4rem + 60px); /* (altura do botão + margem) */
+         /* A regra anterior era calc(2.5rem + 80px), esta é a mais recente */
     }
 }
 
-/* Mobile styles (screen up to 768px) */
+/* Mobile styles for .btn-preview */
 @media (max-width: 768px) {
     .btn-preview {
-        bottom: 0;
+        bottom: 0; /* Originalmente 1rem, depois 0 */
         left: 0;
         width: 100%;
-        height: 65px;
-        /* Increased height */
-        padding: 0;
+        height: 65px; /* Originalmente padding, depois height 60px, depois 65px */
+        padding: 0; /* Removido padding para usar height */
         margin: 0;
         border-radius: 0;
-        font-size: 1.3rem;
-        /* Increased from 1.1rem to 1.3rem */
+        font-size: 1.3rem; /* Original 0.9rem, depois 1.1rem, depois 1.3rem */
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-        font-weight: 600;
     }
-
     .btn-preview i {
-        font-size: 1.4rem;
-        /* Increased icon size */
+        font-size: 1.4rem; /* Original 1rem, depois 1.2rem, depois 1.4rem */
+    }
+     /* Ajuste de padding no .creation-flow para acomodar o botão */
+    .creation-flow {
+        padding-bottom: 60px; /* Altura do botão no mobile */
+    }
+    .preview-modal-content { /* Para o modal de preview em mobile */
+        padding: 1rem;
     }
 }
 
-/* Small screen adjustments */
+/* Small screen adjustments for .btn-preview */
 @media (max-width: 480px) {
     .btn-preview {
         height: 60px;
         font-size: 1.2rem;
-        /* Slightly smaller for very small screens */
     }
-
     .btn-preview i {
         font-size: 1.3rem;
     }
 }
 
-/* Adjust content padding to prevent button overlap */
-@media (min-width: 769px) {
-    .creation-flow {
-        padding-bottom: calc(4rem + 60px);
-    }
-}
 
-@media (max-width: 768px) {
-    .creation-flow {
-        padding-bottom: 60px;
-    }
-}
-
-.btn-close-preview {
+.btn-close-preview { /* Para fechar o .preview-modal */
     width: 100%;
     padding: 1rem;
     background: var(--color-secondary);
@@ -2863,2046 +2090,17 @@ html {
     cursor: pointer;
     transition: all 0.3s ease;
 }
-
 .btn-close-preview:hover {
     background: var(--color-accent);
     color: var(--color-dark);
 }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .preview-modal-content {
-        padding: 1rem;
-    }
 
-    .btn-preview {
-        bottom: 1rem;
-        padding: 0.75rem 1.5rem;
-        font-size: 0.9rem;
-    }
-}
+/* Reset da Progress Container (Redundante, o novo estilo já está acima) */
+/* .progress-container * { box-sizing: border-box; margin: 0; padding: 0; } */
 
-/* Remover espaços entre inputs */
-.input-group {
-    margin-bottom: 0.5rem;
-    /* Reduzido de 1rem para 0.5rem */
-}
-
-/* Garantir que não haja espaço entre grupos consecutivos */
-.input-group+.input-group {
-    margin-top: 0;
-}
-
-/* Ajustar espaçamento dos textareas */
-#cardMessage,
-#cardFinalMessage {
-    margin-bottom: 0.25rem;
-    /* Reduzido de 0.5rem para 0.25rem */
-}
-
-/* Reduzir espaçamento dos elementos de feedback */
-.input-footer {
-    margin-top: 0.25rem;
-}
-
-.input-hint {
-    margin-top: 0.25rem;
-}
-
-/* Ajustes específicos para dispositivos móveis */
-@media (max-width: 768px) {
-    .input-group {
-        margin-bottom: 0.5rem;
-    }
-
-    #cardMessage,
-    #cardFinalMessage {
-        margin-bottom: 0.25rem;
-    }
-
-    .input-footer,
-    .input-hint {
-        margin-top: 0.25rem;
-    }
-
-    /* Remover qualquer padding adicional que possa causar espaço */
-    .step-content {
-        margin-bottom: 1rem;
-    }
-
-    /* Garantir que não haja espaços extras */
-    textarea {
-        margin: 0;
-    }
-}
-
-/* Reset da Progress Container */
-.progress-container * {
+/* Forçar conteúdo a ficar dentro dos limites */
+* {
+    max-width: 100vw; /* Cuidado com esta regra global, pode ter efeitos colaterais */
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-/* Novo estilo para o Progress Container */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 10px;
-}
-
-/* Wrapper para garantir posicionamento correto */
-.progress-bar-wrapper {
-    position: relative;
-    width: 100%;
-    margin-bottom: 30px;
-}
-
-/* Estilo da barra de progresso */
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-/* Indicador de progresso */
-.progress {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 10px;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-/* Efeito de brilho na barra de progresso */
-.progress::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.4) 50%,
-            rgba(255, 255, 255, 0) 100%);
-    animation: shimmer 1.5s infinite;
-    transform: translateX(-100%);
-}
-
-@keyframes shimmer {
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-/* Container dos indicadores de etapa */
-.step-indicators {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    margin-top: -35px;
-    overflow: auto;
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    scrollbar-width: none;
-    /* Firefox */
-}
-
-/* Esconder scrollbar em navegadores WebKit */
-.step-indicators::-webkit-scrollbar {
-    display: none;
-}
-
-/* Linha conectora */
-.step-indicators::before {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: transparent;
-    z-index: 1;
-}
-
-/* Estilo dos steps */
-.step {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 60px;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0 5px;
-}
-
-/* Número do step */
-.step-number {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-dark);
-}
-
-/* Label do step */
-.step-label {
-    font-size: 12px;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-    opacity: 0.8;
-    max-width: 100px;
-}
-
-/* Estado ativo */
-.step.active .step-number {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
-    border-color: var(--color-accent);
-}
-
-.step.active .step-label {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estado concluído */
-.step.completed .step-number {
-    background-color: var(--color-success);
-    color: white;
-    border-color: var(--color-success);
-}
-
-.step.completed .step-label {
-    color: var(--color-success);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-/* Telas muito pequenas */
-@media (max-width: 400px) {
-    .step {
-        min-width: 34px;
-    }
-
-    .step-number {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-
-    .step-label {
-        font-size: 8px;
-        max-width: 45px;
-    }
-}
-
-/* Navegação horizontal touch-friendly para mobile */
-@media (hover: none) and (pointer: coarse) {
-    .step-indicators {
-        padding: 10px 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        gap: 5px;
-    }
-
-    .step {
-        padding: 0 2px;
-        scroll-snap-align: start;
-    }
-
-    /* Adicionar indicadores de scroll */
-    .progress-container::after {
-        content: '';
-        position: absolute;
-        right: 10px;
-        bottom: 50%;
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(90deg, transparent, var(--color-secondary));
-        opacity: 0.6;
-        pointer-events: none;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 0.3;
-        }
-
-        100% {
-            opacity: 0.6;
-        }
-    }
-}
-
-/* Acessibilidade */
-.step:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Layout alternativo para telas muito estreitas */
-@media (max-width: 320px) {
-    .step-label {
-        display: none;
-        /* Ocultar labels em telas extremamente pequenas */
-    }
-
-    .step-number {
-        margin-bottom: 0;
-    }
-
-    .step-indicators {
-        margin-top: -22px;
-    }
-}
-
-/* Novo indicador de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-}
-
-/* Trilha de progresso simples e minimalista */
-.progress-track {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 3px;
-    transition: width 0.4s ease-out;
-}
-
-/* Wrapper que permite centralização e scrolling horizontal */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Container scrollável com fade nas bordas */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    padding: 0.5rem 0;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
-}
-
-/* Lista horizontal de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    min-width: 100%;
-    padding: 0 0.5rem;
-    margin: 1rem 0;
-}
-
-/* Cada item de etapa */
-.step-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    min-width: 60px;
-    /* Garantir mínimo de largura */
-    cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-/* Criar linha conectora entre os passos */
-.steps-list::before {
-    content: '';
-    position: absolute;
-    top: 18px;
-    /* Alinhar ao centro dos círculos */
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-/* Bolha do número da etapa */
-.step-bubble {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-secondary);
-    transition: all 0.3s ease;
-}
-
-/* Nome da etapa */
-.step-name {
-    font-size: 0.8rem;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-
-/* Estilos para etapa ativa */
-.step-item.active .step-bubble {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
-}
-
-.step-item.active .step-name {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estilos para etapas completas */
-.step-item.completed .step-bubble {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: white;
-}
-
-.step-item.completed .step-name {
-    color: var(--color-success);
-    opacity: 0.9;
-}
-
-/* Hover e focus para acessibilidade */
-.step-item:hover .step-bubble {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-}
-
-.step-item:focus {
-    outline: none;
-}
-
-.step-item:focus .step-bubble {
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-/* Telas muito pequenas */
-@media (max-width: 400px) {
-    .step {
-        min-width: 34px;
-    }
-
-    .step-number {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-
-    .step-label {
-        font-size: 8px;
-        max-width: 45px;
-    }
-}
-
-/* Navegação horizontal touch-friendly para mobile */
-@media (hover: none) and (pointer: coarse) {
-    .step-indicators {
-        padding: 10px 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        gap: 5px;
-    }
-
-    .step {
-        padding: 0 2px;
-        scroll-snap-align: start;
-    }
-
-    /* Adicionar indicadores de scroll */
-    .progress-container::after {
-        content: '';
-        position: absolute;
-        right: 10px;
-        bottom: 50%;
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(90deg, transparent, var(--color-secondary));
-        opacity: 0.6;
-        pointer-events: none;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 0.3;
-        }
-
-        100% {
-            opacity: 0.6;
-        }
-    }
-}
-
-/* Acessibilidade */
-.step:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Layout alternativo para telas muito estreitas */
-@media (max-width: 320px) {
-    .step-label {
-        display: none;
-        /* Ocultar labels em telas extremamente pequenas */
-    }
-
-    .step-number {
-        margin-bottom: 0;
-    }
-
-    .step-indicators {
-        margin-top: -22px;
-    }
-}
-
-/* Novo indicador de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-}
-
-/* Trilha de progresso simples e minimalista */
-.progress-track {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 3px;
-    transition: width 0.4s ease-out;
-}
-
-/* Wrapper que permite centralização e scrolling horizontal */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Container scrollável com fade nas bordas */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    padding: 0.5rem 0;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
-}
-
-/* Lista horizontal de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    min-width: 100%;
-    padding: 0 0.5rem;
-    margin: 1rem 0;
-}
-
-/* Cada item de etapa */
-.step-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    min-width: 60px;
-    /* Garantir mínimo de largura */
-    cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-/* Criar linha conectora entre os passos */
-.steps-list::before {
-    content: '';
-    position: absolute;
-    top: 18px;
-    /* Alinhar ao centro dos círculos */
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-/* Bolha do número da etapa */
-.step-bubble {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-secondary);
-    transition: all 0.3s ease;
-}
-
-/* Nome da etapa */
-.step-name {
-    font-size: 0.8rem;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-
-/* Estilos para etapa ativa */
-.step-item.active .step-bubble {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
-}
-
-.step-item.active .step-name {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estilos para etapas completas */
-.step-item.completed .step-bubble {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: white;
-}
-
-.step-item.completed .step-name {
-    color: var(--color-success);
-    opacity: 0.9;
-}
-
-/* Hover e focus para acessibilidade */
-.step-item:hover .step-bubble {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-}
-
-.step-item:focus {
-    outline: none;
-}
-
-.step-item:focus .step-bubble {
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-/* Telas muito pequenas */
-@media (max-width: 400px) {
-    .step {
-        min-width: 34px;
-    }
-
-    .step-number {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-
-    .step-label {
-        font-size: 8px;
-        max-width: 45px;
-    }
-}
-
-/* Navegação horizontal touch-friendly para mobile */
-@media (hover: none) and (pointer: coarse) {
-    .step-indicators {
-        padding: 10px 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        gap: 5px;
-    }
-
-    .step {
-        padding: 0 2px;
-        scroll-snap-align: start;
-    }
-
-    /* Adicionar indicadores de scroll */
-    .progress-container::after {
-        content: '';
-        position: absolute;
-        right: 10px;
-        bottom: 50%;
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(90deg, transparent, var(--color-secondary));
-        opacity: 0.6;
-        pointer-events: none;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 0.3;
-        }
-
-        100% {
-            opacity: 0.6;
-        }
-    }
-}
-
-/* Acessibilidade */
-.step:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Layout alternativo para telas muito estreitas */
-@media (max-width: 320px) {
-    .step-label {
-        display: none;
-        /* Ocultar labels em telas extremamente pequenas */
-    }
-
-    .step-number {
-        margin-bottom: 0;
-    }
-
-    .step-indicators {
-        margin-top: -22px;
-    }
-}
-
-/* Novo indicador de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-}
-
-/* Trilha de progresso simples e minimalista */
-.progress-track {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 3px;
-    transition: width 0.4s ease-out;
-}
-
-/* Wrapper que permite centralização e scrolling horizontal */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Container scrollável com fade nas bordas */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    padding: 0.5rem 0;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
-}
-
-/* Lista horizontal de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    min-width: 100%;
-    padding: 0 0.5rem;
-    margin: 1rem 0;
-}
-
-/* Cada item de etapa */
-.step-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    min-width: 60px;
-    /* Garantir mínimo de largura */
-    cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-/* Criar linha conectora entre os passos */
-.steps-list::before {
-    content: '';
-    position: absolute;
-    top: 18px;
-    /* Alinhar ao centro dos círculos */
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-/* Bolha do número da etapa */
-.step-bubble {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-secondary);
-    transition: all 0.3s ease;
-}
-
-/* Nome da etapa */
-.step-name {
-    font-size: 0.8rem;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-
-/* Estilos para etapa ativa */
-.step-item.active .step-bubble {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
-}
-
-.step-item.active .step-name {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estilos para etapas completas */
-.step-item.completed .step-bubble {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: white;
-}
-
-.step-item.completed .step-name {
-    color: var(--color-success);
-    opacity: 0.9;
-}
-
-/* Hover e focus para acessibilidade */
-.step-item:hover .step-bubble {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-}
-
-.step-item:focus {
-    outline: none;
-}
-
-.step-item:focus .step-bubble {
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-/* Telas muito pequenas */
-@media (max-width: 400px) {
-    .step {
-        min-width: 34px;
-    }
-
-    .step-number {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-
-    .step-label {
-        font-size: 8px;
-        max-width: 45px;
-    }
-}
-
-/* Navegação horizontal touch-friendly para mobile */
-@media (hover: none) and (pointer: coarse) {
-    .step-indicators {
-        padding: 10px 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        gap: 5px;
-    }
-
-    .step {
-        padding: 0 2px;
-        scroll-snap-align: start;
-    }
-
-    /* Adicionar indicadores de scroll */
-    .progress-container::after {
-        content: '';
-        position: absolute;
-        right: 10px;
-        bottom: 50%;
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(90deg, transparent, var(--color-secondary));
-        opacity: 0.6;
-        pointer-events: none;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 0.3;
-        }
-
-        100% {
-            opacity: 0.6;
-        }
-    }
-}
-
-/* Acessibilidade */
-.step:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Layout alternativo para telas muito estreitas */
-@media (max-width: 320px) {
-    .step-label {
-        display: none;
-        /* Ocultar labels em telas extremamente pequenas */
-    }
-
-    .step-number {
-        margin-bottom: 0;
-    }
-
-    .step-indicators {
-        margin-top: -22px;
-    }
-}
-
-/* Novo indicador de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-}
-
-/* Trilha de progresso simples e minimalista */
-.progress-track {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 3px;
-    transition: width 0.4s ease-out;
-}
-
-/* Wrapper que permite centralização e scrolling horizontal */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Container scrollável com fade nas bordas */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    padding: 0.5rem 0;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
-}
-
-/* Lista horizontal de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    min-width: 100%;
-    padding: 0 0.5rem;
-    margin: 1rem 0;
-}
-
-/* Cada item de etapa */
-.step-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    min-width: 60px;
-    /* Garantir mínimo de largura */
-    cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-/* Criar linha conectora entre os passos */
-.steps-list::before {
-    content: '';
-    position: absolute;
-    top: 18px;
-    /* Alinhar ao centro dos círculos */
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-/* Bolha do número da etapa */
-.step-bubble {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-secondary);
-    transition: all 0.3s ease;
-}
-
-/* Nome da etapa */
-.step-name {
-    font-size: 0.8rem;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-
-/* Estilos para etapa ativa */
-.step-item.active .step-bubble {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
-}
-
-.step-item.active .step-name {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estilos para etapas completas */
-.step-item.completed .step-bubble {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: white;
-}
-
-.step-item.completed .step-name {
-    color: var(--color-success);
-    opacity: 0.9;
-}
-
-/* Hover e focus para acessibilidade */
-.step-item:hover .step-bubble {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-}
-
-.step-item:focus {
-    outline: none;
-}
-
-.step-item:focus .step-bubble {
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-/* Telas muito pequenas */
-@media (max-width: 400px) {
-    .step {
-        min-width: 34px;
-    }
-
-    .step-number {
-        width: 24px;
-        height: 24px;
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-
-    .step-label {
-        font-size: 8px;
-        max-width: 45px;
-    }
-}
-
-/* Navegação horizontal touch-friendly para mobile */
-@media (hover: none) and (pointer: coarse) {
-    .step-indicators {
-        padding: 10px 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        gap: 5px;
-    }
-
-    .step {
-        padding: 0 2px;
-        scroll-snap-align: start;
-    }
-
-    /* Adicionar indicadores de scroll */
-    .progress-container::after {
-        content: '';
-        position: absolute;
-        right: 10px;
-        bottom: 50%;
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(90deg, transparent, var(--color-secondary));
-        opacity: 0.6;
-        pointer-events: none;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        0% {
-            opacity: 0.3;
-        }
-
-        100% {
-            opacity: 0.6;
-        }
-    }
-}
-
-/* Acessibilidade */
-.step:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
-
-/* Layout alternativo para telas muito estreitas */
-@media (max-width: 320px) {
-    .step-label {
-        display: none;
-        /* Ocultar labels em telas extremamente pequenas */
-    }
-
-    .step-number {
-        margin-bottom: 0;
-    }
-
-    .step-indicators {
-        margin-top: -22px;
-    }
-}
-
-/* Novo indicador de progresso */
-.progress-container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    padding: 0 1rem;
-}
-
-/* Trilha de progresso simples e minimalista */
-.progress-track {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--gold-light));
-    border-radius: 3px;
-    transition: width 0.4s ease-out;
-}
-
-/* Wrapper que permite centralização e scrolling horizontal */
-.steps-wrapper {
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Container scrollável com fade nas bordas */
-.steps-scroller {
-    width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE e Edge */
-    padding: 0.5rem 0;
-    margin: 0 -1rem;
-    padding: 0 1rem;
-}
-
-.steps-scroller::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
-}
-
-/* Lista horizontal de etapas */
-.steps-list {
-    display: flex;
-    justify-content: space-between;
-    min-width: 100%;
-    padding: 0 0.5rem;
-    margin: 1rem 0;
-}
-
-/* Cada item de etapa */
-.step-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    min-width: 60px;
-    /* Garantir mínimo de largura */
-    cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-/* Criar linha conectora entre os passos */
-.steps-list::before {
-    content: '';
-    position: absolute;
-    top: 18px;
-    /* Alinhar ao centro dos círculos */
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-    z-index: 1;
-}
-
-/* Bolha do número da etapa */
-.step-bubble {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--color-secondary);
-    transition: all 0.3s ease;
-}
-
-/* Nome da etapa */
-.step-name {
-    font-size: 0.8rem;
-    color: var(--color-text);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-
-/* Estilos para etapa ativa */
-.step-item.active .step-bubble {
-    background-color: var(--color-accent);
-    color: var(--color-dark);
-    transform: scale(1.1);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
-}
-
-.step-item.active .step-name {
-    color: var(--color-accent);
-    font-weight: 600;
-    opacity: 1;
-}
-
-/* Estilos para etapas completas */
-.step-item.completed .step-bubble {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: white;
-}
-
-.step-item.completed .step-name {
-    color: var(--color-success);
-    opacity: 0.9;
-}
-
-/* Hover e focus para acessibilidade */
-.step-item:hover .step-bubble {
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-}
-
-.step-item:focus {
-    outline: none;
-}
-
-.step-item:focus .step-bubble {
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3);
-}
-
-/* Responsividade */
-@media (max-width: 992px) {
-    .progress-container {
-        padding: 0 15px;
-    }
-
-    .step-number {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
-    }
-
-    .step-label {
-        font-size: 11px;
-        max-width: 80px;
-    }
-}
-
-@media (max-width: 768px) {
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-bar-wrapper {
-        margin-bottom: 25px;
-    }
-
-    .step-indicators {
-        margin-top: -30px;
-        padding-bottom: 5px;
-    }
-
-    .step {
-        min-width: 50px;
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .step-label {
-        font-size: 10px;
-        max-width: 70px;
-    }
-}
-
-@media (max-width: 576px) {
-    .progress-bar {
-        height: 6px;
-    }
-
-    .step-indicators {
-        padding: 0 10px;
-        margin-top: -28px;
-    }
-
-    .step {
-        min-width: 40px;
-    }
-
-    .step-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-    }
-
-    .step-label {
-        font-size: 9px;
-        max-width: 60px;
-    }
-}
-
-@media (max-width: 480px) {
-    .progress-container {
-        padding: 0.5rem;
-    }
-
-    .step-indicators {
-        gap: 0.4rem;
-    }
-
-    .step-number {
-        width: clamp(20px, 5vw, 22px);
-        height: clamp(20px, 5vw, 22px);
-        font-size: clamp(0.65rem, 1.6vw, 0.75rem);
-    }
-
-    .theme-option {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .theme-info {
-        text-align: center;
-    }
-
-    .preview-card {
-        font-size: 0.8rem;
-        min-height: 500px;
-    }
-
-    .carousel-prev,
-    .carousel-next,
-    .media-toggle {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-}
-
-/* Estilos simplificados para final section */
-.final-section-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1.5rem;
-    min-height: 250px;
-    position: relative;
-}
-
-/* Wrapper da mensagem final */
-.final-message-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem 0;
-}
-
-.final-message {
-    text-align: center;
-    max-width: 90%;
-}
-
-/* Decoração simples */
-.message-decoration {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.decoration-line {
-    height: 1px;
-    width: 50px;
-    background: linear-gradient(90deg, 
-                transparent, 
-                var(--color-accent) 50%, 
-                transparent);
-}
-
-.pulse-heart {
-    color: var(--color-accent);
-    font-size: 1.1rem;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-/* Texto da mensagem final */
-.final-text {
-    font-size: 1.4rem;
-    color: var(--color-light);
-    line-height: 1.3;
-    margin: 0;
-}
-
-/* Seção de compartilhamento */
-.share-section {
-    text-align: center;
-    margin-top: 1rem;
-}
-
-.share-label {
-    margin-bottom: 0.75rem;
-}
-
-.share-text {
-    color: var(--color-light);
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-/* Botões de compartilhamento */
-.preview-share-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.preview-share-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.preview-share-btn:hover {
-    transform: translateY(-3px);
-}
-
-/* Cores dos botões */
-.preview-share-btn.whatsapp {
-    background-color: #25D366;
-}
-
-.preview-share-btn.facebook {
-    background-color: #1877F2;
-}
-
-.preview-share-btn.twitter {
-    background-color: #1DA1F2;
-}
-
-.preview-share-btn.email {
-    background-color: #D44638;
-}
-
-/* Responsividade básica */
-@media (max-width: 480px) {
-    .final-section-content {
-        padding: 1rem;
-        min-height: 200px;
-    }
-    
-    .final-text {
-        font-size: 1.2rem;
-    }
-    
-    .preview-share-btn {
-        width: 32px;
-        height: 32px;
-    }
 }

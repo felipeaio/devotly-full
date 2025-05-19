@@ -248,8 +248,12 @@
                         <div class="step-content">
                             <div class="media-section">
                                 <h3><i class="fas fa-images"></i> Imagens</h3>
-                                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp" multiple
-                                    style="display: none;">
+                                <input type="file" 
+                                       id="imageUpload" 
+                                       accept="image/jpeg,image/png,image/webp" 
+                                       multiple 
+                                       style="display: none;"
+                                       data-handled="false">
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <span>Arraste imagens aqui ou clique para selecionar</span>
@@ -280,15 +284,11 @@
                                 <h3><i class="fas fa-music"></i> Música ou vídeo <span class="required-mark">*</span>
                                 </h3>
                                 <div class="input-group">
-                                    <label for="musicLink">Link do YouTube ou Spotify <span class="required-mark">*</span></label>
-                                    <input 
-                                        type="url" 
-                                        id="musicLink" 
-                                        name="musicLink" 
-                                        required
-                                        value="" 
+                                    <label for="musicLink">Link do YouTube ou Spotify <span
+                                            class="required-mark">*</span></label>
+                                    <input type="url" id="musicLink" name="musicLink" value=""
                                         placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/..."
-                                    >
+                                        required>
                                     <div class="input-hint">
                                         <i class="fas fa-info-circle"></i>
                                         <span>Adicione um link direto para uma música ou vídeo inspirador</span>
@@ -492,7 +492,6 @@
                             <!-- Seção 6: Mensagem Final -->
                             <section class="preview-section" id="finalSection">
                                 <div class="section-content final-section-content">
-                                    <!-- Mensagem final simplificada -->
                                     <div class="final-message-wrapper">
                                         <div class="final-message">
                                             <p class="final-text">Que esta mensagem toque seu coração</p>
@@ -503,28 +502,32 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Seção de compartilhamento simplificada -->
+                                
                                     <div class="share-section">
                                         <div class="share-label">
                                             <span class="share-text">Compartilhe</span>
+                                            <span class="share-decoration"></span>
                                         </div>
                                         
                                         <div class="preview-share-buttons">
                                             <button class="preview-share-btn whatsapp" data-platform="whatsapp" aria-label="Compartilhar no WhatsApp">
                                                 <i class="fab fa-whatsapp"></i>
+                                                <span class="share-tooltip">WhatsApp</span>
                                             </button>
                                             
                                             <button class="preview-share-btn facebook" data-platform="facebook" aria-label="Compartilhar no Facebook">
                                                 <i class="fab fa-facebook-f"></i>
+                                                <span class="share-tooltip">Facebook</span>
                                             </button>
                                             
                                             <button class="preview-share-btn twitter" data-platform="twitter" aria-label="Compartilhar no Twitter">
                                                 <i class="fab fa-twitter"></i>
+                                                <span class="share-tooltip">Twitter</span>
                                             </button>
                                             
                                             <button class="preview-share-btn email" data-platform="email" aria-label="Compartilhar por Email">
                                                 <i class="fas fa-envelope"></i>
+                                                <span class="share-tooltip">Email</span>
                                             </button>
                                         </div>
                                     </div>
