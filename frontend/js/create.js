@@ -259,6 +259,17 @@ class DevotlyCreator {
             if (this.elements.finalMessageCounter) this.elements.finalMessageCounter.textContent = this.state.formData.finalMessage.length;
             this.updateFinalMessagePreview(); // Ensure this method exists or is defined
         }
+
+        const cardNameInput = document.getElementById('cardName');
+        const charCounter = document.createElement('div');
+        charCounter.className = 'input-footer';
+
+        cardNameInput.parentNode.appendChild(charCounter);
+
+        cardNameInput.addEventListener('input', function() {
+            const remaining = 20 - this.value.length;
+            charCounter.textContent = `${this.value.length}/20 caracteres`;
+        });
     }
 
     updateFinalMessagePreview() {
@@ -271,63 +282,93 @@ class DevotlyCreator {
 
 
     setupSectionObserver() {
-        const previewSectionsContainer = document.querySelector('.preview-sections');
-        const sections = document.querySelectorAll('.preview-section');
+    const previewSections = document.querySelector('.preview-sections');
+    const sections = Array.from(document.querySelectorAll('.preview-section'));
+    const dots = Array.from(document.querySelectorAll('.section-dot'));
+    
+    if (!previewSections || !sections.length || !dots.length) return;
 
-        if (!previewSectionsContainer || !sections.length) return;
+    // Função para atualizar dots ativos
+    const updateActiveDot = (index) => {
+        dots.forEach(dot => dot.classList.remove('active'));
+        dots[index]?.classList.add('active');
+    };
 
-        // Disconnect previous observer if it exists to prevent multiple observers
-        if (this.sectionObserver) {
-            this.sectionObserver.disconnect();
-        }
-
-        const observerOptions = {
-            root: previewSectionsContainer,
-            threshold: 0.3,
-            rootMargin: '0px'
-        };
-
-        const observerCallback = (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    console.log('Seção visível:', entry.target.id);
-
-                    document.querySelectorAll('.section-dot').forEach(dot => {
-                        dot.classList.toggle('active', dot.dataset.section === entry.target.id);
-                    });
-
-                    // Apply visual effect for the active section background
-                    this.applyBackgroundEffect(entry.target.id);
-
-                    // Update active class on preview sections for CSS transitions
-                    sections.forEach(sec => sec.classList.remove('active', 'data-entering', 'data-exiting'));
-                    entry.target.classList.add('active');
-                    entry.target.setAttribute('data-entering', '');
-                    setTimeout(() => entry.target.removeAttribute('data-entering'), 800);
-
-
-                } else {
-                    // Handle exiting elements if needed for transitions
-                    entry.target.classList.remove('active'); // Ensure non-intersecting are not active
-                    // entry.target.setAttribute('data-exiting', '');
-                    // setTimeout(() => entry.target.removeAttribute('data-exiting'), 600);
-                }
-            });
-        };
-
-        this.sectionObserver = new IntersectionObserver(observerCallback, observerOptions);
-
-        sections.forEach(section => {
-            this.sectionObserver.observe(section);
-            console.log('Observando seção:', section.id);
+    // Função para scrollar para uma seção específica
+    const scrollToSection = (index) => {
+        const section = sections[index];
+        if (!section) return;
+        
+        section.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
         });
+        
+        updateActiveDot(index);
+        this.applyBackgroundEffect(section.id);
+    };
+
+    // Setup click listeners nos dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => scrollToSection(index));
+    });
+
+    // Intersection Observer para atualizar dots durante scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const index = sections.indexOf(entry.target);
+                updateActiveDot(index);
+                this.applyBackgroundEffect(entry.target.id);
+            }
+        });
+    }, {
+        threshold: 0.5
+    });
+
+    sections.forEach(section => observer.observe(section));
+
+    // Wheel event para scroll controlado
+    let isScrolling = false;
+    let currentIndex = 0;
+
+    previewSections.addEventListener('wheel', (e) => {
+        e.preventDefault();
+
+        if (isScrolling) return;
+        isScrolling = true;
+
+        const direction = e.deltaY > 0 ? 1 : -1;
+        currentIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
+        
+        scrollToSection(currentIndex);
 
         setTimeout(() => {
-            previewSectionsContainer.scrollBy(0, 1);
-            previewSectionsContainer.scrollBy(0, -1);
-        }, 100);
-    }
+            isScrolling = false;
+        }, 1000); // Debounce do scroll
+    }, { passive: false });
 
+    // Touch events para mobile
+    let touchStart = 0;
+    let touchEnd = 0;
+
+    previewSections.addEventListener('touchstart', (e) => {
+        touchStart = e.touches[0].clientY;
+    }, { passive: true });
+
+    previewSections.addEventListener('touchend', (e) => {
+        touchEnd = e.changedTouches[0].clientY;
+        
+        if (Math.abs(touchStart - touchEnd) > 50) { // Threshold mínimo
+            const direction = touchStart > touchEnd ? 1 : -1;
+            currentIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
+            scrollToSection(currentIndex);
+        }
+    }, { passive: true });
+
+    // Scroll inicial para a primeira seção
+    scrollToSection(0);
+}
     applyBackgroundEffect(sectionId) {
         const previewThemeContainer = document.getElementById('previewTheme'); // or this.elements.previewTheme
         if (!previewThemeContainer) return;
@@ -416,38 +457,112 @@ class DevotlyCreator {
             });
         }
 
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-            // No need to clone for these as they don't call instance methods directly that might change
-            uploadArea.addEventListener('click', () => this.elements.imageUpload?.click());
-            uploadArea.addEventListener('dragover', (e) => {
+        // Substituir o código de upload de imagens por este:
+        const uploadArea = document.querySelector('.upload-area');
+        const imageUpload = document.getElementById('imageUpload');
+
+        if (uploadArea && imageUpload) {
+            // Remover listeners existentes
+            const newUploadArea = uploadArea.cloneNode(true);
+            const newImageUpload = imageUpload.cloneNode(true);
+            
+            uploadArea.parentNode.replaceChild(newUploadArea, uploadArea);
+            imageUpload.parentNode.replaceChild(newImageUpload, imageUpload);
+
+            // Adicionar novo listener para click
+            newUploadArea.addEventListener('click', (e) => {
                 e.preventDefault();
-                uploadArea.classList.add('dragover');
+                e.stopPropagation();
+                newImageUpload.click();
             });
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            uploadArea.addEventListener('drop', (e) => {
+
+            // Novo listener para change
+            newImageUpload.addEventListener('change', async (e) => {
                 e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                if (e.dataTransfer.files.length && this.elements.imageUpload) {
-                    this.elements.imageUpload.files = e.dataTransfer.files;
-                    this.handleImageUpload();
+                e.stopPropagation();
+
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+
+                try {
+                    const maxFiles = 5;
+                    if (this.state.formData.images.length + files.length > maxFiles) {
+                        alert(`Máximo de ${maxFiles} imagens permitidas`);
+                        return;
+                    }
+
+                    for (const file of files) {
+                        // Validar tipo
+                        if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+                            alert('Formato de imagem inválido. Use JPG, PNG ou WebP');
+                            continue;
+                        }
+
+                        // Validar tamanho
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Imagem muito grande. Máximo 5MB');
+                            continue;
+                        }
+
+                        try {
+                            // Criar URL temporária
+                            const tempUrl = URL.createObjectURL(file);
+                            
+                            // Adicionar à lista de imagens
+                            const imageData = {
+                                isTemp: true,
+                                tempUrl: tempUrl,
+                                blob: file,
+                                fileName: file.name
+                            };
+                            
+                            this.state.formData.images.push(imageData);
+                            
+                            // Adicionar preview
+                            await this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                        } catch (imageError) {
+                            console.error('Erro ao processar imagem individual:', imageError);
+                            URL.revokeObjectURL(tempUrl); // Limpar URL se houver erro
+                            continue; // Continuar para próxima imagem em caso de erro
+                        }
+                    }
+
+                    // Atualizar preview apenas uma vez após processar todas as imagens
+                    this.updatePreview();
+                } catch (error) {
+                    console.error('Erro ao processar imagens:', error);
+                    alert('Ocorreu um erro ao processar as imagens. Por favor, tente novamente.');
+                } finally {
+                    // Limpar input
+                    newImageUpload.value = '';
                 }
             });
-        }
 
-        if (this.elements.imageUpload) {
-            // Remove todos os listeners anteriores
-            const newImageUpload = this.elements.imageUpload.cloneNode(true);
-            this.elements.imageUpload.parentNode.replaceChild(newImageUpload, this.elements.imageUpload);
-            this.elements.imageUpload = newImageUpload;
-
-            // Adiciona um único listener
-            this.elements.imageUpload.addEventListener('change', (e) => {
+            // Drag and drop
+            newUploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                this.handleImageUpload();
-            }, { once: true }); // Garante que o evento só será disparado uma vez
+                newUploadArea.classList.add('dragover');
+            });
+
+            newUploadArea.addEventListener('dragleave', () => {
+                newUploadArea.classList.remove('dragover');
+            });
+
+            newUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                newUploadArea.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                if (files.length) {
+                    const dataTransfer = new DataTransfer();
+                    files.forEach(file => dataTransfer.items.add(file));
+                    newImageUpload.files = dataTransfer.files;
+                    
+                    // Disparar evento change
+                    const event = new Event('change', { bubbles: true });
+                    newImageUpload.dispatchEvent(event);
+                }
+            });
         }
 
         const fetchVerseButton = document.getElementById('fetchVerse');
@@ -658,35 +773,43 @@ class DevotlyCreator {
     }
 
 
-    setupSectionDotListeners() {
-        document.querySelectorAll('.section-dot').forEach(indicator => {
-            // Clone to remove old listeners if any, though these are dynamically added
-            const newIndicator = indicator.cloneNode(true);
-            indicator.parentNode.replaceChild(newIndicator, indicator);
+setupSectionDotListeners() {
+    document.querySelectorAll('.section-dot').forEach(indicator => {
+        const newIndicator = indicator.cloneNode(true);
+        indicator.parentNode.replaceChild(newIndicator, indicator);
 
-            newIndicator.addEventListener('click', () => {
-                const targetSectionId = newIndicator.dataset.section;
-                const targetSection = document.getElementById(targetSectionId);
-                const previewSectionsContainer = document.querySelector('.preview-sections');
-
-                if (targetSection && previewSectionsContainer) {
-                    previewSectionsContainer.scrollTo({
-                        top: targetSection.offsetTop,
-                        behavior: 'auto'
-                    });
-
-                    // Manually update active dot for immediate feedback
-                    document.querySelectorAll('.section-dot').forEach(dot => dot.classList.remove('active'));
-                    newIndicator.classList.add('active');
-
-                    // Manually update active section for CSS transitions
-                    document.querySelectorAll('.preview-section').forEach(sec => sec.classList.remove('active'));
-                    targetSection.classList.add('active');
-                    this.applyBackgroundEffect(targetSectionId); // Apply background for clicked section
-                }
-            });
+        newIndicator.addEventListener('click', () => {
+            const targetSectionId = newIndicator.dataset.section;
+            this.scrollToSection(targetSectionId);
         });
+    });
+}
+
+scrollToSection(sectionId) {
+    const targetSection = document.getElementById(sectionId);
+    const previewSectionsContainer = document.querySelector('.preview-sections');
+    
+    if (targetSection && previewSectionsContainer) {
+        // Calcular o deslocamento para centralizar a seção
+        const containerHeight = previewSectionsContainer.clientHeight;
+        const sectionHeight = targetSection.offsetHeight;
+        const offset = targetSection.offsetTop - (containerHeight - sectionHeight) / 2;
+
+        previewSectionsContainer.scrollTo({
+            top: offset,
+            behavior: 'smooth'
+        });
+
+        // Atualizar estados ativos imediatamente
+        document.querySelectorAll('.section-dot').forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.section === sectionId);
+        });
+        document.querySelectorAll('.preview-section').forEach(sec => {
+            sec.classList.toggle('active', sec.id === sectionId);
+        });
+        this.applyBackgroundEffect(sectionId);
     }
+}
 
     handleNextStep() {
         if (this.validateStep(this.state.currentStep)) {
@@ -918,76 +1041,97 @@ class DevotlyCreator {
     }
 
     async handleImageUpload() {
-        if (!this.elements.imageUpload || !this.elements.imageUpload.files.length) return;
-
-        // Previne múltiplos uploads do mesmo conjunto de arquivos
-        const files = Array.from(this.elements.imageUpload.files);
-        this.elements.imageUpload.value = ''; // Limpa o input após pegar os arquivos
-
-        if (this.state.formData.images.length + files.length > 7) {
-            alert('Você pode adicionar no máximo 7 imagens.'); // Consider using a custom modal/toast
-            return;
-        }
-
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) uploadArea.classList.add('loading');
-
         try {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                    alert(`A imagem ${file.name} excede o limite de 2MB.`);
+            if (!this.elements.imageUpload || !this.elements.imageUpload.files.length) return;
+            
+            const files = Array.from(this.elements.imageUpload.files);
+            const maxFiles = 5; // Máximo de 5 imagens
+            
+            if (this.state.formData.images.length + files.length > maxFiles) {
+                this.showError(this.elements.imageUpload, `Máximo de ${maxFiles} imagens permitidas`);
+                return;
+            }
+
+            for (const file of files) {
+                // Validar tipo e tamanho
+                if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+                    this.showError(this.elements.imageUpload, 'Formato de imagem inválido. Use JPG, PNG ou WebP');
                     continue;
                 }
 
-                const tempUrl = URL.createObjectURL(file); // Use object URL for immediate preview
-                const fileName = `${Date.now()}-${i}.${file.name.split('.').pop() || 'webp'}`; // Keep original extension or default to webp
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    this.showError(this.elements.imageUpload, 'Imagem muito grande. Máximo 5MB');
+                    continue;
+                }
 
-                this.state.formData.images.push({
-                    tempUrl,
-                    blob: file,
-                    fileName,
-                    isTemp: true // Mark as temporary, needs upload
-                });
+                try {
+                    // Criar URL temporária para preview
+                    const tempUrl = URL.createObjectURL(file);
+                    
+                    // Adicionar à lista de imagens com informações necessárias
+                    this.state.formData.images.push({
+                        isTemp: true,
+                        tempUrl: tempUrl,
+                        blob: file,
+                        fileName: file.name
+                    });
 
-                this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
-                await new Promise(resolve => setTimeout(resolve, 50)); // Small delay
+                    // Adicionar preview no formulário
+                    this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                    
+                } catch (error) {
+                    console.error('Erro ao processar imagem:', error);
+                    this.showError(this.elements.imageUpload, 'Erro ao processar imagem');
+                }
             }
 
-            this.reindexImages(); // Re-index data attributes on remove buttons
-            this.updatePreview(); // Update the main preview sections
-
-            // setupAutoGallery was removed, if gallery needs auto-play, it needs new logic.
-            // For now, manual navigation will work if controls are present.
+            // Atualizar o preview principal
+            this.updatePreview();
+            
+            // Limpar o input após processamento bem-sucedido
+            this.elements.imageUpload.value = '';
 
         } catch (error) {
-            console.error('Erro ao processar imagens:', error);
-            alert('Ocorreu um erro ao processar as imagens.');
-        } finally {
-            if (uploadArea) uploadArea.classList.remove('loading');
-            if (this.elements.imageUpload) this.elements.imageUpload.value = ''; // Reset file input
+            console.error('Erro ao fazer upload das imagens:', error);
+            this.showError(this.elements.imageUpload, 'Erro ao processar imagens');
         }
     }
-
-    addImagePreview(url, index) {
+    
+    async addImagePreview(url, index) {
         const container = document.getElementById('imagePreviewContainer');
         if (!container) return;
 
-        const previewDiv = document.createElement('div');
-        previewDiv.className = 'image-preview';
-        previewDiv.innerHTML = `
-            <img src="${url}" alt="Imagem ${index + 1}">
-            <button class="remove-image" data-index="${index}">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
+        try {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'image-preview';
+            
+            // Criar e carregar a imagem antes de adicionar ao DOM
+            const img = document.createElement('img');
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = url;
+            });
 
-        container.appendChild(previewDiv);
+            previewDiv.innerHTML = `
+                <img src="${url}" alt="Imagem ${index + 1}">
+                <button class="remove-image" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
 
-        const removeButton = previewDiv.querySelector('.remove-image');
-        removeButton.addEventListener('click', () => {
-            this.removeImage(parseInt(removeButton.dataset.index));
-        });
+            container.appendChild(previewDiv);
+
+            const removeButton = previewDiv.querySelector('.remove-image');
+            if (removeButton) {
+                removeButton.addEventListener('click', () => {
+                    this.removeImage(parseInt(removeButton.dataset.index));
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar preview da imagem:', error);
+            throw error; // Propagar erro para tratamento adequado
+        }
     }
 
     reindexImages() { // This re-indexes the remove buttons in the form preview
@@ -1133,35 +1277,41 @@ class DevotlyCreator {
         }
     }
 
-    navigateCarousel(direction) { // For the new preview gallery
+    navigateCarousel(direction) {
+        if (!this.state.formData.images.length) return;
+        
+        const newIndex = (this.state.currentImageIndex + direction + this.state.formData.images.length) % this.state.formData.images.length;
+        this.goToImage(newIndex);
+    }
+
+    goToImage(index) {
         const galleryContainer = document.querySelector('#gallerySection .gallery-container');
         if (!galleryContainer) return;
+
+        // Atualizar imagens
         const images = galleryContainer.querySelectorAll('img');
-        const indicators = document.querySelectorAll('#gallerySection .gallery-indicator'); // Corrected selector for new indicators
+        images.forEach((img, i) => {
+            img.style.display = i === index ? 'block' : 'none';
+            img.classList.toggle('active', i === index);
+        });
 
-        if (images.length <= 1) return;
+        // Atualizar indicadores
+        const indicators = galleryContainer.querySelectorAll('.gallery-indicator');
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+        });
 
-        const currentImage = images[this.state.currentImageIndex];
-        if (currentImage) {
-            currentImage.classList.remove('active');
-            currentImage.style.display = 'none'; // Or use opacity/transform for transitions
+        // Atualizar contador
+        const counter = galleryContainer.querySelector('.image-counter');
+        if (counter) {
+            counter.innerHTML = `
+                <span class="current">${index + 1}</span>/<span class="total">${this.state.formData.images.length}</span>
+            `;
         }
-        if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
-            indicators[this.state.currentImageIndex].classList.remove('active');
-        }
 
-
-        this.state.currentImageIndex = (this.state.currentImageIndex + direction + images.length) % images.length;
-
-        const nextImage = images[this.state.currentImageIndex];
-        if (nextImage) {
-            nextImage.classList.add('active');
-            nextImage.style.display = 'block'; // Or use opacity/transform
-        }
-        if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
-            indicators[this.state.currentImageIndex].classList.add('active');
-        }
+        this.state.currentImageIndex = index;
     }
+
 
     startImageCarousel() {
         // this.imageInterval was removed. If auto-carousel is needed, new logic for interval management is required.
@@ -1183,10 +1333,8 @@ class DevotlyCreator {
         // this.state.isMediaPlaying was removed. Logic needs to be independent or use a different state.
         // For simplicity, let's assume we just try to send a command.
         // This will likely not work as expected without a state to track play/pause.
-        const currentToggleIcon = document.querySelector('.media-toggle i');
-
-        // Simplified: just try to play/pause without knowing current state
         let command = 'playVideo'; // Default to play
+        const currentToggleIcon = document.querySelector('.media-toggle i');
         if (currentToggleIcon?.classList.contains('fa-pause')) { // If it shows pause, it means it's playing
             command = 'pauseVideo';
             currentToggleIcon.classList.remove('fa-pause');
@@ -1292,79 +1440,100 @@ class DevotlyCreator {
     updateGalleryPreview() {
         const galleryContainer = document.querySelector('#gallerySection .gallery-container');
         if (!galleryContainer) return;
-        galleryContainer.innerHTML = ''; // Clear previous images
 
-        const indicatorsContainer = document.querySelector('#gallerySection .gallery-indicators');
-        if (indicatorsContainer) indicatorsContainer.innerHTML = '';
-
+        const galleryInner = galleryContainer.querySelector('.gallery-inner') || document.createElement('div');
+        galleryInner.className = 'gallery-inner';
+        
+        // Limpar o container
+        galleryInner.innerHTML = '';
 
         if (this.state.formData.images.length === 0) {
             galleryContainer.innerHTML = `
-                <div class="no-images" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color: var(--color-text-secondary); opacity: 0.7;">
-                    <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <div class="no-images">
+                    <i class="fas fa-image"></i>
                     <span>Nenhuma imagem selecionada</span>
                 </div>`;
             return;
         }
 
+        // Adicionar imagens
         this.state.formData.images.forEach((imageObj, index) => {
             const img = document.createElement('img');
-            img.src = imageObj.tempUrl || imageObj; // tempUrl for fresh uploads, direct URL if already processed/loaded
+            img.src = imageObj.tempUrl || imageObj.url || imageObj;
             img.alt = `Imagem ${index + 1}`;
-            img.style.display = index === this.state.currentImageIndex ? 'block' : 'none'; // Manage visibility
-            if (index === this.state.currentImageIndex) img.classList.add('active');
-            galleryContainer.appendChild(img);
-
-            if (indicatorsContainer && this.state.formData.images.length > 1) {
-                const indicatorDot = document.createElement('div');
-                indicatorDot.className = 'gallery-indicator';
-                if (index === this.state.currentImageIndex) indicatorDot.classList.add('active');
-                indicatorDot.addEventListener('click', () => this.goToImage(index));
-                indicatorsContainer.appendChild(indicatorDot);
-            }
+            img.style.display = index === this.state.currentImageIndex ? 'block' : 'none';
+            img.className = index === this.state.currentImageIndex ? 'active' : '';
+            galleryInner.appendChild(img);
         });
 
-        // Add carousel controls if more than one image and not already present
-        if (this.state.formData.images.length > 1 && !galleryContainer.querySelector('.carousel-controls')) {
-            const controlsHTML = `
+        // Atualizar controles do carrossel
+        galleryContainer.innerHTML = `
+            <div class="gallery-inner">${galleryInner.innerHTML}</div>
+            ${this.state.formData.images.length > 1 ? `
                 <div class="carousel-controls">
-                    <button class="carousel-prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="carousel-next"><i class="fas fa-chevron-right"></i></button>
-                </div>`;
-            galleryContainer.insertAdjacentHTML('beforeend', controlsHTML);
-            galleryContainer.querySelector('.carousel-prev').addEventListener('click', () => this.navigateCarousel(-1));
-            galleryContainer.querySelector('.carousel-next').addEventListener('click', () => this.navigateCarousel(1));
-        } else if (this.state.formData.images.length <= 1) {
-            const controls = galleryContainer.querySelector('.carousel-controls');
-            if (controls) controls.remove();
+                    <button class="carousel-prev" aria-label="Anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-next" aria-label="Próximo">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="gallery-indicators">
+                    ${this.state.formData.images.map((_, i) => `
+                        <div class="gallery-indicator ${i === this.state.currentImageIndex ? 'active' : ''}" 
+                             data-index="${i}"></div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            <div class="image-counter">
+                <span class="current">${this.state.currentImageIndex + 1}</span>/<span class="total">${this.state.formData.images.length}</span>
+            </div>
+        `;
+
+        // Adicionar event listeners
+        if (this.state.formData.images.length > 1) {
+            const prevBtn = galleryContainer.querySelector('.carousel-prev');
+            const nextBtn = galleryContainer.querySelector('.carousel-next');
+            const indicators = galleryContainer.querySelectorAll('.gallery-indicator');
+
+            prevBtn?.addEventListener('click', () => this.navigateCarousel(-1));
+            nextBtn?.addEventListener('click', () => this.navigateCarousel(1));
+            
+            indicators.forEach(indicator => {
+                indicator.addEventListener('click', () => {
+                    const index = parseInt(indicator.dataset.index);
+                    this.goToImage(index);
+                });
+            });
         }
     }
 
-    goToImage(index) { // For indicator clicks
+    goToImage(index) {
         const galleryContainer = document.querySelector('#gallerySection .gallery-container');
         if (!galleryContainer) return;
+
+        // Atualizar imagens
         const images = galleryContainer.querySelectorAll('img');
-        const indicators = document.querySelectorAll('#gallerySection .gallery-indicator');
+        images.forEach((img, i) => {
+            img.style.display = i === index ? 'block' : 'none';
+            img.classList.toggle('active', i === index);
+        });
 
-        if (images.length <= 1 || index < 0 || index >= images.length) return;
+        // Atualizar indicadores
+        const indicators = galleryContainer.querySelectorAll('.gallery-indicator');
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+        });
 
-        if (images[this.state.currentImageIndex]) {
-            images[this.state.currentImageIndex].classList.remove('active');
-            images[this.state.currentImageIndex].style.display = 'none';
-        }
-        if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
-            indicators[this.state.currentImageIndex].classList.remove('active');
+        // Atualizar contador
+        const counter = galleryContainer.querySelector('.image-counter');
+        if (counter) {
+            counter.innerHTML = `
+                <span class="current">${index + 1}</span>/<span class="total">${this.state.formData.images.length}</span>
+            `;
         }
 
         this.state.currentImageIndex = index;
-
-        if (images[this.state.currentImageIndex]) {
-            images[this.state.currentImageIndex].classList.add('active');
-            images[this.state.currentImageIndex].style.display = 'block';
-        }
-        if (indicators.length > 0 && indicators[this.state.currentImageIndex]) {
-            indicators[this.state.currentImageIndex].classList.add('active');
-        }
     }
 
 
@@ -1622,16 +1791,5 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const previewButton = document.querySelector('.btn-preview'); // This is the main preview button
     if (previewButton) {
-        // These styles might conflict with CSS, use with caution or integrate into CSS
-        // previewButton.style.setProperty('bottom', '0', 'important');
-        // previewButton.style.setProperty('margin', '0', 'important');
-        // previewButton.style.setProperty('padding', '0', 'important');
-        // previewButton.offsetHeight; // Force reflow
     }
 });
-
-// scrollToCurrentStep and its listeners were removed
-// centerActiveStep and its listeners were removed
-// Global updateProgress and updateStepCounter were removed
-// Global sectionObserver and handleSectionTransition were removed
-// setupAutoGallery and setupGalleryRotation were removed

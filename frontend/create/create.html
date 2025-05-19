@@ -57,9 +57,13 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardName">Nome do Cartão <span class="required-mark">*</span></label>
-                                <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem de fé"
-                                    required
-                                    title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
+                                <input type="text" 
+                                       id="cardName" 
+                                       name="cardName" 
+                                       placeholder="ex: mensagem de fé" 
+                                       maxlength="20"
+                                       required 
+                                       title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
                                 <div class="input-hint">
                                     <i class="fas fa-link"></i>
                                     <span>Seu cartão estará em: <strong>devotly.com/<span
@@ -447,8 +451,16 @@
                             <section class="preview-section" id="verseSection">
                                 <div class="section-content">
                                     <div class="verse-container">
-                                        <p id="previewVerseText">"Porque Deus amou o mundo de tal maneira..."</p>
-                                        <span id="previewVerseRef">João 3:16</span>
+                                        <div class="verse-content">
+                                            <i class="fas fa-quote-left quote-icon"></i>
+                                            <p id="previewVerseText">Porque Deus amou o mundo de tal maneira...</p>
+                                            <span id="previewVerseRef">João 3:16</span>
+                                        </div>
+                                        <div class="verse-decoration bottom">
+                                            <span class="decoration-line"></span>
+                                            <i class="fas fa-cross"></i>
+                                            <span class="decoration-line"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -456,23 +468,19 @@
                             <!-- Seção 4: Galeria -->
                             <section class="preview-section" id="gallerySection">
                                 <div class="section-content">
-                                    <div class="gallery-container" id="previewImages">
-                                        <div class="no-images">
-                                            <i class="fas fa-image"></i>
-                                            <span>Nenhuma imagem selecionada</span>
+                                    <div class="gallery-container">
+                                        <div class="gallery-inner">
+                                            <!-- As imagens serão inseridas aqui dinamicamente -->
                                         </div>
-                                        <!-- Controls will be added dynamically when images are present -->
                                         <div class="carousel-controls">
-                                            <button class="carousel-prev">
+                                            <button class="carousel-prev" aria-label="Anterior">
                                                 <i class="fas fa-chevron-left"></i>
                                             </button>
-                                            <button class="carousel-next">
+                                            <button class="carousel-next" aria-label="Próximo">
                                                 <i class="fas fa-chevron-right"></i>
                                             </button>
                                         </div>
-                                        <div class="image-counter">
-                                            <span class="current">1</span>/<span class="total">1</span>
-                                        </div>
+                                        <!-- Indicadores e contador aqui, se necessário -->
                                     </div>
                                 </div>
                             </section>
@@ -489,46 +497,14 @@
                                 </div>
                             </section>
 
-                            <!-- Seção 6: Mensagem Final -->
+                            <!-- Seção 6: Mensagem Final - Versão simplificada -->
                             <section class="preview-section" id="finalSection">
                                 <div class="section-content final-section-content">
-                                    <div class="final-message-wrapper">
-                                        <div class="final-message">
-                                            <p class="final-text">Que esta mensagem toque seu coração</p>
-                                            <div class="message-decoration">
-                                                <span class="decoration-line"></span>
-                                                <i class="fas fa-heart pulse-heart"></i>
-                                                <span class="decoration-line"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                                    <div class="share-section">
-                                        <div class="share-label">
-                                            <span class="share-text">Compartilhe</span>
-                                            <span class="share-decoration"></span>
-                                        </div>
-                                        
-                                        <div class="preview-share-buttons">
-                                            <button class="preview-share-btn whatsapp" data-platform="whatsapp" aria-label="Compartilhar no WhatsApp">
-                                                <i class="fab fa-whatsapp"></i>
-                                                <span class="share-tooltip">WhatsApp</span>
-                                            </button>
-                                            
-                                            <button class="preview-share-btn facebook" data-platform="facebook" aria-label="Compartilhar no Facebook">
-                                                <i class="fab fa-facebook-f"></i>
-                                                <span class="share-tooltip">Facebook</span>
-                                            </button>
-                                            
-                                            <button class="preview-share-btn twitter" data-platform="twitter" aria-label="Compartilhar no Twitter">
-                                                <i class="fab fa-twitter"></i>
-                                                <span class="share-tooltip">Twitter</span>
-                                            </button>
-                                            
-                                            <button class="preview-share-btn email" data-platform="email" aria-label="Compartilhar por Email">
-                                                <i class="fas fa-envelope"></i>
-                                                <span class="share-tooltip">Email</span>
-                                            </button>
+                                    <!-- Mensagem Final -->
+                                    <div class="final-message">
+                                        <p id="previewFinalMessage">Que esta mensagem toque seu coração</p>
+                                        <div class="message-decoration">
+                                            <i class="fas fa-heart"></i>
                                         </div>
                                     </div>
                                 </div>
