@@ -1938,27 +1938,59 @@ class VerticalPreviewNavigator {
         this.goToSection(0, false);
     }
     
-    createIndicators() {
-        // Criar indicadores verticais se não existirem
-        if (!document.querySelector('.vertical-section-indicators')) {
-            const indicatorsContainer = document.createElement('div');
-            indicatorsContainer.className = 'vertical-section-indicators';
-            
-            this.sections.forEach((_, index) => {
-                const indicator = document.createElement('div');
-                indicator.className = 'v-indicator' + (index === 0 ? ' active' : '');
-                indicator.dataset.index = index;
-                indicatorsContainer.appendChild(indicator);
-            });
-            
-            if (this.previewContainer) {
-                this.previewContainer.appendChild(indicatorsContainer);
-            }
-        }
-        
-        // Obter referências para os indicadores
-        this.indicators = Array.from(document.querySelectorAll('.v-indicator'));
+createIndicators() {
+    // Remover indicadores existentes
+    const existingIndicators = document.querySelector('.vertical-section-indicators');
+    if (existingIndicators) {
+        existingIndicators.remove();
     }
+    
+    // Criar container
+    const indicatorsContainer = document.createElement('div');
+    indicatorsContainer.className = 'vertical-section-indicators';
+    
+    // Aplicar estilos inline como backup
+    Object.assign(indicatorsContainer.style, {
+        position: 'fixed',
+        bottom: '70px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '10px',
+        zIndex: '1010',
+        padding: '8px 16px',
+        background: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: '20px',
+        backdropFilter: 'blur(4px)'
+    });
+    
+    // Adicionar indicadores
+    this.sections.forEach((_, index) => {
+        const indicator = document.createElement('div');
+        indicator.className = 'v-indicator' + (index === 0 ? ' active' : '');
+        indicator.dataset.index = index;
+        
+        // Aplicar estilos inline
+        Object.assign(indicator.style, {
+            width: index === 0 ? '20px' : '8px',
+            height: '8px',
+            borderRadius: index === 0 ? '10px' : '50%',
+            background: index === 0 ? '#f4c440' : 'rgba(255, 255, 255, 0.3)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+        });
+        
+        indicatorsContainer.appendChild(indicator);
+    });
+    
+    if (this.previewContainer) {
+        this.previewContainer.appendChild(indicatorsContainer);
+    }
+    
+    // Obter referências
+    this.indicators = Array.from(document.querySelectorAll('.v-indicator'));
+}
     
     setupEventListeners() {
         if (!this.previewContainer) return;
@@ -2029,11 +2061,38 @@ class VerticalPreviewNavigator {
         
         // Remover classe 'active' de todas as seções e indicadores
         this.sections.forEach(section => section.classList.remove('active'));
-        this.indicators.forEach(indicator => indicator.classList.remove('active'));
         
-        // Adicionar classe 'active' à seção atual e indicador
+        // Atualizar os indicadores horizontais (importante: remover estilos inline)
+        this.indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+            
+            // Remover estilos inline e deixar o CSS controlar a aparência
+            indicator.style.width = '';
+            indicator.style.height = '';
+            indicator.style.borderRadius = '';
+            indicator.style.background = '';
+            
+            // Aplicar estilos corretos baseados no estado ativo
+            if (i === index) {
+                indicator.style.width = '20px';
+                indicator.style.borderRadius = '10px';
+                indicator.style.background = '#f4c440';
+            } else {
+                indicator.style.width = '8px';
+                indicator.style.borderRadius = '50%';
+                indicator.style.background = 'rgba(255, 255, 255, 0.3)';
+            }
+        });
+        
+        // Também atualizar os indicadores laterais (section-dot)
+        document.querySelectorAll('.section-dot').forEach(dot => dot.classList.remove('active'));
+        const correspondingDot = document.querySelector(`.section-dot[data-section="${this.sections[index].id}"]`);
+        if (correspondingDot) {
+            correspondingDot.classList.add('active');
+        }
+        
+        // Adicionar classe 'active' à seção atual
         this.sections[index].classList.add('active');
-        this.indicators[index].classList.add('active');
         
         // Atualizar background se necessário
         if (window.devotlyCreator) {
