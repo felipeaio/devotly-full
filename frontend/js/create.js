@@ -18,6 +18,45 @@ if (!HTMLCanvasElement.prototype.toBlob) {
     };
 }
 
+// Esta função deve ser chamada para reorganizar o HTML existente
+function restructurePreviewSections() {
+    const previewSections = document.querySelector('.preview-sections');
+    if (!previewSections) return;
+    
+    // Cria o container do carrossel
+    const carousel = document.createElement('div');
+    carousel.className = 'preview-carousel';
+    
+    // Move todas as seções para o carrossel
+    const sections = Array.from(previewSections.querySelectorAll('.preview-section'));
+    sections.forEach(section => {
+        carousel.appendChild(section);
+    });
+    
+    // Adiciona o carrossel ao container principal
+    previewSections.innerHTML = '';
+    previewSections.appendChild(carousel);
+    
+    // Cria indicadores horizontais
+    const indicators = document.createElement('div');
+    indicators.className = 'horizontal-section-indicators';
+    
+    sections.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = 'h-indicator' + (index === 0 ? ' active' : '');
+        dot.dataset.index = index;
+        indicators.appendChild(dot);
+    });
+    
+    // Adicionar apenas os indicadores
+    previewSections.appendChild(indicators);
+    
+    // Ativar a primeira seção
+    if (sections.length > 0) {
+        sections[0].classList.add('active');
+    }
+}
+
 // main.js
 class DevotlyCreator {
     constructor() {
@@ -282,93 +321,10 @@ class DevotlyCreator {
 
 
     setupSectionObserver() {
-    const previewSections = document.querySelector('.preview-sections');
-    const sections = Array.from(document.querySelectorAll('.preview-section'));
-    const dots = Array.from(document.querySelectorAll('.section-dot'));
-    
-    if (!previewSections || !sections.length || !dots.length) return;
+        // Inicializa o navegador de preview vertical
+        window.previewNavigator = new VerticalPreviewNavigator();
+    }
 
-    // Função para atualizar dots ativos
-    const updateActiveDot = (index) => {
-        dots.forEach(dot => dot.classList.remove('active'));
-        dots[index]?.classList.add('active');
-    };
-
-    // Função para scrollar para uma seção específica
-    const scrollToSection = (index) => {
-        const section = sections[index];
-        if (!section) return;
-        
-        section.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-        
-        updateActiveDot(index);
-        this.applyBackgroundEffect(section.id);
-    };
-
-    // Setup click listeners nos dots
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => scrollToSection(index));
-    });
-
-    // Intersection Observer para atualizar dots durante scroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const index = sections.indexOf(entry.target);
-                updateActiveDot(index);
-                this.applyBackgroundEffect(entry.target.id);
-            }
-        });
-    }, {
-        threshold: 0.5
-    });
-
-    sections.forEach(section => observer.observe(section));
-
-    // Wheel event para scroll controlado
-    let isScrolling = false;
-    let currentIndex = 0;
-
-    previewSections.addEventListener('wheel', (e) => {
-        e.preventDefault();
-
-        if (isScrolling) return;
-        isScrolling = true;
-
-        const direction = e.deltaY > 0 ? 1 : -1;
-        currentIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
-        
-        scrollToSection(currentIndex);
-
-        setTimeout(() => {
-            isScrolling = false;
-        }, 1000); // Debounce do scroll
-    }, { passive: false });
-
-    // Touch events para mobile
-    let touchStart = 0;
-    let touchEnd = 0;
-
-    previewSections.addEventListener('touchstart', (e) => {
-        touchStart = e.touches[0].clientY;
-    }, { passive: true });
-
-    previewSections.addEventListener('touchend', (e) => {
-        touchEnd = e.changedTouches[0].clientY;
-        
-        if (Math.abs(touchStart - touchEnd) > 50) { // Threshold mínimo
-            const direction = touchStart > touchEnd ? 1 : -1;
-            currentIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
-            scrollToSection(currentIndex);
-        }
-    }, { passive: true });
-
-    // Scroll inicial para a primeira seção
-    scrollToSection(0);
-}
     applyBackgroundEffect(sectionId) {
         const previewThemeContainer = document.getElementById('previewTheme'); // or this.elements.previewTheme
         if (!previewThemeContainer) return;
@@ -1689,6 +1645,7 @@ scrollToSection(sectionId) {
                 if (typeof img === 'string') return img; // It's already a URL
                 if (img.url) return img.url; // It's an object with a URL (e.g., after upload)
                 // If it's a temp blob, don't save it or save placeholder/metadata
+                // Blobs cannot be directly stringified. For draft saving, consider storing metadata or temp IDs.
                 return null; // Or some placeholder
             }).filter(img => img !== null);
 
@@ -1737,7 +1694,7 @@ class PreviewModal {
         this.openButton.addEventListener('click', () => this.openModal());
         this.closeButton.addEventListener('click', () => this.closeModal());
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+            if ( e.key === 'Escape' && this.modal.classList.contains('active')) {
                 this.closeModal();
             }
         });
@@ -1757,6 +1714,13 @@ class PreviewModal {
 
         document.body.style.overflow = 'hidden';
         this.modal.classList.add('active');
+
+        // Inicializar navegador vertical se ainda não existir
+        setTimeout(() => {
+            if (!window.previewNavigator) {
+                window.previewNavigator = new VerticalPreviewNavigator();
+            }
+        }, 100);
     }
 
     closeModal() {
@@ -1786,10 +1750,320 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
 // Styling for .btn-preview (this was likely for the old preview button, may not be needed)
 document.addEventListener('DOMContentLoaded', () => {
     const previewButton = document.querySelector('.btn-preview'); // This is the main preview button
     if (previewButton) {
     }
 });
+
+// Adicionar ao final do arquivo create.js
+document.addEventListener('DOMContentLoaded', function() {
+    // Garantir que o navegador horizontal seja inicializado quando o modal de preview for aberto
+
+   
+
+    const previewButton = document.getElementById('previewButton');
+    if (previewButton) {
+        previewButton.addEventListener('click', function() {
+            setTimeout(() => {
+                if (!window.previewNavigator) {
+                    restructurePreviewSections();
+                    window.previewNavigator = new HorizontalPreviewNavigator();
+                }
+            }, 100);
+        });
+    }
+});
+
+// Horizontal Preview Navigator Class
+class HorizontalPreviewNavigator {
+    constructor() {
+        this.carousel = document.querySelector('.preview-carousel');
+       
+        this.sections = Array.from(document.querySelectorAll('.preview-section'));
+        this.indicators = Array.from(document.querySelectorAll('.h-indicator'));
+        this.verticalDots = Array.from(document.querySelectorAll('.section-dot'));
+        this.prevButton = document.querySelector('.preview-nav-prev');
+        this.nextButton = document.querySelector('.preview-nav-next');
+        
+        this.currentIndex = 0;
+        this.totalSections = this.sections.length;
+        this.touchStartX = 0;
+        this.touchEndX = 0;
+        this.minSwipeDistance = 50;
+        this.isAnimating = false;
+        
+        this.init();
+    }
+    
+    init() {
+        // Inicializar posição
+        this.goToSection(0, false);
+        
+        // Setup event listeners
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        // Touch Events
+        this.carousel.addEventListener('touchstart', (e) => {
+            this.touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        
+        this.carousel.addEventListener('touchend', (e) => {
+            if (this.isAnimating) return;
+            
+            this.touchEndX = e.changedTouches[0].clientX;
+            const diff = this.touchStartX - this.touchEndX;
+            
+            if (Math.abs(diff) > this.minSwipeDistance) {
+                if (diff > 0) {
+                    this.nextSection();
+                } else {
+                    this.prevSection();
+                }
+            }
+        }, { passive: true });
+        
+        // Button Navigation
+        if (this.prevButton) {
+            this.prevButton.addEventListener('click', () => this.prevSection());
+        }
+        
+        if (this.nextButton) {
+            this.nextButton.addEventListener('click', () => this.nextSection());
+        }
+        
+        // Indicator Navigation
+        if (this.indicators && this.indicators.length) {
+            this.indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => this.goToSection(index));
+            });
+        }
+        
+        // Vertical Dots (sync with horizontal)
+        if (this.verticalDots && this.verticalDots.length) {
+            this.verticalDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => this.goToSection(index));
+            });
+        }
+        
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (this.isAnimating) return;
+            
+            if (e.key === 'ArrowRight') {
+                this.nextSection();
+            } else if (e.key === 'ArrowLeft') {
+                this.prevSection();
+            }
+        });
+    }
+    
+    goToSection(index, animate = true) {
+        if (index < 0 || index >= this.totalSections || this.isAnimating) return;
+        
+        this.isAnimating = animate;
+        this.currentIndex = index;
+        
+        // Atualizar seções - mostrar apenas a seção atual
+        this.sections.forEach((section, i) => {
+            section.classList.toggle('active', i === index);
+        });
+        
+        // Atualizar indicadores
+        if (this.indicators && this.indicators.length) {
+            this.indicators.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Sincronizar com indicadores verticais
+        if (this.verticalDots && this.verticalDots.length) {
+            this.verticalDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Aplicar efeito de fundo
+        const sectionId = this.sections[index]?.id;
+        if (window.devotlyCreator && sectionId) {
+            window.devotlyCreator.applyBackgroundEffect(sectionId);
+        }
+        
+        // Reset do flag de animação
+        if (animate) {
+            setTimeout(() => {
+                this.isAnimating = false;
+            }, 500);
+        } else {
+            this.isAnimating = false;
+        }
+    }
+    
+    nextSection() {
+        if (this.currentIndex < this.totalSections - 1) {
+            this.goToSection(this.currentIndex + 1);
+        }
+    }
+    
+    prevSection() {
+        if (this.currentIndex > 0) {
+            this.goToSection(this.currentIndex - 1);
+        }
+    }
+}
+
+/**
+ * VerticalPreviewNavigator - Controla navegação vertical das seções do preview
+ * @class
+ */
+class VerticalPreviewNavigator {
+    constructor() {
+        // Elementos
+        this.previewContainer = document.querySelector('.preview-sections');
+        this.sections = Array.from(document.querySelectorAll('.preview-section'));
+        this.indicators = []; // Será preenchido após criar os indicadores
+        
+        // Estado
+        this.currentIndex = 0;
+        this.isAnimating = false;
+        this.touchStartY = 0;
+        this.minSwipeDistance = 50;
+        
+        // Inicialização
+        this.createIndicators();
+        this.setupEventListeners();
+        this.goToSection(0, false);
+    }
+    
+    createIndicators() {
+        // Criar indicadores verticais se não existirem
+        if (!document.querySelector('.vertical-section-indicators')) {
+            const indicatorsContainer = document.createElement('div');
+            indicatorsContainer.className = 'vertical-section-indicators';
+            
+            this.sections.forEach((_, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = 'v-indicator' + (index === 0 ? ' active' : '');
+                indicator.dataset.index = index;
+                indicatorsContainer.appendChild(indicator);
+            });
+            
+            if (this.previewContainer) {
+                this.previewContainer.appendChild(indicatorsContainer);
+            }
+        }
+        
+        // Obter referências para os indicadores
+        this.indicators = Array.from(document.querySelectorAll('.v-indicator'));
+    }
+    
+    setupEventListeners() {
+        if (!this.previewContainer) return;
+        
+        // 1. Eventos de toque (swipe vertical)
+        this.previewContainer.addEventListener('touchstart', (e) => {
+            this.touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        this.previewContainer.addEventListener('touchend', (e) => {
+            if (this.isAnimating) return;
+            
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaY = this.touchStartY - touchEndY;
+            
+            if (Math.abs(deltaY) > this.minSwipeDistance) {
+                if (deltaY > 0) {
+                    this.nextSection();
+                } else {
+                    this.prevSection();
+                }
+            }
+        }, { passive: true });
+        
+        // 2. Eventos de roda do mouse
+        this.previewContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            if (this.isAnimating) return;
+            
+            // Debounce para evitar múltiplos eventos
+            if (this.wheelTimeout) clearTimeout(this.wheelTimeout);
+            
+            this.wheelTimeout = setTimeout(() => {
+                const direction = e.deltaY > 0 ? 1 : -1;
+                
+                if (direction > 0) {
+                    this.nextSection();
+                } else {
+                    this.prevSection();
+                }
+            }, 50);
+        }, { passive: false });
+        
+        // 3. Eventos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (this.isAnimating) return;
+            
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                this.nextSection();
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                this.prevSection();
+            }
+        });
+        
+        // 4. Clique nos indicadores
+        this.indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => this.goToSection(index));
+        });
+    }
+    
+    goToSection(index, animate = true) {
+        if (index < 0 || index >= this.sections.length || this.isAnimating) return;
+        
+        this.isAnimating = animate;
+        
+        // Remover classe 'active' de todas as seções e indicadores
+        this.sections.forEach(section => section.classList.remove('active'));
+        this.indicators.forEach(indicator => indicator.classList.remove('active'));
+        
+        // Adicionar classe 'active' à seção atual e indicador
+        this.sections[index].classList.add('active');
+        this.indicators[index].classList.add('active');
+        
+        // Atualizar background se necessário
+        if (window.devotlyCreator) {
+            const sectionId = this.sections[index].id;
+            if (sectionId) {
+                window.devotlyCreator.applyBackgroundEffect(sectionId);
+            }
+        }
+        
+        this.currentIndex = index;
+        
+        // Reset do flag de animação após a transição
+        if (animate) {
+            setTimeout(() => {
+                this.isAnimating = false;
+            }, 400);
+        } else {
+            this.isAnimating = false;
+        }
+    }
+    
+    nextSection() {
+        if (this.currentIndex < this.sections.length - 1) {
+            this.goToSection(this.currentIndex + 1);
+        }
+    }
+    
+    prevSection() {
+        if (this.currentIndex > 0) {
+            this.goToSection(this.currentIndex - 1);
+        }
+    }
+}
