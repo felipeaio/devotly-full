@@ -539,10 +539,87 @@ class DevotlyCreator {
         });
 
         document.querySelectorAll('.btn-select-plan').forEach(button => {
-            const newButton = button.cloneNode(true); // Clone if selectPlan might change
+            // Remover listeners antigos para evitar duplicidade
+            const newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
-            newButton.addEventListener('click', (e) => {
-                this.selectPlan(e.target.dataset.plan);
+            
+            newButton.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                // Obter o plano do botão
+                const planType = newButton.dataset.plan;
+                if (!planType) return;
+                
+                // Desabilitar TODOS os botões de seleção de plano
+                document.querySelectorAll('.btn-select-plan').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                // Adicionar estado de loading apenas ao botão clicado
+                newButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                
+                // Exibir overlay de loading
+                const loadingOverlay = document.getElementById('planLoadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+                
+                try {
+                    // Chamar selectPlan sem passar pelo método que está falhando
+                    const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
+                    const planoPtBr = planMapping[planType] || planType;
+                    this.state.formData.selectedPlan = planoPtBr;
+                    
+                    const cardCreationResponse = await this.submitFormData();
+                    if (!cardCreationResponse.success) {
+                        throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
+                    }
+                    console.log('Cartão criado:', cardCreationResponse.data);
+                    
+                    const checkoutData = {
+                        plano: planoPtBr,
+                        email: document.getElementById('userEmail')?.value,
+                        cardId: cardCreationResponse.data.id
+                    };
+                    console.log('Enviando dados para checkout:', checkoutData);
+                    
+                    const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(checkoutData)
+                    });
+                    
+                    if (!checkoutResponse.ok) {
+                        const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
+                        throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
+                    }
+                    const mpData = await checkoutResponse.json();
+                    
+                    if (!mpData.success || !mpData.init_point) {
+                        throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
+                    }
+                    console.log('Checkout criado, redirecionando:', mpData.init_point);
+                    window.location.href = mpData.init_point;
+                    
+                } catch (error) {
+                    console.error('Erro no processo de seleção de plano:', error);
+                    
+                    // Ocultar overlay de loading
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                    
+                    // Restaurar estado do botão
+                    newButton.innerHTML = 'Selecionar plano';
+                    
+                    // Reativar todos os botões
+                    document.querySelectorAll('.btn-select-plan').forEach(btn => {
+                        btn.disabled = false;
+                    });
+                    
+                    // Mostrar mensagem de erro
+                    alert(error.message || 'Erro ao processar pagamento. Tente novamente.');
+                }
             });
         });
 
@@ -1244,52 +1321,74 @@ async fetchBibleVerse() {
         this.updatePreview();
     }
 
-    async selectPlan(plan) {
-        const loadingModal = document.getElementById('loadingModal');
-        if (loadingModal) loadingModal.style.display = 'flex';
+async selectPlan(plan) {
+    // Elementos
+    const loadingOverlay = document.getElementById('planLoadingOverlay');
+    const clickedButton = document.querySelector(`.btn-select-plan[data-plan="${plan}"]`);
+    
+    if (!clickedButton) return;
 
-        try {
-            const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
-            const planoPtBr = planMapping[plan] || plan;
-            this.state.formData.selectedPlan = planoPtBr;
-
-            const cardCreationResponse = await this.submitFormData(); // This now handles image uploads internally
-            if (!cardCreationResponse.success) {
-                throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
-            }
-            console.log('Cartão criado:', cardCreationResponse.data);
-
-            const checkoutData = {
-                plano: planoPtBr,
-                email: document.getElementById('userEmail')?.value,
-                cardId: cardCreationResponse.data.id
-            };
-            console.log('Enviando dados para checkout:', checkoutData);
-
-            const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(checkoutData)
-            });
-
-            if (!checkoutResponse.ok) {
-                const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
-                throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
-            }
-            const mpData = await checkoutResponse.json();
-
-            if (!mpData.success || !mpData.init_point) {
-                throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
-            }
-            console.log('Checkout criado, redirecionando:', mpData.init_point);
-            window.location.href = mpData.init_point;
-
-        } catch (error) {
-            console.error('Erro no processo de seleção de plano:', error);
-            if (loadingModal) loadingModal.style.display = 'none';
-            alert(error.message || 'Erro ao processar pagamento. Tente novamente.'); // Use custom modal for errors
+    try {
+        // 1. Desabilitar botão e mostrar loading
+        clickedButton.disabled = true;
+        clickedButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        
+        // 2. Mostrar overlay de loading
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
         }
+
+        // 3. Processar o plano
+        const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
+        const planoPtBr = planMapping[plan] || plan;
+        this.state.formData.selectedPlan = planoPtBr;
+        
+        const cardCreationResponse = await this.submitFormData();
+        if (!cardCreationResponse.success) {
+            throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
+        }
+
+        const checkoutData = {
+            plano: planoPtBr,
+            email: document.getElementById('userEmail')?.value,
+            cardId: cardCreationResponse.data.id
+        };
+
+        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(checkoutData)
+        });
+
+        if (!checkoutResponse.ok) {
+            const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
+            throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
+        }
+
+        const mpData = await checkoutResponse.json();
+        if (!mpData.success || !mpData.init_point) {
+            throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
+        }
+
+        // 4. Redirecionar para o checkout
+        window.location.href = mpData.init_point;
+
+    } catch (error) {
+        console.error('Erro no processo de seleção de plano:', error);
+        
+        // 5. Restaurar botão em caso de erro
+        clickedButton.disabled = false;
+        clickedButton.innerHTML = 'Selecionar plano';
+        
+        // 6. Esconder overlay
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+        
+        // 7. Mostrar erro
+        alert(error.message || 'Erro ao processar pagamento. Tente novamente.');
     }
+}
 
     navigateCarousel(direction) {
         if (!this.state.formData.images.length) return;
@@ -1500,7 +1599,7 @@ async fetchBibleVerse() {
                 </div>
             ` : ''}
             <div class="image-counter">
-                <span class="current">${this.state.currentImageIndex + 1}</span>/<span class="total">${this.state.formData.images.length}</span>
+                <span class="current">${this.state.formData.images.length}</span>/<span class="total">${this.state.formData.images.length}</span>
             </div>
         `;
 

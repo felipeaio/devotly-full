@@ -614,6 +614,15 @@
             observer.observe(document.body, config);
         });
     </script>
+
+    <!-- Adicione este HTML antes da tag </body> no final do arquivo -->
+    <div id="planLoadingOverlay" class="plan-loading-wrapper" style="display: none;">
+        <div class="plan-loading-container">
+            <div class="plan-loading-spinner"></div>
+            <div class="plan-loading-text">Processando pagamento</div>
+            <div class="plan-loading-subtext">Aguarde um momento...</div>
+        </div>
+    </div>
 </body>
 
 </html>
