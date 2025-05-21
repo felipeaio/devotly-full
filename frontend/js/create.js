@@ -539,10 +539,27 @@ class DevotlyCreator {
         });
 
         document.querySelectorAll('.btn-select-plan').forEach(button => {
-            const newButton = button.cloneNode(true); // Clone if selectPlan might change
+            const newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
             newButton.addEventListener('click', (e) => {
-                this.selectPlan(e.target.dataset.plan);
+                e.preventDefault();
+                
+                // Obter o plano do data-plan do botão
+                const planType = e.target.dataset.plan || e.target.closest('.btn-select-plan')?.dataset.plan;
+                
+                if (planType) {
+                    // Adicionar classe visual imediatamente para feedback instantâneo
+                    const allCards = document.querySelectorAll('.plan-card');
+                    allCards.forEach(card => card.classList.remove('selecting'));
+                    
+                    const selectedCard = e.target.closest('.plan-card');
+                    if (selectedCard) {
+                        selectedCard.classList.add('selecting');
+                    }
+                    
+                    // Chamar o método selectPlan
+                    this.selectPlan(planType);
+                }
             });
         });
 
@@ -1121,41 +1138,90 @@ scrollToSection(sectionId) {
         });
     }
 
-    async fetchBibleVerse() {
-        const bookSelect = document.getElementById('bibleBook');
-        const chapterInput = document.getElementById('bibleChapter');
-        const verseInput = document.getElementById('bibleVerse');
+async fetchBibleVerse() {
+    const bookSelect = document.getElementById('bibleBook');
+    const chapterInput = document.getElementById('bibleChapter');
+    const verseInput = document.getElementById('bibleVerse');
+    const fetchButton = document.getElementById('fetchVerse');
+    
+    // Verificações iniciais
+    if (!bookSelect?.value || !chapterInput?.value || !verseInput?.value) {
+        this.showError(bookSelect || chapterInput || verseInput, 'Por favor, selecione um livro, capítulo e versículo');
+        return;
+    }
 
-        if (!bookSelect?.value || !chapterInput?.value || !verseInput?.value) {
-            this.showError(bookSelect || chapterInput || verseInput, 'Por favor, selecione um livro, capítulo e versículo');
-            return;
-        }
-
-        try {
-            const response = await this.simulateBibleApiCall(bookSelect.value, chapterInput.value, verseInput.value);
-            if (response && response.text !== "Versículo não encontrado") {
-                this.state.formData.bibleVerse = {
-                    book: bookSelect.options[bookSelect.selectedIndex].text,
-                    chapter: chapterInput.value,
-                    verse: verseInput.value,
-                    text: response.text,
-                    reference: `${bookSelect.options[bookSelect.selectedIndex].text} ${chapterInput.value}:${verseInput.value}`
-                };
-                const verseTextElem = document.querySelector('.verse-preview .verse-text'); // Form preview
-                if (verseTextElem) verseTextElem.textContent = `"${response.text}"`;
-                const verseRefElem = document.querySelector('.verse-preview .verse-reference'); // Form preview
-                if (verseRefElem) verseRefElem.textContent = this.state.formData.bibleVerse.reference;
-                this.updatePreview(); // Update main preview
-            } else {
-                this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
-                this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' }; // Clear verse
-                this.updatePreview();
+    // Definir estado de carregamento
+    if (fetchButton) {
+        fetchButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+        fetchButton.disabled = true;
+    }
+    
+    try {
+        const response = await this.simulateBibleApiCall(bookSelect.value, chapterInput.value, verseInput.value);
+        
+        if (response && response.text !== "Versículo não encontrado") {
+            this.state.formData.bibleVerse = {
+                book: bookSelect.options[bookSelect.selectedIndex].text,
+                chapter: chapterInput.value,
+                verse: verseInput.value,
+                text: response.text,
+                reference: `${bookSelect.options[bookSelect.selectedIndex].text} ${chapterInput.value}:${verseInput.value}`
+            };
+            
+            // Atualizar preview no formulário
+            const versePreviewElement = document.querySelector('.verse-preview');
+            const verseTextElement = document.querySelector('.verse-preview .verse-text');
+            const verseRefElement = document.querySelector('.verse-preview .verse-reference');
+            
+            if (versePreviewElement && verseTextElement && verseRefElement) {
+                verseTextElement.textContent = `"${response.text}"`;
+                verseRefElement.textContent = this.state.formData.bibleVerse.reference;
+                versePreviewElement.style.display = 'block';
             }
-        } catch (error) {
-            console.error('Erro ao buscar versículo:', error);
-            this.showError(bookSelect, 'Não foi possível carregar o versículo. Tente novamente.');
+            
+            // Atualizar preview principal
+            const previewVerseTextElem = document.querySelector('#verseSection #previewVerseText');
+            if (previewVerseTextElem) {
+                previewVerseTextElem.textContent = `"${response.text}"`;
+            }
+            
+            const previewVerseRefElem = document.querySelector('#verseSection #previewVerseRef');
+            if (previewVerseRefElem) {
+                previewVerseRefElem.textContent = this.state.formData.bibleVerse.reference;
+            }
+            
+            // Destacar seção
+            const verseSection = document.getElementById('verseSection');
+            if (verseSection) {
+                verseSection.classList.add('highlight-pulse');
+                setTimeout(() => {
+                    verseSection.classList.remove('highlight-pulse');
+                }, 2000);
+            }
+            
+            this.updatePreview();
+        } else {
+            this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
+            this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' };
+            
+            const versePreviewElement = document.querySelector('.verse-preview');
+            if (versePreviewElement) {
+                versePreviewElement.style.display = 'none';
+            }
+            
+            this.updatePreview();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar versículo:', error);
+        this.showError(bookSelect, 'Não foi possível carregar o versículo. Tente novamente.');
+    } finally {
+        // Restaurar botão sempre com o HTML fixo
+        if (fetchButton) {
+            fetchButton.innerHTML = '<i class="fas fa-search"></i> Buscar Versículo';
+            fetchButton.disabled = false;
         }
     }
+}
 
     simulateBibleApiCall(book, chapter, verse) { // Same simulation
         return new Promise((resolve) => {
@@ -1186,52 +1252,92 @@ scrollToSection(sectionId) {
         this.updatePreview();
     }
 
-    async selectPlan(plan) {
-        const loadingModal = document.getElementById('loadingModal');
-        if (loadingModal) loadingModal.style.display = 'flex';
-
-        try {
-            const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
-            const planoPtBr = planMapping[plan] || plan;
-            this.state.formData.selectedPlan = planoPtBr;
-
-            const cardCreationResponse = await this.submitFormData(); // This now handles image uploads internally
-            if (!cardCreationResponse.success) {
-                throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
-            }
-            console.log('Cartão criado:', cardCreationResponse.data);
-
-            const checkoutData = {
-                plano: planoPtBr,
-                email: document.getElementById('userEmail')?.value,
-                cardId: cardCreationResponse.data.id
-            };
-            console.log('Enviando dados para checkout:', checkoutData);
-
-            const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(checkoutData)
-            });
-
-            if (!checkoutResponse.ok) {
-                const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
-                throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
-            }
-            const mpData = await checkoutResponse.json();
-
-            if (!mpData.success || !mpData.init_point) {
-                throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
-            }
-            console.log('Checkout criado, redirecionando:', mpData.init_point);
-            window.location.href = mpData.init_point;
-
-        } catch (error) {
-            console.error('Erro no processo de seleção de plano:', error);
-            if (loadingModal) loadingModal.style.display = 'none';
-            alert(error.message || 'Erro ao processar pagamento. Tente novamente.'); // Use custom modal for errors
-        }
+async selectPlan(plan) {
+    // Identificar qual botão foi clicado
+    const clickedButton = document.querySelector(`.btn-select-plan[data-plan="${plan}"]`);
+    if (!clickedButton) return;
+    
+    // Adicionar classe de loading ao botão
+    clickedButton.classList.add('loading');
+    clickedButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    
+    // Encontrar o card pai e adicionar a classe selecting
+    const planCard = clickedButton.closest('.plan-card');
+    if (planCard) {
+        planCard.classList.add('selecting');
     }
+    
+    // Desabilitar todos os botões para evitar cliques múltiplos
+    document.querySelectorAll('.btn-select-plan').forEach(btn => {
+        btn.disabled = true;
+    });
+    
+    // Mostrar o modal de loading
+    const loadingModal = document.getElementById('loadingModal');
+    if (loadingModal) {
+        loadingModal.style.display = 'flex';
+    }
+    
+    try {
+        const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
+        const planoPtBr = planMapping[plan] || plan;
+        this.state.formData.selectedPlan = planoPtBr;
+        
+        const cardCreationResponse = await this.submitFormData();
+        if (!cardCreationResponse.success) {
+            throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
+        }
+        console.log('Cartão criado:', cardCreationResponse.data);
+        
+        const checkoutData = {
+            plano: planoPtBr,
+            email: document.getElementById('userEmail')?.value,
+            cardId: cardCreationResponse.data.id
+        };
+        console.log('Enviando dados para checkout:', checkoutData);
+        
+        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(checkoutData)
+        });
+        
+        if (!checkoutResponse.ok) {
+            const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
+            throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
+        }
+        const mpData = await checkoutResponse.json();
+        
+        if (!mpData.success || !mpData.init_point) {
+            throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
+        }
+        console.log('Checkout criado, redirecionando:', mpData.init_point);
+        window.location.href = mpData.init_point;
+        
+    } catch (error) {
+        console.error('Erro no processo de seleção de plano:', error);
+        
+        // Restaurar o estado original dos botões
+        clickedButton.classList.remove('loading');
+        clickedButton.innerHTML = 'Selecionar plano';
+        
+        if (planCard) {
+            planCard.classList.remove('selecting');
+        }
+        
+        document.querySelectorAll('.btn-select-plan').forEach(btn => {
+            btn.disabled = false;
+        });
+        
+        // Esconder o modal de loading em caso de erro
+        if (loadingModal) {
+            loadingModal.style.display = 'none';
+        }
+        
+        // Mostrar mensagem de erro para o usuário
+        alert(error.message || 'Erro ao processar pagamento. Tente novamente.');
+    }
+}
 
     navigateCarousel(direction) {
         if (!this.state.formData.images.length) return;
@@ -1687,40 +1793,6 @@ class PreviewModal {
                 });
             return;
         }
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        this.openButton.addEventListener('click', () => this.openModal());
-        this.closeButton.addEventListener('click', () => this.closeModal());
-        document.addEventListener('keydown', (e) => {
-            if ( e.key === 'Escape' && this.modal.classList.contains('active')) {
-                this.closeModal();
-            }
-        });
-    }
-
-    openModal() {
-        if (window.devotlyCreator && typeof window.devotlyCreator.updatePreview === 'function') {
-            window.devotlyCreator.updatePreview(); // Ensure preview is up-to-date
-        }
-
-        if (this.previewContentContainer && this.modalBody) {
-            this.modalBody.appendChild(this.previewContentContainer); // Move preview into modal
-            this.previewContentContainer.style.display = 'block'; // Ensure it's visible
-            // Potentially adjust styles for modal view, e.g., height
-            this.previewContentContainer.style.height = 'calc(100vh - 4rem - 60px)'; // Example: full height minus padding and close button
-        }
-
-        document.body.style.overflow = 'hidden';
-        this.modal.classList.add('active');
-
-        // Inicializar navegador vertical se ainda não existir
-        setTimeout(() => {
-            if (!window.previewNavigator) {
-                window.previewNavigator = new VerticalPreviewNavigator();
-            }
-        }, 100);
     }
 
     closeModal() {

@@ -154,6 +154,56 @@ html {
     /* Mantido como estava, verificar se é scale ou translate */
 }
 
+/* Estilos aprimorados para a galeria de imagens */
+.gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-height: 500px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(244, 196, 64, 0.15);
+}
+
+.gallery-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-inner img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform-origin: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+}
+
+.gallery-inner img.active {
+    animation: fadeInZoom 0.5s ease forwards;
+}
+
+@keyframes fadeInZoom {
+    from {
+        opacity: 0.4;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Controles de carrossel aprimorados */
 .carousel-controls {
     position: absolute;
     top: 50%;
@@ -161,76 +211,238 @@ html {
     display: flex;
     justify-content: space-between;
     transform: translateY(-50%);
-    padding: 0 1rem;
+    padding: 0 15px;
+    z-index: 10;
 }
 
 .carousel-prev,
 .carousel-next {
-    background: rgba(0, 0, 0, 0.7);
-    border: none;
-    color: var(--color-accent);
-    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(244, 196, 64, 0.3);
+    color: var(--color-light);
+    padding: 0;
     cursor: pointer;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
 }
 
 .carousel-prev:hover,
 .carousel-next:hover {
-    background: var(--color-accent);
+    background: rgba(244, 196, 64, 0.8);
     color: var(--color-dark);
     transform: scale(1.1);
+    box-shadow: 0 5px 20px rgba(244, 196, 64, 0.4);
 }
 
-.no-images {
-    /* Mantido pois existe .no-images, .no-media */
+.carousel-prev:active,
+.carousel-next:active {
+    transform: scale(0.95);
+}
+
+/* Indicadores de imagem aprimorados */
+.gallery-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
+    gap: 10px;
+    z-index: 5;
+    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.gallery-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-indicator:hover {
+    background: rgba(244, 196, 64, 0.7);
+    transform: scale(1.2);
+}
+
+.gallery-indicator.active {
+    width: 24px;
+    border-radius: 10px;
+    background: #f4c440;
+    box-shadow: 0 0 8px rgba(244, 196, 64, 0.6);
+}
+
+.gallery-indicator.active::after {
+    opacity: 1;
+}
+
+/* Contador de imagens aprimorado */
+.image-counter {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--color-light);
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    z-index: 5;
+}
+
+.image-counter .current {
+    color: #f4c440;
+    font-weight: 600;
+    font-size: 1.1rem;
+    min-width: 1ch;
+    text-align: center;
+}
+
+.image-counter .total {
+    opacity: 0.8;
+    min-width: 1ch;
+    text-align: center;
+}
+
+/* Efeito de gradiente para destacar a imagem */
+.gallery-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Animação de carregamento para quando as imagens estiverem carregando */
+@keyframes imagePulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+}
+
+.gallery-inner.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    /* Ou 120px dependendo do contexto original */
-    color: var(--color-text);
-    opacity: 0.6;
-    /* Ou 0.5 */
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    z-index: 5;
+    animation: imagePulse 1.5s infinite;
 }
 
-.no-images i {
-    /* Mantido pois existe .no-images i, .no-media i */
-    font-size: clamp(2rem, 5vw, 2.5rem);
-    /* Ou clamp(1.5rem, 4vw, 1.75rem) */
-    margin-bottom: 0.5rem;
-    /* Ou 0.4rem */
+.gallery-inner.loading::after {
+    content: '\f1ce';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #f4c440;
+    font-size: 2rem;
+    z-index: 6;
+    animation: spin 1.5s infinite linear;
 }
 
-
-.no-media {
-    /* Mantido pois existe .no-images, .no-media */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    /* Ou 120px */
-    color: var(--color-text);
-    opacity: 0.6;
-    /* Ou 0.5 */
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-.no-media i {
-    /* Mantido pois existe .no-images i, .no-media i */
-    font-size: clamp(2rem, 5vw, 2.5rem);
-    /* Ou clamp(1.5rem, 4vw, 1.75rem) */
-    margin-bottom: 0.5rem;
-    /* Ou 0.4rem */
+/* Responsividade */
+@media (max-width: 768px) {
+    .gallery-container {
+        border-radius: 12px;
+    }
+
+    .carousel-prev,
+    .carousel-next {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .gallery-indicators {
+        bottom: 15px;
+        padding: 6px 12px;
+    }
+
+    .image-counter {
+        top: 15px;
+        right: 15px;
+        padding: 5px 12px;
+        font-size: 0.85rem;
+    }
+
+    .image-counter .current {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-inner {
+        min-height: 250px;
+    }
+
+    .carousel-prev,
+    .carousel-next {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+
+    .gallery-indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .gallery-indicator.active {
+        width: 20px;
+    }
+
+    .image-counter {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
 }
 
 /* Cabeçalho */
@@ -698,6 +910,61 @@ html {
     content: '✓ ';
 }
 
+/* Adicione este código ao final do arquivo */
+.btn-select-plan.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.btn-select-plan.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+/* Estilos adicionais para o estado do plano selecionado */
+.plan-card.selecting {
+    transition: all 0.3s ease;
+    border-color: #f4c440;
+    box-shadow: 0 0 15px rgba(244, 196, 64, 0.3);
+}
+
+/* Efeito de pulsação do botão em loading */
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(244, 196, 64, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0);
+    }
+}
+
+.plan-card.selecting {
+    animation: pulse-border 2s infinite;
+}
+
 /* Responsividade dos Planos */
 @media (max-width: 768px) {
     .plan-cards {
@@ -860,7 +1127,7 @@ html {
     border: 1px solid rgba(212, 175, 55, 0.1);
     border-radius: var(--border-radius);
     padding: 1.5rem;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -2171,4 +2438,77 @@ html {
   .bible-selector h3 i {
     font-size: 1.3rem;
   }
+}
+
+/* Adicione este estilo ao final do arquivo */
+@keyframes highlight-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(244, 196, 64, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0);
+    }
+}
+
+.highlight-pulse {
+    animation: highlight-pulse 2s ease-out;
+}
+
+/* Melhorar a aparência do verse-preview no formulário */
+.verse-preview {
+    display: none;
+    background-color: rgba(244, 196, 64, 0.05);
+    border: 1px solid rgba(244, 196, 64, 0.2);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.verse-preview .verse-text {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    color: var(--color-light);
+    text-align: center;
+}
+
+.verse-preview .verse-reference {
+    display: block;
+    text-align: right;
+    font-size: 0.95rem;
+    color: #f4c440;
+    margin-top: 0.5rem;
+}
+
+/* Adicione estes estilos ao final do arquivo ou modifique os existentes */
+.message-container {
+    /* Quebra de palavras e texto */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    
+    /* Garante que o texto não ultrapasse o container */
+    max-width: 100%;
+    
+    /* Melhora a leitura em dispositivos móveis */
+    text-align: center;
+    padding: 1rem;
+    
+    /* Evita comportamentos inesperados do text-overflow */
+    white-space: pre-wrap;
+    
+    /* Garante que o container se ajuste ao conteúdo */
+    display: block;
+    
+    /* Compatibilidade com navegadores mais antigos */
+    -ms-word-break: break-all;
+    -ms-hyphens: auto;
+    -webkit-hyphens: auto;
 }
