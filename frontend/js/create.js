@@ -539,27 +539,10 @@ class DevotlyCreator {
         });
 
         document.querySelectorAll('.btn-select-plan').forEach(button => {
-            const newButton = button.cloneNode(true);
+            const newButton = button.cloneNode(true); // Clone if selectPlan might change
             button.parentNode.replaceChild(newButton, button);
             newButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // Obter o plano do data-plan do botão
-                const planType = e.target.dataset.plan || e.target.closest('.btn-select-plan')?.dataset.plan;
-                
-                if (planType) {
-                    // Adicionar classe visual imediatamente para feedback instantâneo
-                    const allCards = document.querySelectorAll('.plan-card');
-                    allCards.forEach(card => card.classList.remove('selecting'));
-                    
-                    const selectedCard = e.target.closest('.plan-card');
-                    if (selectedCard) {
-                        selectedCard.classList.add('selecting');
-                    }
-                    
-                    // Chamar o método selectPlan
-                    this.selectPlan(planType);
-                }
+                this.selectPlan(e.target.dataset.plan);
             });
         });
 
@@ -1142,24 +1125,31 @@ async fetchBibleVerse() {
     const bookSelect = document.getElementById('bibleBook');
     const chapterInput = document.getElementById('bibleChapter');
     const verseInput = document.getElementById('bibleVerse');
-    const fetchButton = document.getElementById('fetchVerse');
     
-    // Verificações iniciais
+    // Salvar referência do botão e seu texto original
+    const fetchButton = document.getElementById('fetchVerse');
+    if (!fetchButton) return; // Verificação de segurança
+    
+    const originalButtonText = '<i class="fas fa-search"></i> Buscar Versículo';
+    
     if (!bookSelect?.value || !chapterInput?.value || !verseInput?.value) {
         this.showError(bookSelect || chapterInput || verseInput, 'Por favor, selecione um livro, capítulo e versículo');
         return;
     }
 
-    // Definir estado de carregamento
-    if (fetchButton) {
+    try {
+        // Mostrar indicador de carregamento
         fetchButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
         fetchButton.disabled = true;
-    }
-    
-    try {
+        
         const response = await this.simulateBibleApiCall(bookSelect.value, chapterInput.value, verseInput.value);
         
+        // Restaurar o botão ao estado original
+        fetchButton.innerHTML = originalButtonText;
+        fetchButton.disabled = false;
+        
         if (response && response.text !== "Versículo não encontrado") {
+            // Atualizar o estado com os dados do versículo
             this.state.formData.bibleVerse = {
                 book: bookSelect.options[bookSelect.selectedIndex].text,
                 chapter: chapterInput.value,
@@ -1168,7 +1158,7 @@ async fetchBibleVerse() {
                 reference: `${bookSelect.options[bookSelect.selectedIndex].text} ${chapterInput.value}:${verseInput.value}`
             };
             
-            // Atualizar preview no formulário
+            // 1. Atualizar o preview no formulário
             const versePreviewElement = document.querySelector('.verse-preview');
             const verseTextElement = document.querySelector('.verse-preview .verse-text');
             const verseRefElement = document.querySelector('.verse-preview .verse-reference');
@@ -1179,7 +1169,7 @@ async fetchBibleVerse() {
                 versePreviewElement.style.display = 'block';
             }
             
-            // Atualizar preview principal
+            // 2. Atualizar no preview principal
             const previewVerseTextElem = document.querySelector('#verseSection #previewVerseText');
             if (previewVerseTextElem) {
                 previewVerseTextElem.textContent = `"${response.text}"`;
@@ -1190,7 +1180,7 @@ async fetchBibleVerse() {
                 previewVerseRefElem.textContent = this.state.formData.bibleVerse.reference;
             }
             
-            // Destacar seção
+            // 3. Destacar o preview do versículo para chamar atenção
             const verseSection = document.getElementById('verseSection');
             if (verseSection) {
                 verseSection.classList.add('highlight-pulse');
@@ -1204,6 +1194,7 @@ async fetchBibleVerse() {
             this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
             this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' };
             
+            // Esconder o preview no formulário caso o versículo não seja encontrado
             const versePreviewElement = document.querySelector('.verse-preview');
             if (versePreviewElement) {
                 versePreviewElement.style.display = 'none';
@@ -1215,9 +1206,10 @@ async fetchBibleVerse() {
         console.error('Erro ao buscar versículo:', error);
         this.showError(bookSelect, 'Não foi possível carregar o versículo. Tente novamente.');
     } finally {
-        // Restaurar botão sempre com o HTML fixo
+        // Garantir que o botão sempre volte ao estado original
+        // Este bloco sempre executa, mesmo se houver erros no try ou no catch
         if (fetchButton) {
-            fetchButton.innerHTML = '<i class="fas fa-search"></i> Buscar Versículo';
+            fetchButton.innerHTML = originalButtonText;
             fetchButton.disabled = false;
         }
     }
@@ -1252,92 +1244,52 @@ async fetchBibleVerse() {
         this.updatePreview();
     }
 
-async selectPlan(plan) {
-    // Identificar qual botão foi clicado
-    const clickedButton = document.querySelector(`.btn-select-plan[data-plan="${plan}"]`);
-    if (!clickedButton) return;
-    
-    // Adicionar classe de loading ao botão
-    clickedButton.classList.add('loading');
-    clickedButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    
-    // Encontrar o card pai e adicionar a classe selecting
-    const planCard = clickedButton.closest('.plan-card');
-    if (planCard) {
-        planCard.classList.add('selecting');
+    async selectPlan(plan) {
+        const loadingModal = document.getElementById('loadingModal');
+        if (loadingModal) loadingModal.style.display = 'flex';
+
+        try {
+            const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
+            const planoPtBr = planMapping[plan] || plan;
+            this.state.formData.selectedPlan = planoPtBr;
+
+            const cardCreationResponse = await this.submitFormData(); // This now handles image uploads internally
+            if (!cardCreationResponse.success) {
+                throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
+            }
+            console.log('Cartão criado:', cardCreationResponse.data);
+
+            const checkoutData = {
+                plano: planoPtBr,
+                email: document.getElementById('userEmail')?.value,
+                cardId: cardCreationResponse.data.id
+            };
+            console.log('Enviando dados para checkout:', checkoutData);
+
+            const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(checkoutData)
+            });
+
+            if (!checkoutResponse.ok) {
+                const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
+                throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
+            }
+            const mpData = await checkoutResponse.json();
+
+            if (!mpData.success || !mpData.init_point) {
+                throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
+            }
+            console.log('Checkout criado, redirecionando:', mpData.init_point);
+            window.location.href = mpData.init_point;
+
+        } catch (error) {
+            console.error('Erro no processo de seleção de plano:', error);
+            if (loadingModal) loadingModal.style.display = 'none';
+            alert(error.message || 'Erro ao processar pagamento. Tente novamente.'); // Use custom modal for errors
+        }
     }
-    
-    // Desabilitar todos os botões para evitar cliques múltiplos
-    document.querySelectorAll('.btn-select-plan').forEach(btn => {
-        btn.disabled = true;
-    });
-    
-    // Mostrar o modal de loading
-    const loadingModal = document.getElementById('loadingModal');
-    if (loadingModal) {
-        loadingModal.style.display = 'flex';
-    }
-    
-    try {
-        const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
-        const planoPtBr = planMapping[plan] || plan;
-        this.state.formData.selectedPlan = planoPtBr;
-        
-        const cardCreationResponse = await this.submitFormData();
-        if (!cardCreationResponse.success) {
-            throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
-        }
-        console.log('Cartão criado:', cardCreationResponse.data);
-        
-        const checkoutData = {
-            plano: planoPtBr,
-            email: document.getElementById('userEmail')?.value,
-            cardId: cardCreationResponse.data.id
-        };
-        console.log('Enviando dados para checkout:', checkoutData);
-        
-        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(checkoutData)
-        });
-        
-        if (!checkoutResponse.ok) {
-            const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
-            throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
-        }
-        const mpData = await checkoutResponse.json();
-        
-        if (!mpData.success || !mpData.init_point) {
-            throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
-        }
-        console.log('Checkout criado, redirecionando:', mpData.init_point);
-        window.location.href = mpData.init_point;
-        
-    } catch (error) {
-        console.error('Erro no processo de seleção de plano:', error);
-        
-        // Restaurar o estado original dos botões
-        clickedButton.classList.remove('loading');
-        clickedButton.innerHTML = 'Selecionar plano';
-        
-        if (planCard) {
-            planCard.classList.remove('selecting');
-        }
-        
-        document.querySelectorAll('.btn-select-plan').forEach(btn => {
-            btn.disabled = false;
-        });
-        
-        // Esconder o modal de loading em caso de erro
-        if (loadingModal) {
-            loadingModal.style.display = 'none';
-        }
-        
-        // Mostrar mensagem de erro para o usuário
-        alert(error.message || 'Erro ao processar pagamento. Tente novamente.');
-    }
-}
 
     navigateCarousel(direction) {
         if (!this.state.formData.images.length) return;
@@ -1793,6 +1745,40 @@ class PreviewModal {
                 });
             return;
         }
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.openButton.addEventListener('click', () => this.openModal());
+        this.closeButton.addEventListener('click', () => this.closeModal());
+        document.addEventListener('keydown', (e) => {
+            if ( e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.closeModal();
+            }
+        });
+    }
+
+    openModal() {
+        if (window.devotlyCreator && typeof window.devotlyCreator.updatePreview === 'function') {
+            window.devotlyCreator.updatePreview(); // Ensure preview is up-to-date
+        }
+
+        if (this.previewContentContainer && this.modalBody) {
+            this.modalBody.appendChild(this.previewContentContainer); // Move preview into modal
+            this.previewContentContainer.style.display = 'block'; // Ensure it's visible
+            // Potentially adjust styles for modal view, e.g., height
+            this.previewContentContainer.style.height = 'calc(100vh - 4rem - 60px)'; // Example: full height minus padding and close button
+        }
+
+        document.body.style.overflow = 'hidden';
+        this.modal.classList.add('active');
+
+        // Inicializar navegador vertical se ainda não existir
+        setTimeout(() => {
+            if (!window.previewNavigator) {
+                window.previewNavigator = new VerticalPreviewNavigator();
+            }
+        }, 100);
     }
 
     closeModal() {
@@ -2010,59 +1996,27 @@ class VerticalPreviewNavigator {
         this.goToSection(0, false);
     }
     
-createIndicators() {
-    // Remover indicadores existentes
-    const existingIndicators = document.querySelector('.vertical-section-indicators');
-    if (existingIndicators) {
-        existingIndicators.remove();
-    }
-    
-    // Criar container
-    const indicatorsContainer = document.createElement('div');
-    indicatorsContainer.className = 'vertical-section-indicators';
-    
-    // Aplicar estilos inline como backup
-    Object.assign(indicatorsContainer.style, {
-        position: 'fixed',
-        bottom: '70px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '10px',
-        zIndex: '1010',
-        padding: '8px 16px',
-        background: 'rgba(0, 0, 0, 0.5)',
-        borderRadius: '20px',
-        backdropFilter: 'blur(4px)'
-    });
-    
-    // Adicionar indicadores
-    this.sections.forEach((_, index) => {
-        const indicator = document.createElement('div');
-        indicator.className = 'v-indicator' + (index === 0 ? ' active' : '');
-        indicator.dataset.index = index;
+    createIndicators() {
+        // Criar indicadores verticais se não existirem
+        if (!document.querySelector('.vertical-section-indicators')) {
+            const indicatorsContainer = document.createElement('div');
+            indicatorsContainer.className = 'vertical-section-indicators';
+            
+            this.sections.forEach((_, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = 'v-indicator' + (index === 0 ? ' active' : '');
+                indicator.dataset.index = index;
+                indicatorsContainer.appendChild(indicator);
+            });
+            
+            if (this.previewContainer) {
+                this.previewContainer.appendChild(indicatorsContainer);
+            }
+        }
         
-        // Aplicar estilos inline
-        Object.assign(indicator.style, {
-            width: index === 0 ? '20px' : '8px',
-            height: '8px',
-            borderRadius: index === 0 ? '10px' : '50%',
-            background: index === 0 ? '#f4c440' : 'rgba(255, 255, 255, 0.3)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-        });
-        
-        indicatorsContainer.appendChild(indicator);
-    });
-    
-    if (this.previewContainer) {
-        this.previewContainer.appendChild(indicatorsContainer);
+        // Obter referências para os indicadores
+        this.indicators = Array.from(document.querySelectorAll('.v-indicator'));
     }
-    
-    // Obter referências
-    this.indicators = Array.from(document.querySelectorAll('.v-indicator'));
-}
     
     setupEventListeners() {
         if (!this.previewContainer) return;
@@ -2133,38 +2087,11 @@ createIndicators() {
         
         // Remover classe 'active' de todas as seções e indicadores
         this.sections.forEach(section => section.classList.remove('active'));
+        this.indicators.forEach(indicator => indicator.classList.remove('active'));
         
-        // Atualizar os indicadores horizontais (importante: remover estilos inline)
-        this.indicators.forEach((indicator, i) => {
-            indicator.classList.toggle('active', i === index);
-            
-            // Remover estilos inline e deixar o CSS controlar a aparência
-            indicator.style.width = '';
-            indicator.style.height = '';
-            indicator.style.borderRadius = '';
-            indicator.style.background = '';
-            
-            // Aplicar estilos corretos baseados no estado ativo
-            if (i === index) {
-                indicator.style.width = '20px';
-                indicator.style.borderRadius = '10px';
-                indicator.style.background = '#f4c440';
-            } else {
-                indicator.style.width = '8px';
-                indicator.style.borderRadius = '50%';
-                indicator.style.background = 'rgba(255, 255, 255, 0.3)';
-            }
-        });
-        
-        // Também atualizar os indicadores laterais (section-dot)
-        document.querySelectorAll('.section-dot').forEach(dot => dot.classList.remove('active'));
-        const correspondingDot = document.querySelector(`.section-dot[data-section="${this.sections[index].id}"]`);
-        if (correspondingDot) {
-            correspondingDot.classList.add('active');
-        }
-        
-        // Adicionar classe 'active' à seção atual
+        // Adicionar classe 'active' à seção atual e indicador
         this.sections[index].classList.add('active');
+        this.indicators[index].classList.add('active');
         
         // Atualizar background se necessário
         if (window.devotlyCreator) {
