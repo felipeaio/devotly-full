@@ -1108,12 +1108,20 @@ html {
 }
 
 .input-footer {
-    display: flex;
+    display: flex !important; /* Força display flex */
     justify-content: flex-end;
     font-size: 0.9rem;
     color: var(--color-text);
     opacity: 0.8;
     margin-top: 0.25rem;
+    min-height: 1.2em; /* Garante altura mínima */
+    visibility: visible !important; /* Força visibilidade */
+}
+
+/* Garante que o container pai não oculte o contador */
+.input-group {
+    position: relative;
+    margin-bottom: 1rem; /* Espaço para o contador */
 }
 
 /* Seletor de Versículo */

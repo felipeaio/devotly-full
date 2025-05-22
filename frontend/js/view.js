@@ -10,7 +10,8 @@ class DevotlyViewer {
             cardData: null,
             currentImageIndex: 0,
             loading: true,
-            error: null
+            error: null,
+            activeSection: 'titleSection'
         };
 
         // Definir elementos da página
@@ -31,13 +32,19 @@ class DevotlyViewer {
             verseText: document.getElementById('verseText'),
             verseRef: document.getElementById('verseRef'),
             cardImages: document.getElementById('cardImages'),
+            galleryInner: document.querySelector('.gallery-inner'),
             cardMedia: document.getElementById('cardMedia'),
             qrCodeImage: document.getElementById('qrCodeImage'),
             sectionDots: document.querySelectorAll('.section-dot'),
+            previewSections: document.querySelector('.preview-sections'),
+            sections: document.querySelectorAll('.preview-section'),
             toastNotification: document.getElementById('toastNotification'),
             toastMessage: document.getElementById('toastMessage'),
             retryBtn: document.getElementById('retryBtn'),
-            checkAgainBtn: document.getElementById('checkAgainBtn')
+            checkAgainBtn: document.getElementById('checkAgainBtn'),
+            carouselPrev: document.querySelector('.carousel-prev'),
+            carouselNext: document.querySelector('.carousel-next'),
+            imageCounter: document.querySelector('.image-counter')
         };
 
         this.initialize();
@@ -61,6 +68,31 @@ class DevotlyViewer {
                     this.loadCard();
                 }, 300);
             });
+        }
+
+        // Adicionar eventos para botões
+        if (this.elements.retryBtn) {
+            this.elements.retryBtn.addEventListener('click', () => this.loadCard());
+        }
+
+        if (this.elements.checkAgainBtn) {
+            this.elements.checkAgainBtn.addEventListener('click', () => this.loadCard());
+        }
+
+        // Setup carousel control events
+        if (this.elements.carouselPrev) {
+            this.elements.carouselPrev.addEventListener('click', () => this.navigateCarousel(-1));
+        }
+
+        if (this.elements.carouselNext) {
+            this.elements.carouselNext.addEventListener('click', () => this.navigateCarousel(1));
+        }
+
+        // Auto-carregamento
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoload = urlParams.get('autoload');
+        if (autoload === 'true') {
+            this.loadCard();
         }
     }
 
@@ -95,7 +127,12 @@ class DevotlyViewer {
         this.showState('loadingState');
 
         try {
-            const response = await fetch(`http://localhost:3000/api/cards/${this.state.cardId}`);
+            // Determine server URL based on environment
+            const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? 'http://localhost:3000'
+                : 'https://api.devotly.com';
+
+            const response = await fetch(`${baseUrl}/api/cards/${this.state.cardId}`);
 
             if (!response.ok) {
                 if (response.status === 404) {
@@ -143,7 +180,7 @@ class DevotlyViewer {
         // Mostrar o estado solicitado
         const stateElement = this.elements[stateId];
         if (stateElement) {
-            stateElement.style.display = 'block';
+            stateElement.style.display = 'flex';
         }
     }
 
@@ -186,14 +223,14 @@ class DevotlyViewer {
             if (conteudo.bibleVerse && conteudo.bibleVerse.text) {
                 this.elements.verseText.textContent = conteudo.bibleVerse.text;
                 this.elements.verseRef.textContent = conteudo.bibleVerse.reference;
-                this.elements.verseSection.style.display = 'block';
+                this.elements.verseSection.style.display = 'flex';
             } else {
                 this.elements.verseSection.style.display = 'none';
             }
         }
 
         // Galeria
-        if (this.elements.cardImages) {
+        if (this.elements.galleryInner) {
             this.renderGallery(conteudo.images);
         }
 
@@ -209,28 +246,39 @@ class DevotlyViewer {
 
         // Mostrar o cartão
         this.showState('cardContent');
+
+        // Marcar o primeiro dot como ativo
+        if (this.elements.sectionDots && this.elements.sectionDots.length > 0) {
+            this.elements.sectionDots[0].classList.add('active');
+        }
+        
+        // Rolagem suave entre seções
+        if (this.elements.previewSections) {
+            this.elements.previewSections.style.scrollBehavior = 'smooth';
+        }
     }
 
     renderGallery(images) {
-        const container = this.elements.cardImages;
-        if (!container) return;
+        const galleryInner = this.elements.galleryInner;
+        if (!galleryInner) return;
 
-        container.innerHTML = '';
+        galleryInner.innerHTML = '';
 
         if (!images || !images.length) {
-            container.innerHTML = `
+            galleryInner.innerHTML = `
                 <div class="no-images">
                     <i class="fas fa-image"></i>
                     <p>Sem imagens</p>
                 </div>
             `;
+            
+            // Esconder controles se não houver imagens
+            if (this.elements.carouselPrev) this.elements.carouselPrev.style.display = 'none';
+            if (this.elements.carouselNext) this.elements.carouselNext.style.display = 'none';
+            if (this.elements.imageCounter) this.elements.imageCounter.style.display = 'none';
+            
             return;
         }
-
-        // Criar container para as imagens
-        const galleryImages = document.createElement('div');
-        galleryImages.className = 'gallery-images';
-        container.appendChild(galleryImages);
 
         // Adicionar todas as imagens
         images.forEach((src, index) => {
@@ -240,87 +288,35 @@ class DevotlyViewer {
             img.src = src;
             img.alt = `Imagem ${index + 1}`;
             img.loading = 'lazy';
-            galleryImages.appendChild(img);
+            img.style.display = index === 0 ? 'block' : 'none';
+            
+            if (index === 0) {
+                img.classList.add('active');
+            }
+            
+            galleryInner.appendChild(img);
         });
 
-        // Adicionar indicador de scroll
-        const scrollIndicator = document.createElement('div');
-        scrollIndicator.className = 'gallery-scroll-indicator';
-        container.appendChild(scrollIndicator);
-
-        let autoScrollInterval = null;
-        let isUserInteracting = false;
-
-        // Função de scroll automático refinada
-        const autoScroll = () => {
-            if (isUserInteracting) return;
-
-            const scrollWidth = galleryImages.scrollWidth - container.clientWidth;
-            let currentScroll = container.scrollLeft;
-
-            currentScroll += container.clientWidth;
-
-            if (currentScroll > scrollWidth) {
-                currentScroll = 0;
-            }
-
-            container.scrollTo({
-                left: currentScroll,
-                behavior: 'smooth'
-            });
-        };
-
-        // Iniciar transição automática com 5 segundos
-        const startAutoScroll = () => {
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
-            autoScrollInterval = setInterval(autoScroll, 5000); // Alterado para 5 segundos
-        };
-
-        // Parar transição automática
-        const stopAutoScroll = () => {
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
-                autoScrollInterval = null;
-            }
-        };
-
-        // Eventos de interação do usuário
-        container.addEventListener('touchstart', () => {
-            isUserInteracting = true;
-            stopAutoScroll();
-        }, { passive: true });
-
-        container.addEventListener('mouseenter', () => {
-            isUserInteracting = true;
-            stopAutoScroll();
-        });
-
-        // Reiniciar transição após interação
-        const resetAutoScroll = () => {
-            isUserInteracting = false;
-            // Pequeno delay antes de reiniciar para melhor experiência
-            setTimeout(startAutoScroll, 500);
-        };
-
-        container.addEventListener('touchend', resetAutoScroll);
-        container.addEventListener('mouseleave', resetAutoScroll);
-
-        // Atualizar indicador de scroll
-        container.addEventListener('scroll', () => {
-            const progress = container.scrollLeft / (galleryImages.scrollWidth - container.clientWidth);
-            if (scrollIndicator) {
-                scrollIndicator.style.left = `${(progress * 80) + 10}%`;
-                scrollIndicator.style.opacity = '1';
-
-                clearTimeout(scrollIndicator.timeout);
-                scrollIndicator.timeout = setTimeout(() => {
-                    scrollIndicator.style.opacity = '0';
-                }, 1500);
-            }
-        });
-
-        // Iniciar o autoScroll
-        startAutoScroll();
+        // Atualizar contador de imagens
+        if (this.elements.imageCounter) {
+            const currentElem = this.elements.imageCounter.querySelector('.current');
+            const totalElem = this.elements.imageCounter.querySelector('.total');
+            
+            if (currentElem) currentElem.textContent = '1';
+            if (totalElem) totalElem.textContent = images.length;
+        }
+        
+        // Mostrar/esconder controles de carrossel
+        const showControls = images.length > 1;
+        if (this.elements.carouselPrev) {
+            this.elements.carouselPrev.style.display = showControls ? 'flex' : 'none';
+        }
+        if (this.elements.carouselNext) {
+            this.elements.carouselNext.style.display = showControls ? 'flex' : 'none';
+        }
+        if (this.elements.imageCounter) {
+            this.elements.imageCounter.style.display = showControls ? 'flex' : 'none';
+        }
     }
 
     renderMedia(mediaLink) {
@@ -385,6 +381,12 @@ class DevotlyViewer {
                 if (section) {
                     section.scrollIntoView({ behavior: 'smooth' });
                 }
+                
+                // Atualiza os dots
+                this.elements.sectionDots.forEach(d => {
+                    d.classList.remove('active');
+                });
+                dot.classList.add('active');
             });
         });
     }
@@ -399,14 +401,16 @@ class DevotlyViewer {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                    const sectionId = entry.target.id;
+                    
+                    // Atualiza o estado
+                    this.state.activeSection = sectionId;
+                    
                     // Atualizar classe ativa no indicator
                     this.elements.sectionDots.forEach(dot => {
-                        const isActive = dot.getAttribute('data-section') === entry.target.id;
+                        const isActive = dot.getAttribute('data-section') === sectionId;
                         dot.classList.toggle('active', isActive);
                     });
-
-                    // Aplicar efeito de fundo baseado na seção
-                    this.applyBackgroundEffect(entry.target.id);
                 }
             });
         }, {
@@ -418,29 +422,13 @@ class DevotlyViewer {
         sections.forEach(section => {
             observer.observe(section);
         });
-
-        // Configurar evento de clique nos dots para navegação
-        this.elements.sectionDots.forEach(dot => {
-            dot.addEventListener('click', () => {
-                const sectionId = dot.getAttribute('data-section');
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-    }
-
-    applyBackgroundEffect(sectionId) {
-        // Método intencionalmente vazio para não alterar o fundo
-        return;
     }
 
     navigateCarousel(direction) {
-        const container = this.elements.cardImages;
-        if (!container) return;
+        const galleryInner = this.elements.galleryInner;
+        if (!galleryInner) return;
 
-        const images = container.querySelectorAll('img');
+        const images = galleryInner.querySelectorAll('img');
         if (images.length <= 1) return;
 
         // Ocultar imagem atual
@@ -453,6 +441,46 @@ class DevotlyViewer {
         // Mostrar nova imagem
         images[this.state.currentImageIndex].style.display = 'block';
         images[this.state.currentImageIndex].classList.add('active');
+        
+        // Atualizar contador
+        if (this.elements.imageCounter) {
+            const currentElem = this.elements.imageCounter.querySelector('.current');
+            if (currentElem) {
+                currentElem.textContent = (this.state.currentImageIndex + 1).toString();
+            }
+        }
+    }
+
+    setupTouchInteractions() {
+        const galleryInner = this.elements.galleryInner;
+        if (!galleryInner) return;
+        
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        galleryInner.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        galleryInner.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+        
+        const handleSwipe = () => {
+            const minSwipeDistance = 50;
+            const swipeDistance = touchEndX - touchStartX;
+            
+            if (Math.abs(swipeDistance) < minSwipeDistance) return;
+            
+            if (swipeDistance > 0) {
+                // Swipe right - prev image
+                this.navigateCarousel(-1);
+            } else {
+                // Swipe left - next image
+                this.navigateCarousel(1);
+            }
+        };
     }
 
     getYouTubeId(url) {
@@ -474,56 +502,47 @@ class DevotlyViewer {
 
         return null;
     }
-
-    showToast(message, type = 'success') {
-        if (!this.elements.toastNotification || !this.elements.toastMessage) return;
-
-        // Definir mensagem
-        this.elements.toastMessage.textContent = message;
-
-        // Remover classes anteriores
-        this.elements.toastNotification.className = 'toast-notification';
-
-        // Adicionar classe de tipo
-        this.elements.toastNotification.classList.add(`toast-${type}`);
-
-        // Mostrar notificação
-        this.elements.toastNotification.classList.add('visible');
-
-        // Ocultar após 3 segundos
-        setTimeout(() => {
-            this.elements.toastNotification.classList.remove('visible');
-        }, 3000);
-    }
-
-    setupTouchInteractions() {
-        let touchStartY;
-        const container = document.querySelector('.preview-sections');
-        
-        container.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-        
-        container.addEventListener('touchmove', (e) => {
-            if (!touchStartY) return;
-            
-            const touchY = e.touches[0].clientY;
-            const diff = touchStartY - touchY;
-            
-            // Adicionar feedback visual baseado no gesto
-            if (Math.abs(diff) > 50) {
-                container.style.transform = `translateY(${-diff/10}px)`;
-            }
-        }, { passive: true });
-        
-        container.addEventListener('touchend', () => {
-            container.style.transform = '';
-            touchStartY = null;
-        });
-    }
 }
 
 // Inicializar quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
     new DevotlyViewer();
 });
+
+function setupMediaContainer() {
+  const mediaContainers = document.querySelectorAll('.media-container');
+  
+  mediaContainers.forEach(container => {
+    const iframe = container.querySelector('iframe');
+    
+    if (iframe) {
+      // Add loading state handling
+      iframe.addEventListener('load', () => {
+        container.classList.add('loaded');
+      });
+
+      // Add error handling
+      iframe.addEventListener('error', () => {
+        container.innerHTML = `
+          <div class="no-media">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Não foi possível carregar o conteúdo</p>
+          </div>
+        `;
+      });
+
+      // Improve iframe attributes for better performance and security
+      iframe.setAttribute('loading', 'lazy');
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
+      
+      // Add title for accessibility
+      iframe.setAttribute('title', 'Conteúdo de mídia incorporado');
+
+      // Add sandbox attributes for security
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+    }
+  });
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', setupMediaContainer);

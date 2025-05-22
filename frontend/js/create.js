@@ -299,15 +299,28 @@ class DevotlyCreator {
             this.updateFinalMessagePreview(); // Ensure this method exists or is defined
         }
 
+        this.initCharCounter();
+    }
+
+    initCharCounter() {
         const cardNameInput = document.getElementById('cardName');
+        if (!cardNameInput) return;
+        
+        // Remover qualquer contador existente primeiro
+        const existingCounters = cardNameInput.parentNode.querySelectorAll('.input-footer');
+        existingCounters.forEach(counter => counter.remove());
+        
+        // Criar um único contador novo
         const charCounter = document.createElement('div');
         charCounter.className = 'input-footer';
-
+        charCounter.textContent = '0/20 caracteres';
+        
         cardNameInput.parentNode.appendChild(charCounter);
-
+        
+        // Atualizar o contador quando o usuário digitar
         cardNameInput.addEventListener('input', function() {
-            const remaining = 20 - this.value.length;
-            charCounter.textContent = `${this.value.length}/20 caracteres`;
+            const remaining = this.value.length;
+            charCounter.textContent = `${remaining}/20 caracteres`;
         });
     }
 

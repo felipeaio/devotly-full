@@ -33,10 +33,25 @@
 
   <main class="view-container">
     <div id="startViewState" class="initial-screen">
-      <div class="initial-button-container">
-        <button id="startViewBtn" class="initial-button">
-          ABRIR DEVOCIONAL
-        </button>
+      <div class="initial-screen-container">
+        <div class="initial-content">
+          <div class="initial-logo">
+            <i class="fas fa-cross"></i>
+          </div>
+          <h1 class="initial-title">Mensagem de Fé</h1>
+          <p class="initial-subtitle">Uma devocional especial foi preparada para você</p>
+          <div class="initial-button-container">
+            <button id="startViewBtn" class="initial-button">
+              <i class="fas fa-book-open"></i>
+              ABRIR DEVOCIONAL
+            </button>
+          </div>
+          <div class="initial-decoration">
+            <span class="decoration-line"></span>
+            <span class="decoration-icon"><i class="fas fa-heart"></i></span>
+            <span class="decoration-line"></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -95,8 +110,15 @@
           <div class="preview-sections">
             <!-- Seção 1: Título -->
             <section class="preview-section" id="titleSection">
-              <div class="section-content">
-                <h1 id="cardTitle"></h1>
+              <div class="section-content title-container">
+                <div class="title-wrapper">
+                  <h1 id="cardTitle" class="card-title"></h1>
+                  <div class="title-decorators">
+                    <span class="decorator-line left"></span>
+                    <span class="decorator-icon"><i class="fas fa-cross"></i></span>
+                    <span class="decorator-line right"></span>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -113,8 +135,16 @@
             <section class="preview-section" id="verseSection">
               <div class="section-content">
                 <div class="verse-container">
-                  <p id="verseText"></p>
-                  <span id="verseRef"></span>
+                  <div class="verse-content">
+                    <i class="fas fa-quote-left quote-icon"></i>
+                    <p id="verseText"></p>
+                    <span id="verseRef"></span>
+                  </div>
+                  <div class="verse-decoration bottom">
+                    <span class="decoration-line"></span>
+                    <i class="fas fa-cross"></i>
+                    <span class="decoration-line"></span>
+                  </div>
                 </div>
               </div>
             </section>
@@ -123,7 +153,20 @@
             <section class="preview-section" id="gallerySection">
               <div class="section-content">
                 <div class="gallery-container" id="cardImages">
-                  <!-- Imagens serão inseridas via JavaScript -->
+                  <div class="gallery-inner">
+                    <!-- Imagens serão inseridas via JavaScript -->
+                  </div>
+                  <div class="carousel-controls">
+                    <button class="carousel-prev" aria-label="Anterior">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-next" aria-label="Próximo">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  <div class="image-counter">
+                    <span class="current">1</span>/<span class="total">3</span>
+                  </div>
                 </div>
               </div>
             </section>
@@ -139,9 +182,12 @@
 
             <!-- Seção 6: Mensagem Final -->
             <section class="preview-section" id="finalSection">
-              <div class="section-content">
+              <div class="section-content final-section-content">
                 <div class="final-message">
                   <p id="finalMessage"></p>
+                  <div class="message-decoration">
+                    <i class="fas fa-heart"></i>
+                  </div>
                   <div class="card-author" id="cardAuthor"></div>
                 </div>
               </div>
