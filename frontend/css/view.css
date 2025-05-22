@@ -1018,20 +1018,19 @@ body {
   }
 }
 
-/* Gallery Section Enhancement */
+/* Gallery Section - Simple & Responsive com Aumento de Altura */
 #gallerySection {
   background: linear-gradient(to bottom, rgba(12, 12, 18, 0.95), rgba(8, 8, 12, 0.98));
 }
 
 .gallery-container {
   width: 100%;
-  height: 100%;
-  max-width: 90%;
-  max-height: 80%;
+  max-width: 85%;
+  aspect-ratio: 16/12; /* Aumentado de 16/10 para 16/12 para maior altura vertical */
   position: relative;
-  overflow: hidden;
   border-radius: var(--border-radius);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
   margin: auto;
 }
 
@@ -1039,9 +1038,6 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .gallery-inner img {
@@ -1049,35 +1045,13 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--border-radius);
   opacity: 0;
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  transform: scale(1.05);
+  transition: opacity 0.3s ease;
 }
 
 .gallery-inner img.active {
   opacity: 1;
-  transform: scale(1);
   z-index: 1;
-}
-
-/* Enhanced image animations */
-.gallery-inner img.active {
-  animation: fadeInScale 0.6s ease forwards;
-}
-
-.gallery-inner img.exiting {
-  animation: fadeOutScale 0.6s ease forwards;
-}
-
-@keyframes fadeInScale {
-  from { opacity: 0; transform: scale(1.08); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes fadeOutScale {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
 }
 
 /* Carousel Controls */
@@ -1090,65 +1064,50 @@ body {
   z-index: 5;
   display: flex;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 .carousel-prev, 
 .carousel-next {
-  width: clamp(38px, 10vw, 48px);
-  height: clamp(38px, 10vw, 48px);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--color-light);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
 }
 
 .carousel-prev:hover, 
 .carousel-next:hover {
   background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.05);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-  border-color: rgba(244, 196, 64, 0.4);
-}
-
-.carousel-prev:active, 
-.carousel-next:active {
-  transform: scale(0.95);
 }
 
 .carousel-prev i, 
 .carousel-next i {
-  font-size: clamp(14px, 4vw, 18px);
+  font-size: 14px;
   color: var(--color-accent);
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 }
 
 /* Image Counter */
 .image-counter {
   position: absolute;
-  bottom: clamp(10px, 3vh, 20px);
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.6);
   color: var(--color-light);
-  padding: 6px clamp(10px, 3vw, 16px);
-  border-radius: 50px;
-  font-size: clamp(12px, 2.5vw, 14px);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  letter-spacing: 1px;
 }
 
 .image-counter .current {
@@ -1157,224 +1116,39 @@ body {
   margin: 0 2px;
 }
 
-.image-counter .total {
-  margin: 0 2px;
-}
-
-/* Empty state styling */
-.no-images {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: var(--border-radius);
-  padding: 2rem;
-}
-
-.no-images i {
-  font-size: clamp(2rem, 10vw, 4rem);
-  margin-bottom: 1rem;
-  opacity: 0.6;
-}
-
-.no-images p {
-  font-size: clamp(14px, 4vw, 16px);
-  opacity: 0.8;
-}
-
-/* Image hover effects */
-.gallery-inner:hover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at var(--x, 50%) var(--y, 50%),
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 60%
-  );
-  border-radius: var(--border-radius);
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.gallery-inner:hover::after {
-  opacity: 1;
-}
-
-/* Loading state */
-.gallery-inner.loading {
-  min-height: 200px;
-}
-
-.gallery-inner.loading::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(244, 196, 64, 0.1);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
 /* Responsiveness */
 @media (max-width: 768px) {
   .gallery-container {
-    max-width: 95%;
-  }
-  
-  .carousel-controls {
-    padding: 0 10px;
-  }
-  
-  .carousel-prev, 
-  .carousel-next {
-    width: 36px;
-    height: 36px;
-    margin: 0 5px;
+    max-width: 90%;
+    aspect-ratio: 4/4; /* Aumentado de 4/3 para 4/4 */
   }
 }
 
 @media (max-width: 480px) {
   .gallery-container {
-    max-width: 100%;
-    border-radius: calc(var(--border-radius) - 2px);
-  }
-  
-  .carousel-controls {
-    padding: 0 8px;
-  }
-  
-  .carousel-prev, 
-  .carousel-next {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .carousel-prev i, 
-  .carousel-next i {
-    font-size: 12px;
-  }
-  
-  .image-counter {
-    padding: 4px 10px;
-    font-size: 11px;
-    bottom: 8px;
+    max-width: 95%;
+    aspect-ratio: 1/1.2; /* Aumentado de 1/1 para 1/1.2 */
   }
 }
 
-/* Landscape optimization */
+/* Para dispositivos muito pequenos */
+@media (max-width: 360px) {
+  .gallery-container {
+    aspect-ratio: 1/1.3; /* Proporção ainda maior para telas muito pequenas */
+  }
+}
+
+/* Para telas maiores */
+@media (min-width: 992px) {
+  .gallery-container {
+    aspect-ratio: 16/13; /* Proporção um pouco maior para telas desktop */
+  }
+}
+
+/* Para telas em modo paisagem */
 @media (max-height: 500px) and (orientation: landscape) {
   .gallery-container {
+    aspect-ratio: 16/10; /* Menos altura em modo paisagem para evitar rolagem */
     max-height: 70vh;
   }
-  
-  .carousel-prev, 
-  .carousel-next {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .image-counter {
-    bottom: 6px;
-    padding: 3px 8px;
-    font-size: 10px;
-  }
-}
-
-/* Touch indicators for mobile */
-@media (hover: none) and (pointer: coarse) {
-  .gallery-container::after {
-    content: '';
-    position: absolute;
-    bottom: clamp(40px, 10vh, 60px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    z-index: 10;
-    opacity: 0.7;
-  }
-  
-  .swipe-indicator {
-    position: absolute;
-    bottom: clamp(36px, 8vh, 50px);
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 12px;
-    opacity: 0.7;
-    z-index: 10;
-  }
-  
-  .swipe-indicator i {
-    animation: swipeHint 2s infinite;
-  }
-  
-  @keyframes swipeHint {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(8px); }
-  }
-}
-
-/* Improved image focus effect */
-.gallery-inner img:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 4px;
-}
-
-/* Fullscreen capability */
-.gallery-container.fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  max-width: 100vw;
-  max-height: 100vh;
-  z-index: 9999;
-  border-radius: 0;
-  background: rgba(0, 0, 0, 0.95);
-}
-
-.fullscreen-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--color-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-}
-
-.fullscreen-toggle:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.1);
-}
-
-.fullscreen-toggle i {
-  font-size: 14px;
-  color: var(--color-accent);
 }

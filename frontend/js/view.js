@@ -607,3 +607,47 @@ function setupMediaContainer() {
 
 // Call the function when the page loads
 document.addEventListener('DOMContentLoaded', setupMediaContainer);
+
+/**
+ * Melhora a navegação simples do carrossel
+ */
+function enhanceSimpleGallery() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const galleryInner = document.querySelector('.gallery-inner');
+    if (!galleryInner) return;
+    
+    // Adicionar navegação por toque
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    galleryInner.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    galleryInner.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) {
+        // Swipe para esquerda - próxima imagem
+        document.querySelector('.carousel-next')?.click();
+      } else if (touchEndX - touchStartX > 50) {
+        // Swipe para direita - imagem anterior
+        document.querySelector('.carousel-prev')?.click();
+      }
+    }, { passive: true });
+    
+    // Pré-carregar imagens para transição mais suave
+    const images = galleryInner.querySelectorAll('img');
+    images.forEach(img => {
+      if (img.getAttribute('data-src')) {
+        const preloadImg = new Image();
+        preloadImg.src = img.getAttribute('data-src');
+        preloadImg.onload = () => {
+          img.src = preloadImg.src;
+          img.removeAttribute('data-src');
+        };
+      }
+    });
+  });
+}
+
+enhanceSimpleGallery();
