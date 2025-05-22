@@ -159,6 +159,7 @@ class DevotlyViewer {
 
             this.renderCard();
             this.setupEventListeners();
+            this.setupSectionIndicators(); // Adicionar esta linha
             this.setupSectionObserver();
             this.setupTouchInteractions();
 
@@ -422,6 +423,66 @@ class DevotlyViewer {
         sections.forEach(section => {
             observer.observe(section);
         });
+    }
+
+    setupSectionIndicators() {
+        const dots = document.querySelectorAll('.section-dot');
+        const sections = document.querySelectorAll('.preview-section');
+        
+        // Verifica visibilidade das seções no carregamento
+        this.checkSectionVisibility();
+        
+        // Atualiza indicadores quando há rolagem
+        this.elements.previewSections.addEventListener('scroll', () => {
+            this.checkSectionVisibility();
+        });
+        
+        // Adiciona feedback visual ao clicar
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                // Efeito visual de clique
+                dot.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    dot.style.transform = '';
+                }, 200);
+                
+                // Navegação para a seção
+                const sectionId = dot.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    }
+
+    checkSectionVisibility() {
+        const sections = Array.from(document.querySelectorAll('.preview-section'));
+        const dots = document.querySelectorAll('.section-dot');
+        
+        // Encontra a seção mais visível
+        const visibleSection = sections.reduce((most, section) => {
+            const rect = section.getBoundingClientRect();
+            const visibleHeight = Math.min(rect.bottom, window.innerHeight) - 
+                                  Math.max(rect.top, 0);
+            
+            return (visibleHeight > most.visibleHeight) 
+              ? { element: section, visibleHeight } 
+              : most;
+        }, { element: null, visibleHeight: 0 });
+        
+        if (visibleSection.element) {
+            const sectionId = visibleSection.element.id;
+            
+            // Atualiza os dots
+            dots.forEach(dot => {
+              if (dot.getAttribute('data-section') === sectionId) {
+                dot.classList.add('active');
+              } else {
+                dot.classList.remove('active');
+              }
+            });
+        }
     }
 
     navigateCarousel(direction) {
