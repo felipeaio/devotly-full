@@ -2,8 +2,7 @@
  * DevotlyViewer - Visualização de cartões
  * Baseado no layout de preview do create.js
  */
-class DevotlyViewer {
-    constructor() {
+class DevotlyViewer {    constructor() {
         // Estado inicial
         this.state = {
             cardId: null,
@@ -13,6 +12,10 @@ class DevotlyViewer {
             error: null,
             activeSection: 'titleSection'
         };
+        
+        // Variáveis de controle para rolagem suave
+        this.isScrolling = false;
+        this.lastScrollTime = 0;
 
         // Definir elementos da página
         this.elements = {
@@ -201,10 +204,11 @@ class DevotlyViewer {
 
         if (this.elements.cardMessage) {
             this.elements.cardMessage.textContent = conteudo.cardMessage || '';
-        }
-
-        if (this.elements.finalMessage) {
+        }        if (this.elements.finalMessage) {
             this.elements.finalMessage.textContent = conteudo.finalMessage || '';
+            
+            // Adicionar efeito de fade-in na mensagem final quando for visível
+            this.setupFinalMessageEffect();
         }
 
         // Autor
@@ -212,6 +216,15 @@ class DevotlyViewer {
             if (conteudo.userName) {
                 this.elements.cardAuthor.textContent = conteudo.userName;
                 this.elements.cardAuthor.style.display = 'block';
+                
+                // Formatar nome do autor se necessário
+                if (conteudo.userName.includes('-')) {
+                    const formattedName = conteudo.userName
+                        .split('-')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                    this.elements.cardAuthor.textContent = formattedName;
+                }
             } else {
                 this.elements.cardAuthor.style.display = 'none';
             }
@@ -316,9 +329,7 @@ class DevotlyViewer {
         if (this.elements.imageCounter) {
             this.elements.imageCounter.style.display = showControls ? 'flex' : 'none';
         }
-    }
-
-    renderMedia(mediaLink) {
+    }    renderMedia(mediaLink) {
         const container = this.elements.cardMedia;
         if (!container) return;
 
@@ -336,18 +347,53 @@ class DevotlyViewer {
             return;
         }
 
+        // Adicionar overlay de carregamento
+        container.innerHTML = `
+            <div class="media-loading-overlay">
+                <div class="media-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </div>
+        `;
+
         // Determinar tipo de mídia e renderizar
         if (mediaLink.includes('youtube.com') || mediaLink.includes('youtu.be')) {
             const videoId = this.getYouTubeId(mediaLink);
             if (videoId) {
-                container.innerHTML = `
-                    <iframe 
-                        src="https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
+                // Usar poster antes de carregar o iframe para melhorar o desempenho
+                const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                
+                // Criar elemento de pré-visualização
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'youtube-preview';
+                previewDiv.style.backgroundImage = `url(${thumbnailUrl})`;
+                previewDiv.innerHTML = `
+                    <div class="youtube-play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
                 `;
+                
+                // Substituir loading
+                container.innerHTML = '';
+                container.appendChild(previewDiv);
+                
+                // Carregar iframe ao clicar
+                previewDiv.addEventListener('click', () => {
+                    container.innerHTML = `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&autoplay=1" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            title="YouTube video player"
+                            loading="lazy">
+                        </iframe>
+                    `;
+                    container.classList.add('loaded');
+                    
+                    // Configurar observador para animações quando a seção estiver visível
+                    this.setupMediaVisibilityObserver();
+                });
             }
         } else if (mediaLink.includes('spotify.com')) {
             const spotifyData = this.getSpotifyId(mediaLink);
@@ -356,10 +402,19 @@ class DevotlyViewer {
                     <iframe 
                         src="https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}" 
                         frameborder="0" 
-                        allowtransparency="true" 
-                        allow="encrypted-media">
+                        allowtransparency="true"
+                        allow="encrypted-media"
+                        loading="lazy">
                     </iframe>
                 `;
+                
+                // Adicionar listener para marcar quando carregado
+                const iframe = container.querySelector('iframe');
+                if (iframe) {
+                    iframe.addEventListener('load', () => {
+                        container.classList.add('loaded');
+                    });
+                }
             }
         } else {
             container.innerHTML = `
@@ -369,6 +424,25 @@ class DevotlyViewer {
                 </div>
             `;
         }
+    }
+    
+    // Observador para ativar efeitos quando a mídia estiver visível
+    setupMediaVisibilityObserver() {
+        const mediaSection = document.getElementById('mediaSection');
+        const mediaContainer = this.elements.cardMedia;
+        
+        if (!mediaSection || !mediaContainer) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Adicionar classe para ativar efeitos quando visível
+                    mediaContainer.classList.add('media-visible');
+                }
+            });
+        }, { threshold: 0.6 });
+        
+        observer.observe(mediaSection);
     }
 
     setupEventListeners() {
@@ -388,18 +462,16 @@ class DevotlyViewer {
                 dot.classList.add('active');
             });
         });
-    }
-
-    setupSectionObserver() {
+    }    setupSectionObserver() {
         const previewSections = document.querySelector('.preview-sections');
         const sections = document.querySelectorAll('.preview-section');
 
         if (!previewSections || !sections.length) return;
 
-        // Configurar IntersectionObserver para detectar seções visíveis
+        // Configurar IntersectionObserver para detectar seções visíveis com maior precisão
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
                     const sectionId = entry.target.id;
                     
                     // Atualiza o estado
@@ -414,16 +486,107 @@ class DevotlyViewer {
             });
         }, {
             root: previewSections,
-            threshold: 0.5
+            threshold: 0.7
         });
 
         // Observar todas as seções
         sections.forEach(section => {
             observer.observe(section);
         });
-    }
 
-    setupSectionIndicators() {
+        // Adicionar evento de rolagem para controlar a navegação entre seções
+        previewSections.addEventListener('wheel', this.handleWheelNavigation.bind(this));
+        previewSections.addEventListener('keydown', this.handleKeyNavigation.bind(this));
+    }
+      // Método para controlar a navegação com a roda do mouse
+    handleWheelNavigation(event) {
+        event.preventDefault();
+        
+        const currentSectionIndex = this.getCurrentSectionIndex();
+        if (currentSectionIndex === -1) return;
+        
+        // Variáveis para debounce da rolagem
+        if (this.isScrolling) return;
+        this.isScrolling = true;
+        
+        // Determinar direção da rolagem
+        const direction = event.deltaY > 0 ? 1 : -1;
+        this.navigateToAdjacentSection(currentSectionIndex, direction);
+        
+        // Definir timeout para permitir nova navegação
+        setTimeout(() => {
+            this.isScrolling = false;
+        }, 800); // Tempo suficiente para a animação de rolagem terminar
+    }
+    
+    // Método para controlar a navegação com teclado
+    handleKeyNavigation(event) {
+        // Setas para cima/baixo
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            
+            const currentSectionIndex = this.getCurrentSectionIndex();
+            if (currentSectionIndex === -1) return;
+            
+            // Determinar direção da navegação
+            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            this.navigateToAdjacentSection(currentSectionIndex, direction);
+        }
+    }
+    
+    // Obter índice da seção atual
+    getCurrentSectionIndex() {
+        const sections = Array.from(document.querySelectorAll('.preview-section'));
+        return sections.findIndex(section => section.id === this.state.activeSection);
+    }
+    
+    // Navegar para a seção adjacente
+    navigateToAdjacentSection(currentIndex, direction) {
+        const sections = document.querySelectorAll('.preview-section');
+        const newIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
+        
+        if (newIndex !== currentIndex) {
+            const targetSection = sections[newIndex];
+            this.scrollToSection(targetSection.id);
+            
+            // Atualizar indicador de seção
+            this.updateSectionIndicator(targetSection.id);
+        }
+    }
+    
+    // Atualizar o indicador de seção ativa
+    updateSectionIndicator(sectionId) {
+        this.elements.sectionDots.forEach(dot => {
+            const isActive = dot.getAttribute('data-section') === sectionId;
+            dot.classList.toggle('active', isActive);
+        });
+    }
+      // Scroll para seção específica com efeito de transição aprimorado
+    scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+        
+        // Atualizar estado antes da rolagem
+        this.state.activeSection = sectionId;
+        
+        // Aplica transição suave personalizada
+        const previewSections = this.elements.previewSections;
+        if (previewSections) {
+            // Efeito de transição
+            section.classList.add('section-transition');
+            
+            // Rolar para a seção
+            section.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Remover classe de transição após animação concluída
+            setTimeout(() => {
+                section.classList.remove('section-transition');
+            }, 600);
+        }
+    }setupSectionIndicators() {
         const dots = document.querySelectorAll('.section-dot');
         const sections = document.querySelectorAll('.preview-section');
         
@@ -435,9 +598,11 @@ class DevotlyViewer {
             this.checkSectionVisibility();
         });
         
-        // Adiciona feedback visual ao clicar
+        // Adiciona feedback visual ao clicar e navegação entre seções
         dots.forEach(dot => {
-            dot.addEventListener('click', () => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                
                 // Efeito visual de clique
                 dot.style.transform = 'scale(0.8)';
                 setTimeout(() => {
@@ -446,31 +611,123 @@ class DevotlyViewer {
                 
                 // Navegação para a seção
                 const sectionId = dot.getAttribute('data-section');
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
+                this.scrollToSection(sectionId);
+                
+                // Atualizar navegação
+                this.updateSectionIndicator(sectionId);
             });
         });
+        
+        // Adicionar suporte a navegação por toque para seções
+        this.setupTouchNavigation();
+    }    // Configuração do efeito especial para a mensagem final
+    setupFinalMessageEffect() {
+        const finalSection = document.getElementById('finalSection');
+        const finalMessage = document.querySelector('.final-message');
+        const messageDecoration = document.querySelector('.message-decoration i');
+        
+        if (!finalSection || !finalMessage || !messageDecoration) return;
+        
+        // Adicionar evento de pulsação ao ícone quando a seção estiver visível
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Animar o coração quando a seção se tornar visível
+                    messageDecoration.classList.add('heartbeat');
+                    finalMessage.classList.add('active');
+                } else {
+                    messageDecoration.classList.remove('heartbeat');
+                    finalMessage.classList.remove('active');
+                }
+            });
+        }, { threshold: 0.7 });
+        
+        observer.observe(finalSection);
+        
+        // Adicionar evento de clique no ícone de coração
+        messageDecoration.addEventListener('click', () => {
+            messageDecoration.classList.add('heartbeat-intense');
+            
+            // Remover a classe após a animação
+            setTimeout(() => {
+                messageDecoration.classList.remove('heartbeat-intense');
+            }, 1000);
+        });
     }
-
-    checkSectionVisibility() {
+        
+    // Configurar navegação por toque entre seções
+    setupTouchNavigation() {
+        const previewSections = document.querySelector('.preview-sections');
+        if (!previewSections) return;
+        
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isTouchScrolling = false;
+        
+        previewSections.addEventListener('touchstart', (e) => {
+            // Não iniciar nova navegação se já estiver rolando
+            if (this.isScrolling) return;
+            
+            touchStartY = e.touches[0].clientY;
+            isTouchScrolling = false;
+        }, { passive: true });
+        
+        previewSections.addEventListener('touchmove', (e) => {
+            // Marcar que está rolando para evitar navegação indesejada com pequenos toques
+            isTouchScrolling = true;
+        }, { passive: true });
+        
+        previewSections.addEventListener('touchend', (e) => {
+            // Verificar se pode rolar (debounce)
+            if (!isTouchScrolling || this.isScrolling) return;
+            
+            touchEndY = e.changedTouches[0].clientY;
+            const touchDistance = touchEndY - touchStartY;
+            
+            // Garantir que o gesto foi significativo (distância mínima)
+            if (Math.abs(touchDistance) > 70) {
+                // Bloquear novas rolagens
+                this.isScrolling = true;
+                
+                const currentSectionIndex = this.getCurrentSectionIndex();
+                const direction = touchDistance < 0 ? 1 : -1; // Para baixo : Para cima
+                
+                this.navigateToAdjacentSection(currentSectionIndex, direction);
+                
+                // Permitir nova navegação após um período
+                setTimeout(() => {
+                    this.isScrolling = false;
+                }, 800);
+            }
+        }, { passive: true });
+    }checkSectionVisibility() {
         const sections = Array.from(document.querySelectorAll('.preview-section'));
         const dots = document.querySelectorAll('.section-dot');
+        const container = this.elements.previewSections;
         
-        // Encontra a seção mais visível
-        const visibleSection = sections.reduce((most, section) => {
+        if (!container) return;
+        
+        const containerRect = container.getBoundingClientRect();
+        const containerCenter = containerRect.top + containerRect.height / 2;
+        
+        // Encontra a seção mais próxima do centro da viewport
+        let closestSection = null;
+        let minDistance = Infinity;
+        
+        sections.forEach(section => {
             const rect = section.getBoundingClientRect();
-            const visibleHeight = Math.min(rect.bottom, window.innerHeight) - 
-                                  Math.max(rect.top, 0);
+            const sectionCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(sectionCenter - containerCenter);
             
-            return (visibleHeight > most.visibleHeight) 
-              ? { element: section, visibleHeight } 
-              : most;
-        }, { element: null, visibleHeight: 0 });
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSection = section;
+            }
+        });
         
-        if (visibleSection.element) {
-            const sectionId = visibleSection.element.id;
+        if (closestSection) {
+            const sectionId = closestSection.id;
+            this.state.activeSection = sectionId;
             
             // Atualiza os dots
             dots.forEach(dot => {
@@ -578,6 +835,18 @@ function setupMediaContainer() {
       // Add loading state handling
       iframe.addEventListener('load', () => {
         container.classList.add('loaded');
+        
+        // Adicionar notificação discreta quando o vídeo estiver pronto
+        const loadedNotification = document.createElement('div');
+        loadedNotification.className = 'media-loaded-notification';
+        loadedNotification.innerHTML = `<i class="fas fa-check"></i> Pronto para assistir`;
+        container.appendChild(loadedNotification);
+        
+        // Removê-la após alguns segundos
+        setTimeout(() => {
+          loadedNotification.classList.add('fade-out');
+          setTimeout(() => loadedNotification.remove(), 500);
+        }, 3000);
       });
 
       // Add error handling
@@ -586,8 +855,20 @@ function setupMediaContainer() {
           <div class="no-media">
             <i class="fas fa-exclamation-circle"></i>
             <p>Não foi possível carregar o conteúdo</p>
+            <button class="retry-media-btn">Tentar novamente</button>
           </div>
         `;
+        
+        // Adicionar evento para botão de tentar novamente
+        const retryBtn = container.querySelector('.retry-media-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            // Recarregar o iframe com mesma URL
+            const currentSrc = iframe.src;
+            container.innerHTML = `<iframe src="${currentSrc}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="no-referrer" title="Conteúdo de mídia incorporado"></iframe>`;
+            setupMediaContainer(); // Reconfigurar eventos
+          });
+        }
       });
 
       // Improve iframe attributes for better performance and security
@@ -597,8 +878,20 @@ function setupMediaContainer() {
       // Add title for accessibility
       iframe.setAttribute('title', 'Conteúdo de mídia incorporado');
 
-      // Add sandbox attributes for security
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+      // Add sandbox attributes for security while allowing necessary functionality
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
+      
+      // Adicionar classe para ativar efeitos quando o iframe for carregado
+      container.classList.add('media-enhanced');
+      
+      // Adicionar atributos para otimização de desempenho
+      if (iframe.src.includes('youtube')) {
+        // Preferir carregamento por DNS prefetch para YouTube
+        const linkPrefetch = document.createElement('link');
+        linkPrefetch.rel = 'preconnect';
+        linkPrefetch.href = 'https://www.youtube.com';
+        document.head.appendChild(linkPrefetch);
+      }
     }
   });
 }
@@ -649,3 +942,53 @@ function enhanceSimpleGallery() {
 }
 
 enhanceSimpleGallery();
+
+/**
+ * Melhora a navegação por teclado em toda a página
+ */
+function enhanceKeyboardNavigation() {
+  document.addEventListener('keydown', (e) => {
+    // Navegar entre seções com PageUp/PageDown, Space, Home e End
+    if (['PageUp', 'PageDown', ' ', 'Home', 'End'].includes(e.key)) {
+      e.preventDefault();
+      
+      const previewSections = document.querySelector('.preview-sections');
+      const sections = Array.from(document.querySelectorAll('.preview-section'));
+      const currentSectionIndex = sections.findIndex(section => 
+        section.getBoundingClientRect().top >= 0 && 
+        section.getBoundingClientRect().top <= window.innerHeight/2
+      );
+      
+      let targetIndex;
+      
+      switch (e.key) {
+        case 'PageUp':
+          targetIndex = Math.max(0, currentSectionIndex - 1);
+          break;
+        case 'PageDown':
+        case ' ':
+          targetIndex = Math.min(sections.length - 1, currentSectionIndex + 1);
+          break;
+        case 'Home':
+          targetIndex = 0;
+          break;
+        case 'End':
+          targetIndex = sections.length - 1;
+          break;
+      }
+      
+      if (targetIndex !== undefined && sections[targetIndex]) {
+        sections[targetIndex].scrollIntoView({ behavior: 'smooth' });
+        
+        // Atualizar indicador visual
+        const sectionDots = document.querySelectorAll('.section-dot');
+        sectionDots.forEach(dot => {
+          const isActive = dot.getAttribute('data-section') === sections[targetIndex].id;
+          dot.classList.toggle('active', isActive);
+        });
+      }
+    }
+  });
+}
+
+enhanceKeyboardNavigation();
