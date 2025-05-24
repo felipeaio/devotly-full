@@ -597,17 +597,50 @@ class DevotlyViewer {    constructor() {
         this.elements.previewSections.addEventListener('scroll', () => {
             this.checkSectionVisibility();
         });
-        
-        // Adiciona feedback visual ao clicar e navegação entre seções
+          // Adiciona feedback visual ao clicar e navegação entre seções
         dots.forEach(dot => {
             dot.addEventListener('click', (e) => {
                 e.preventDefault();
                 
-                // Efeito visual de clique
-                dot.style.transform = 'scale(0.8)';
+                // Efeito visual de clique adaptado para formato de traço
+                dot.style.transform = 'scaleX(0.8) scaleY(0.9)';
+                dot.style.opacity = '0.8';
+                
+                // Adicionar efeito de pulsação temporário
+                const flash = document.createElement('div');
+                flash.style.position = 'absolute';
+                flash.style.top = '0';
+                flash.style.left = '0';
+                flash.style.right = '0';
+                flash.style.bottom = '0';
+                flash.style.background = 'var(--color-accent)';
+                flash.style.borderRadius = '1.5px';
+                flash.style.opacity = '0.6';
+                flash.style.animation = 'flash-bar 0.4s ease-out';
+                
+                // Adicionar animação ao CSS se ainda não existir
+                if (!document.querySelector('#flash-bar-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'flash-bar-animation';
+                    style.textContent = `
+                        @keyframes flash-bar {
+                            0% { opacity: 0.6; }
+                            100% { opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                dot.appendChild(flash);
+                
+                // Restaurar estado após a animação
                 setTimeout(() => {
                     dot.style.transform = '';
-                }, 200);
+                    dot.style.opacity = '';
+                    if (flash.parentNode) {
+                        flash.parentNode.removeChild(flash);
+                    }
+                }, 300);
                 
                 // Navegação para a seção
                 const sectionId = dot.getAttribute('data-section');
