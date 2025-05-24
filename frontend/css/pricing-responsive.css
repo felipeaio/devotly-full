@@ -1,0 +1,371 @@
+/* Pricing Section - Enhanced Responsive Styles
+ * Redesigned for maximum responsiveness across all device sizes
+ * From mobile phones through tablets to desktops and large screens
+ */
+
+/* Base Container Styles */
+.pricing-section {
+    padding: 4rem 1rem;
+    background: var(--gradient-dark);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add subtle background pattern */
+.pricing-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 25% 25%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Enhanced section header styles */
+.pricing-section .section-header {
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Grid Layout - Fully Responsive */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tablet breakpoint - 2 cards side by side */
+@media (min-width: 768px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Add more horizontal spacing on tablet */
+    .pricing-section {
+        padding: 5rem 2rem;
+    }
+}
+
+/* Desktop+ breakpoint - maintain 2 cards with max-width */
+@media (min-width: 1200px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, minmax(350px, 500px));
+        justify-content: center;
+    }
+    
+    /* Add more breathing room on large screens */
+    .pricing-section {
+        padding: 6rem 2rem;
+    }
+}
+
+/* Card Styles with enhanced responsiveness */
+.pricing-card {
+    background: var(--color-secondary);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--box-shadow);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Improve spacing for mobile */
+@media (max-width: 480px) {
+    .pricing-card {
+        padding: 1.25rem;
+    }
+}
+
+/* Add more padding on larger screens */
+@media (min-width: 768px) {
+    .pricing-card {
+        padding: 2rem;
+    }
+}
+
+/* Enhanced hover effects */
+.pricing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Featured card highlight */
+.pricing-card.featured {
+    border: 2px solid var(--color-accent);
+    position: relative;
+    z-index: 2;
+}
+
+/* Subtle glow effect on featured card */
+.pricing-card.featured::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.15), transparent 70%);
+    border-radius: var(--border-radius);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.pricing-card.featured:hover::before {
+    opacity: 1;
+}
+
+/* "Most Popular" tag - Responsive Implementation */
+.recommended-tag {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient-gold);
+    color: var(--color-dark);
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    z-index: 5;
+    text-align: center;
+    min-width: 120px;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+    .recommended-tag {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        top: -10px;
+        min-width: 100px;
+        width: auto;
+        max-width: 90%;
+    }
+    
+    /* Ensure card has enough padding for the tag */
+    .pricing-card.featured {
+        margin-top: 10px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 360px) {
+    .recommended-tag {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+        min-width: 90px;
+    }
+}
+
+/* Medium screens */
+@media (min-width: 481px) and (max-width: 767px) {
+    .recommended-tag {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
+        top: -12px;
+        min-width: 110px;
+    }
+}
+
+/* Larger screens */
+@media (min-width: 768px) {
+    .recommended-tag {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.25rem;
+        top: -15px;
+        min-width: 130px;
+    }
+}
+
+/* Very large screens */
+@media (min-width: 1200px) {
+    .recommended-tag {
+        font-size: 0.9rem;
+        padding: 0.5rem 1.5rem;
+        top: -16px;
+    }
+}
+
+/* Landscape orientation specific adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .recommended-tag {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.8rem;
+        top: -10px;
+    }
+    
+    .pricing-card.featured {
+        padding-top: 1.5rem;
+    }
+}
+
+/* Card Header */
+.pricing-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plan-name {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-light);
+}
+
+@media (min-width: 768px) {
+    .plan-name {
+        font-size: 1.5rem;
+    }
+}
+
+/* Price display */
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.currency, .amount {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-light);
+}
+
+@media (min-width: 768px) {
+    .currency, .amount {
+        font-size: 2rem;
+    }
+}
+
+.period {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    margin-left: 0.25rem;
+}
+
+/* Features List */
+.plan-features {
+    list-style: none;
+    margin-bottom: 1.75rem;
+    flex-grow: 1; /* Takes up available space to push button to bottom */
+}
+
+.plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+/* Icons in feature list */
+.plan-features li i {
+    width: 1.25rem;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Button styles */
+.pricing-card .btn {
+    align-self: center;
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+/* Button hover effect */
+.pricing-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Normal button */
+.pricing-card .btn {
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* Primary button for featured card */
+.pricing-card .btn--primary {
+    background-color: var(--color-accent);
+    color: var(--color-dark);
+    border: none;
+}
+
+/* Text colors for feature icons */
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+.text-accent { color: var(--color-accent); }
+
+/* Animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus styles for keyboard navigation */
+.pricing-card:focus, .pricing-card.focused {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-accent), var(--box-shadow);
+}
+
+/* Touch device hover effect */
+.pricing-card.hovering {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Extra small devices - improve text readability */
+@media (max-width: 350px) {
+    .plan-name {
+        font-size: 1.1rem;
+    }
+    
+    .currency, .amount {
+        font-size: 1.5rem;
+    }
+    
+    .plan-features li {
+        font-size: 0.85rem;
+    }
+    
+    .pricing-card {
+        padding: 1rem;
+    }
+}
+
+/* Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .pricing-card {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .pricing-card:hover {
+        transform: none;
+    }
+}

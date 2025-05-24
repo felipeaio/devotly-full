@@ -38,8 +38,6 @@ class DevotlyViewer {
             sectionDots: document.querySelectorAll('.section-dot'),
             previewSections: document.querySelector('.preview-sections'),
             sections: document.querySelectorAll('.preview-section'),
-            toastNotification: document.getElementById('toastNotification'),
-            toastMessage: document.getElementById('toastMessage'),
             retryBtn: document.getElementById('retryBtn'),
             checkAgainBtn: document.getElementById('checkAgainBtn'),
             carouselPrev: document.querySelector('.carousel-prev'),

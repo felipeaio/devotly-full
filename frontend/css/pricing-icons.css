@@ -1,0 +1,50 @@
+/* 
+ * Pricing Section Icons Enhancement
+ * Adiciona efeitos visuais sutis aos ícones da seção de preços
+ */
+
+/* Efeito de rotação suave para o ícone de coroa */
+.pricing-card .btn i.fa-crown {
+    display: inline-block;
+    transform-origin: center;
+    margin-right: 0.5rem;
+    color: var(--color-dark);
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+}
+
+/* Efeito de deslizamento para o ícone de seta */
+.pricing-card .btn i.fa-arrow-right-to-bracket {
+    display: inline-block;
+    margin-right: 0.5rem;
+    transform: translateX(-3px);
+    opacity: 0.9;
+}
+
+.pricing-card .btn:hover i.fa-arrow-right-to-bracket {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Tamanho e espaçamento consistente para os ícones */
+.pricing-card .btn i {
+    font-size: 0.9rem;
+}
+
+/* Melhoria na visibilidade para os ícones da lista de recursos */
+.plan-features i.text-accent {
+    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.2));
+}
+
+.plan-features i.text-success {
+    filter: drop-shadow(0 0 3px rgba(74, 158, 92, 0.2));
+}
+
+/* Acessibilidade - garantir contraste adequado */
+@media (prefers-reduced-motion: reduce) {
+    .pricing-card .btn i {
+        /* Remover efeitos de movimento */
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+}

@@ -13,7 +13,7 @@ body {
 
 .view-container {
     padding: 0;
-    min-height: 100vh; /* Agora usa toda a altura da viewport */
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,7 +23,7 @@ body {
 /* Ajuste do layout do cartão */
 .card-preview-container {
     width: clamp(300px, 95%, 450px);
-    height: clamp(500px, calc(100vh - 40px), 900px); /* Ajustado para usar quase toda a altura */
+    height: clamp(500px, calc(100vh - 40px), 900px);
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -229,6 +229,26 @@ body {
   50% { transform: scale(1.03); }
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes borderGlow {
+  0% { opacity: 0.1; }
+  100% { opacity: 0.3; }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* Estados de Tela */
 .state-container {
     max-width: 500px;
@@ -267,7 +287,7 @@ body {
     font-size: 3rem;
     color: var(--color-error);
     margin-bottom: 1rem;
-    animation: pulse 2s infinite; /* Certifique-se que @keyframes pulse está definido */
+    animation: pulse 2s infinite;
 }
 
 .error-actions {
@@ -292,15 +312,15 @@ body {
     border: 4px solid rgba(212, 175, 55, 0.1);
     border-top-color: var(--color-accent);
     border-radius: 50%;
-    animation: spin 1s linear infinite; /* Certifique-se que @keyframes spin está definido */
+    animation: spin 1s linear infinite;
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
     background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.1));
 }
 
 /* Conteúdo do Cartão */
-.card-preview-container:hover { /* Esta regra estava incompleta no seu input original */
+.card-preview-container:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 32px rgba(212, 175, 55, 0.2); /* Completado com base no padrão de cores */
+    box-shadow: 0 12px 32px rgba(212, 175, 55, 0.2);
 }
 
 .card-preview-container::before {
@@ -314,7 +334,7 @@ body {
     background: linear-gradient(135deg, var(--color-accent), transparent 50%, var(--color-accent));
     opacity: 0.2;
     z-index: -1;
-    animation: borderGlow 4s infinite alternate; /* Certifique-se que @keyframes borderGlow está definido */
+    animation: borderGlow 4s infinite alternate;
 }
 
 .card-preview {
@@ -323,9 +343,9 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #121215, #1e1e24); /* Consolidado de "Aprimoramento visual" */
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); /* Consolidado de "Aprimoramento visual" */
-    border: 1px solid rgba(255, 255, 255, 0.05); /* Consolidado de "Aprimoramento visual" */
+    background: linear-gradient(135deg, #121215, #1e1e24);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .preview-theme {
@@ -361,9 +381,9 @@ body {
     justify-content: center;
     padding: clamp(1rem, 4vw, 2rem);
     position: relative;
-    background-color: rgba(0, 0, 0, 0.15); /* Consolidado de "Aprimoramento visual" */
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2); /* Consolidado de "Aprimoramento visual" */
-    transition: background-color 0.5s ease; /* Consolidado de "Aprimoramento visual" */
+    background-color: rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.5s ease;
 }
 
 /* Efeito sutil de gradiente para cada seção */
@@ -493,7 +513,7 @@ body {
               0 0 20px rgba(244, 196, 64, 0.2);
 }
 
-/* Message Section Enhancement */
+/* Seção de conteúdo */
 .section-content {
   width: 100%;
   max-width: 100%;
@@ -504,6 +524,7 @@ body {
   min-height: 100%;
 }
 
+/* Message Section Enhancement */
 .message-container {
   width: 100%;
   max-width: 85%;
@@ -523,18 +544,15 @@ body {
 }
 
 .message-container::before {
-  content: '';
+  content: '"';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle at 50% 30%,
-    rgba(244, 196, 64, 0.04) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
+  top: 0.5rem;
+  left: 1rem;
+  font-size: 5rem;
+  line-height: 1;
+  font-family: serif;
+  opacity: 0.1;
+  color: var(--color-accent);
 }
 
 .message-container::after {
@@ -590,19 +608,6 @@ body {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(244, 196, 64, 0.1);
 }
 
-/* Enhanced decoration for message container */
-.message-container::before {
-  content: '"';
-  position: absolute;
-  top: 0.5rem;
-  left: 1rem;
-  font-size: 5rem;
-  line-height: 1;
-  font-family: serif;
-  opacity: 0.1;
-  color: var(--color-accent);
-}
-
 /* Custom scrollbar for overflow content */
 .message-container::-webkit-scrollbar {
   width: 6px;
@@ -616,143 +621,6 @@ body {
 .message-container::-webkit-scrollbar-thumb {
   background: rgba(244, 196, 64, 0.3);
   border-radius: 10px;
-}
-
-/* Enhanced Responsiveness for Message */
-@media (max-width: 768px) {
-  .message-container {
-    max-width: 90%;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-  }
- 
-  #cardMessage {
-    font-size: clamp(1.05rem, 2.8vw, 1.25rem);
-    line-height: 1.8;
-  }
-  
-  .message-container::before {
-    font-size: 4rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .section-content {
-    padding: clamp(0.5rem, 2vw, 1rem);
-  }
-  
-  .message-container {
-    max-width: 95%;
-    padding: clamp(1.2rem, 3vw, 1.8rem);
-  }
- 
-  #cardMessage {
-    font-size: clamp(1rem, 4vw, 1.2rem);
-    line-height: 1.7;
-  }
- 
-  #cardMessage::first-letter {
-    font-size: 1.7em;
-  }
-  
-  .message-container::before {
-    font-size: 3rem;
-    top: 0.3rem;
-    left: 0.7rem;
-  }
-}
-
-/* Additional landscape mode optimization */
-@media (max-height: 500px) and (orientation: landscape) {
-  .section-content {
-    padding: 0.5rem;
-  }
-  
-  .message-container {
-    padding: 1rem 1.5rem;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  
-  #cardMessage {
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-  
-  #cardMessage::first-letter {
-    font-size: 1.5em;
-  }
-  
-  .message-container::before {
-    display: none;
-  }
-}
-
-/* Extra Responsive Adjustments */
-@media (max-width: 480px) {
-  .title-container {
-    padding: 1rem;
-  }
-  
-  .title-wrapper {
-    padding: 1.2rem 1rem;
-  }
-  
-  .card-title {
-    font-size: clamp(1.5rem, 7vw, 2rem);
-  }
-  
-  .decorator-icon {
-    width: 1.8rem;
-    height: 1.8rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Landscape Mode Optimization */
-@media (max-height: 500px) and (orientation: landscape) {
-  .title-container {
-    padding: 0.8rem;
-  }
-  
-  .title-wrapper {
-    padding: 0.8rem;
-  }
-  
-  .card-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .title-decorators {
-    margin-top: 0.5rem;
-  }
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .message-container {
-    padding: clamp(1.2rem, 3vw, 1.8rem);
-  }
- 
-  #cardMessage {
-    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-    line-height: 1.8;
-  }
-}
-
-@media (max-width: 480px) {
-  .message-container {
-    padding: 1.2rem;
-  }
- 
-  #cardMessage {
-    font-size: clamp(1rem, 4vw, 1.2rem);
-    line-height: 1.7;
-  }
- 
-  #cardMessage::first-letter {
-    font-size: 1.5em;
-  }
 }
 
 /* Verse Section Enhancement */
@@ -906,119 +774,7 @@ body {
   border-radius: 10px;
 }
 
-/* Responsiveness */
-@media (max-width: 768px) {
-  .verse-container {
-    max-width: 90%;
-    padding: clamp(1.2rem, 4vw, 2rem);
-  }
-  
-  #verseText {
-    font-size: clamp(1.1rem, 3.5vw, 1.6rem);
-    line-height: 1.5;
-  }
-  
-  #verseRef {
-    font-size: clamp(0.85rem, 2.8vw, 1rem);
-  }
-}
-
-@media (max-width: 480px) {
-  .verse-container {
-    max-width: 95%;
-    padding: clamp(1rem, 3vw, 1.5rem);
-  }
-  
-  .verse-content {
-    padding: 0.5rem 0;
-  }
-  
-  #verseText {
-    font-size: clamp(1rem, 4vw, 1.3rem);
-    margin: 0.8rem auto;
-    max-width: 95%;
-  }
-  
-  .quote-icon {
-    font-size: clamp(1.2rem, 4vw, 2rem);
-    margin-bottom: 0.5rem;
-  }
-  
-  #verseRef {
-    margin-top: 0.7rem;
-    padding-top: 0.5rem;
-  }
-  
-  .verse-decoration {
-    margin-top: 1rem;
-    gap: 0.8rem;
-  }
-  
-  .verse-decoration.bottom {
-    margin-top: 1rem;
-  }
-}
-
-/* Landscape optimization */
-@media (max-height: 500px) and (orientation: landscape) {
-  .verse-container {
-    padding: 1rem;
-    max-height: 80vh;
-  }
-  
-  .verse-content {
-    max-height: calc(80vh - 80px);
-    overflow-y: auto;
-    padding: 0.3rem 0;
-  }
-  
-  #verseText {
-    font-size: 1.1rem;
-    line-height: 1.4;
-    margin: 0.5rem auto;
-  }
-  
-  .quote-icon {
-    font-size: 1.2rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  #verseRef {
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-    padding-top: 0.4rem;
-  }
-  
-  .verse-decoration {
-    margin-top: 0.8rem;
-  }
-  
-  .verse-decoration.bottom {
-    margin-top: 0.8rem;
-  }
-  
-  .verse-decoration i {
-    font-size: 0.8rem;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 360px) {
-  .verse-container {
-    padding: 1rem 0.8rem;
-  }
-  
-  #verseText {
-    font-size: 1rem;
-    margin: 0.7rem auto;
-  }
-  
-  .quote-icon {
-    font-size: 1.2rem;
-  }
-}
-
-/* Gallery Section - Simple & Responsive com Aumento de Altura */
+/* Gallery Section - Simple & Responsive */
 #gallerySection {
   background: linear-gradient(to bottom, rgba(12, 12, 18, 0.95), rgba(8, 8, 12, 0.98));
 }
@@ -1026,7 +782,7 @@ body {
 .gallery-container {
   width: 100%;
   max-width: 85%;
-  aspect-ratio: 16/12; /* Aumentado de 16/10 para 16/12 para maior altura vertical */
+  aspect-ratio: 16/12;
   position: relative;
   border-radius: var(--border-radius);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -1116,39 +872,246 @@ body {
   margin: 0 2px;
 }
 
-/* Responsiveness */
+/* Section indicators */
+.section-indicators {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  gap: 0.5rem;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.section-dot {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.section-dot:hover,
+.section-dot.active {
+  background-color: var(--color-accent);
+  transform: scale(1.2);
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
   .gallery-container {
     max-width: 90%;
-    aspect-ratio: 4/4; /* Aumentado de 4/3 para 4/4 */
+    aspect-ratio: 4/4;
+  }
+  
+  .verse-container {
+    max-width: 90%;
+    padding: clamp(1.2rem, 4vw, 2rem);
+  }
+  
+  #verseText {
+    font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+    line-height: 1.5;
+  }
+  
+  .message-container {
+    max-width: 90%;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+ 
+  #cardMessage {
+    font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+    line-height: 1.8;
   }
 }
 
 @media (max-width: 480px) {
   .gallery-container {
     max-width: 95%;
-    aspect-ratio: 1/1.2; /* Aumentado de 1/1 para 1/1.2 */
+    aspect-ratio: 1/1.2;
+  }
+  
+  .section-content {
+    padding: clamp(0.5rem, 2vw, 1rem);
+  }
+  
+  .message-container {
+    max-width: 95%;
+    padding: clamp(1.2rem, 3vw, 1.8rem);
+  }
+ 
+  #cardMessage {
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    line-height: 1.7;
+  }
+ 
+  #cardMessage::first-letter {
+    font-size: 1.7em;
+  }
+  
+  .title-container {
+    padding: 1rem;
+  }
+  
+  .title-wrapper {
+    padding: 1.2rem 1rem;
+  }
+  
+  .card-title {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+  }
+  
+  .decorator-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .verse-container {
+    max-width: 95%;
+    padding: clamp(1rem, 3vw, 1.5rem);
+  }
+  
+  .verse-content {
+    padding: 0.5rem 0;
+  }
+  
+  #verseText {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    margin: 0.8rem auto;
+    max-width: 95%;
+  }
+  
+  .quote-icon {
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    margin-bottom: 0.5rem;
+  }
+  
+  #verseRef {
+    margin-top: 0.7rem;
+    padding-top: 0.5rem;
+  }
+  
+  .verse-decoration {
+    margin-top: 1rem;
+    gap: 0.8rem;
+  }
+  
+  .verse-decoration.bottom {
+    margin-top: 1rem;
   }
 }
 
 /* Para dispositivos muito pequenos */
 @media (max-width: 360px) {
   .gallery-container {
-    aspect-ratio: 1/1.3; /* Proporção ainda maior para telas muito pequenas */
+    aspect-ratio: 1/1.3;
+  }
+  
+  .verse-container {
+    padding: 1rem 0.8rem;
+  }
+  
+  #verseText {
+    font-size: 1rem;
+    margin: 0.7rem auto;
+  }
+  
+  .quote-icon {
+    font-size: 1.2rem;
   }
 }
 
 /* Para telas maiores */
 @media (min-width: 992px) {
   .gallery-container {
-    aspect-ratio: 16/13; /* Proporção um pouco maior para telas desktop */
+    aspect-ratio: 16/13;
   }
 }
 
 /* Para telas em modo paisagem */
 @media (max-height: 500px) and (orientation: landscape) {
   .gallery-container {
-    aspect-ratio: 16/10; /* Menos altura em modo paisagem para evitar rolagem */
+    aspect-ratio: 16/10;
     max-height: 70vh;
+  }
+  
+  .section-content {
+    padding: 0.5rem;
+  }
+  
+  .message-container {
+    padding: 1rem 1.5rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  #cardMessage {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  #cardMessage::first-letter {
+    font-size: 1.5em;
+  }
+  
+  .title-container {
+    padding: 0.8rem;
+  }
+  
+  .title-wrapper {
+    padding: 0.8rem;
+  }
+  
+  .card-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .title-decorators {
+    margin-top: 0.5rem;
+  }
+  
+  .verse-container {
+    padding: 1rem;
+    max-height: 80vh;
+  }
+  
+  .verse-content {
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+    padding: 0.3rem 0;
+  }
+  
+  #verseText {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin: 0.5rem auto;
+  }
+  
+  .quote-icon {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+  
+  #verseRef {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+  }
+  
+  .verse-decoration {
+    margin-top: 0.8rem;
+  }
+  
+  .verse-decoration.bottom {
+    margin-top: 0.8rem;
+  }
+  
+  .verse-decoration i {
+    font-size: 0.8rem;
   }
 }

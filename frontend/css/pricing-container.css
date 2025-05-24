@@ -1,0 +1,207 @@
+/* 
+ * Pricing Container Enhanced Styles
+ * Melhorias visuais para os cards de preços
+ */
+
+/* Container principal com background melhorado */
+.pricing-container {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 1rem;
+}
+
+/* Grid com melhor alinhamento */
+.pricing-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Efeitos visuais para os cards */
+.pricing-card {
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Efeito de brilho no interior dos cards */
+.card-shine, 
+.card-shine-featured {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.card-shine-featured {
+  background: radial-gradient(
+    circle at center,
+    rgba(212, 175, 55, 0.08) 0%,
+    transparent 70%
+  );
+}
+
+/* Redesenho do container do cabeçalho */
+.pricing-header {
+  position: relative;
+  padding-bottom: 1.75rem;
+}
+
+/* Melhor espaçamento e detalhes nos elementos de preço */
+.plan-price {
+  margin-top: 0.75rem;
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.plan-price::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(212, 175, 55, 0.3),
+    transparent
+  );
+}
+
+/* Estilização melhorada para o nome do plano */
+.plan-name {
+  position: relative;
+  display: inline-block;
+  padding: 0.3rem 0;
+}
+
+/* Lista de features com melhor espaçamento */
+.plan-features {
+  position: relative;
+  padding: 1rem 0.5rem;
+  margin-bottom: 1rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+}
+
+.plan-features li {
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.plan-features li:last-child {
+  margin-bottom: 0;
+}
+
+/* Footer para os botões */
+.pricing-footer {
+  padding-top: 1rem;
+}
+
+/* Card em destaque com efeitos visuais sutis */
+.pricing-card.featured {
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(212, 175, 55, 0.1),
+    inset 0 0 10px rgba(212, 175, 55, 0.05);
+  /* Add top padding to accommodate the tag */
+  padding-top: calc(1.75rem + 15px);
+}
+
+/* Tag de recomendação com efeito de destaque */
+.recommended-tag {
+  box-shadow: 
+    0 3px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.3);
+  overflow: visible;
+  text-transform: uppercase;
+  
+  /* Add subtle animated glow effect */
+  animation: tagPulse 2s infinite alternate;
+}
+
+@keyframes tagPulse {
+  from {
+    box-shadow: 
+      0 3px 10px rgba(0, 0, 0, 0.4),
+      inset 0 1px 3px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    box-shadow: 
+      0 3px 15px rgba(212, 175, 55, 0.4),
+      inset 0 1px 3px rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Responsividade para diferentes tamanhos de tela */
+@media (min-width: 768px) {
+  .pricing-container {
+    padding: 3rem 2rem;
+  }
+  
+  .pricing-card {
+    margin: 0 0.5rem;
+  }
+  
+  .pricing-card.featured {
+    margin-top: -0.5rem;
+    /* Improved positioning on tablets and above */
+    padding-top: 2.25rem;
+  }
+  
+  .plan-features {
+    padding: 1.2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Add tag improvements for different viewport sizes */
+@media (max-width: 479px) {
+  .pricing-card.featured {
+    /* Additional top padding for extra space on mobile */
+    padding-top: 1.5rem;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .pricing-card.featured {
+    padding-top: 1.75rem;
+  }
+}
+
+/* Efeitos para telas grandes */
+@media (min-width: 1200px) {
+  .pricing-container {
+    padding: 4rem 2rem;
+  }
+  
+  .pricing-card {
+    transform: translateZ(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .pricing-card:hover:not(.featured) {
+    transform: translateY(-5px);
+    box-shadow: 
+      0 15px 35px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Melhorias de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card {
+    transition: none !important;
+  }
+}

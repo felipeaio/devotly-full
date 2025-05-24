@@ -1,0 +1,49 @@
+/* Estilos específicos para animação de digitação */
+.typing-container {
+  display: inline-block;
+  position: relative;
+  min-width: 8ch; /* Espaço mínimo para evitar saltos de layout */
+}
+
+.typed-text {
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background-color: var(--color-accent);
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+/* Animação para o cursor */
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Media queries para melhorar a responsividade */
+@media (max-width: 768px) {
+    #text-animation-container {
+        min-width: 8ch;
+        margin-top: 0.5rem;
+    }
+    
+    .hero__title {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    #text-animation-container {
+        min-width: 5ch;
+    }
+    
+    .hero__title {
+        min-height: 5rem;
+    }
+}

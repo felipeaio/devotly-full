@@ -1,0 +1,70 @@
+/* Tag Animations and Enhanced Styling
+ * Custom animations to improve visibility of the popular tag
+ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Enhanced tag appearance with improved visibility */
+.recommended-tag {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add subtle shimmer effect to make the tag stand out */
+.recommended-tag::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0)
+  );
+  background-size: 200% 100%;
+  pointer-events: none;
+  animation: shimmer 2.5s infinite;
+}
+
+/* Improve visibility with drop shadow */
+.recommended-tag {
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Prevent tag from being hidden when at the edge of viewport */
+@media (max-width: 480px) {
+  .pricing-section {
+    padding-top: 5rem;
+  }
+  
+  .pricing-grid {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Adjust z-index to ensure tag is always visible */
+.pricing-card.featured {
+  z-index: 10;
+}
+
+/* Reduce animation for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .recommended-tag {
+    animation: none;
+  }
+  
+  .recommended-tag::after {
+    animation: none;
+    opacity: 0;
+  }
+}
