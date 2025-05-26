@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
-import { supabaseMiddleware } from '../../../_middleware';
+import { supabaseClient } from '../../lib/supabase';
 
 // Schema para validação de edição
 const editCardSchema = z.object({
@@ -41,15 +41,11 @@ export default async function handler(req) {
         'Access-Control-Allow-Headers': 'Content-Type, X-User-Email, X-Token-Edit',
       },
     });
+  }  // Inicialize o Supabase
+  const { supabase, error } = supabaseClient(req);
+  if (error) {
+    return error; // Retorna erro se houver problemas com o cliente Supabase
   }
-
-  // Inicialize o Supabase
-  const middlewareResponse = await supabaseMiddleware(req);
-  if (middlewareResponse instanceof NextResponse) {
-    return middlewareResponse; // Retorna erro do middleware se houver
-  }
-
-  const { supabase } = req;
 
   // Processa solicitação PUT
   if (req.method === 'PUT') {

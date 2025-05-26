@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { supabaseMiddleware } from '../_middleware';
+import { supabaseClient } from './lib/supabase';
 
 export const config = {
   runtime: 'edge',
@@ -22,14 +22,11 @@ export default async function handler(req) {
       },
     });
   }
-
   // Inicialize o Supabase
-  const middlewareResponse = await supabaseMiddleware(req);
-  if (middlewareResponse instanceof NextResponse) {
-    return middlewareResponse; // Retorna erro do middleware se houver
+  const { supabase, error } = supabaseClient(req);
+  if (error) {
+    return error; // Retorna erro se houver problemas com o cliente Supabase
   }
-
-  const { supabase } = req;
 
   if (req.method === 'POST') {
     try {

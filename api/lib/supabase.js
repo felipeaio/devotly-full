@@ -1,39 +1,40 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-// Nota: Este arquivo é mantido para compatibilidade com o modo não-Edge,
-// mas as Edge Functions devem usar diretamente api/lib/supabase.js
-
-export function supabaseMiddleware(req) {
+/**
+ * Inicializa o cliente Supabase para Edge Functions
+ * Esta abordagem evita problemas com importações entre arquivos em Edge Functions
+ */
+export function supabaseClient(req) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     console.error(`[${new Date().toISOString()}] Erro: Credenciais Supabase não definidas`);
-    return NextResponse.json({
-      status: 'error',
-      message: 'Erro de configuração do servidor'
-    }, { status: 500 });
+    return {
+      error: NextResponse.json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      }, { status: 500 })
+    };
   }
 
   try {
     // Criar cliente Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Adicionar ao contexto da requisição
+    // Injetar na requisição
     req.supabase = supabase;
     
     console.log(`[${new Date().toISOString()}] Cliente Supabase inicializado com sucesso`);
-    return req;
+    return { supabase };
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao inicializar Supabase:`, error);
-    return NextResponse.json({
-      status: 'error',
-      message: 'Erro interno no servidor'
-    }, { status: 500 });
+    return {
+      error: NextResponse.json({
+        status: 'error',
+        message: 'Erro interno no servidor'
+      }, { status: 500 })
+    };
   }
-}
-
-export default async function middleware(req) {
-  return supabaseMiddleware(req);
 }

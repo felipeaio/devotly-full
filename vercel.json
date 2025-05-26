@@ -10,17 +10,11 @@
     { "src": "/create", "dest": "/frontend/create/create.html" },
     { "src": "/edit", "dest": "/frontend/edit/edit.html" },
     { "src": "/view", "dest": "/frontend/view/view.html" },
-    { "src": "/(.*)", "dest": "/frontend/$1" },
+    { "src": "/js/(.*)", "dest": "/frontend/js/$1" },
+    { "src": "/css/(.*)", "dest": "/frontend/css/$1" },
+    { "src": "/home", "dest": "/frontend/home.html" },
     { "handle": "filesystem" },
+    { "src": "/(.*\\.(?:json|png|ico|xml|svg|webp))", "dest": "/frontend/$1" },
     { "src": "/", "dest": "/frontend/home.html" }
-  ],
-  "env": {
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
-    "MERCADO_PAGO_ACCESS_TOKEN": "@mercado_pago_access_token",
-    "MERCADO_PAGO_PUBLIC_KEY": "@mercado_pago_public_key",
-    "FRONTEND_URL": "@frontend_url",
-    "NODE_ENV": "production"
-  }
+  ]
 }

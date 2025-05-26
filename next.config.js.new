@@ -40,54 +40,15 @@ const nextConfig = {
         source: '/api/:path*',
         destination: '/api/:path*',
       }
-        destination: '/frontend/edit/edit.html',
-      },
-      {
-        source: '/view',
-        destination: '/frontend/view/view.html',
-      },
-      {
-        source: '/success',
-        destination: '/frontend/success.html',
-      },
-      {
-        source: '/failure',
-        destination: '/frontend/error.html',
-      },
-      {
-        source: '/pending',
-        destination: '/frontend/pending.html',
-      },
-      // Redirecionamentos para assets estáticos
-      {
-        source: '/css/:path*',
-        destination: '/frontend/css/:path*',
-      },
-      {
-        source: '/js/:path*',
-        destination: '/frontend/js/:path*',
-      },
-      {
-        source: '/assets/:path*',
-        destination: '/frontend/assets/:path*',
-      },
-      {
-        source: '/fonts/:path*',
-        destination: '/frontend/fonts/:path*',
-      },
     ];
   },
-  // Ajusta as configurações de construção para considerarmos os arquivos estáticos
   webpack: (config) => {
     config.module.rules.push({
-      test: /\.(html)$/,
-      use: {
-        loader: 'html-loader',
-      },
+      test: /\.html$/,
+      use: ['html-loader']
     });
-
     return config;
-  },
+  }
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,6 @@
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { NextResponse } from 'next/server';
-import { supabaseMiddleware } from '../../_middleware';
+import { supabaseClient } from '../lib/supabase';
 
 export const config = {
   runtime: 'edge',
@@ -13,15 +13,12 @@ export default async function handler(req) {
 
   // Para o Mercado Pago, precisamos aceitar a notificação mesmo que haja erros
   // para evitar retentativas desnecessárias
-  try {
-    // Inicialize o Supabase
-    const middlewareResponse = await supabaseMiddleware(req);
-    if (middlewareResponse instanceof NextResponse) {
-      console.error('Erro no middleware do Supabase:', middlewareResponse.status);
+  try {    // Inicialize o Supabase
+    const { supabase, error } = supabaseClient(req);
+    if (error) {
+      console.error('Erro ao inicializar Supabase:', error);
       return new NextResponse('OK', { status: 200 });
     }
-
-    const { supabase } = req;
     
     // Log detalhado da requisição
     const url = new URL(req.url);

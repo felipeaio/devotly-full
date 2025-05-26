@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import QRCode from 'qrcode';
+// Removendo QRCode que causa problemas em Edge Functions
+// import QRCode from 'qrcode';
 import { NextResponse } from 'next/server';
-import { supabaseMiddleware } from '../_middleware';
+import { supabaseClient } from '../lib/supabase';
 
 // Atualizar o schema de validação
 const cardSchema = z.object({
@@ -47,14 +48,11 @@ export default async function handler(req) {
       },
     });
   }
-
   // Inicialize o Supabase
-  const middlewareResponse = await supabaseMiddleware(req);
-  if (middlewareResponse instanceof NextResponse) {
-    return middlewareResponse; // Retorna erro do middleware se houver
+  const { supabase, error } = supabaseClient(req);
+  if (error) {
+    return error; // Retorna erro se houver problemas com o cliente Supabase
   }
-
-  const { supabase } = req;
 
   // Processando a solicitação POST
   if (req.method === 'POST') {
@@ -75,15 +73,13 @@ export default async function handler(req) {
             }, { status: 400 });
           }
         }
-      }
-
-      const qrCodeBuffer = await QRCode.toBuffer(cardUrl);
+      }      // QR Code generation removed for Edge Functions compatibility
+      // Usando uma abordagem simplificada sem gerar QR code
       const qrCodePath = `qr_code_${cardId}.png`;
-
-      // Verificar se o arquivo já existe e removê-lo
-      const { data: existingFiles, error: listError } = await supabase.storage
-        .from('qrcodes')
-        .list('', { search: qrCodePath });
+      
+      // Para compatibilidade, ainda declaramos variables mas não geramos o QR code
+      const existingFiles = [];
+      const listError = null;
         
       if (listError) {
         console.error('Erro ao listar arquivos:', listError.message);
