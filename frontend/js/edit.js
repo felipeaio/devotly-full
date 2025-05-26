@@ -18,14 +18,27 @@ class DevotlyEditor {
         // Verificar se todos os elementos foram encontrados
         Object.entries(this.elements).forEach(([key, element]) => {
             if (!element) {
-                console.error(`Elemento não encontrado: ${key}`);
+                console.warn(`Elemento ${key} não encontrado`);
             }
         });
 
+        // Load API config
+        this.loadApiConfig();
+        
         this.currentCardId = null;
         this.initialize();
     }
 
+    // Add API config loading method
+    async loadApiConfig() {
+        try {
+            const { API_CONFIG } = await import('./core/api-config.js');
+            this.apiConfig = API_CONFIG;
+        } catch (error) {
+            console.error('Erro ao carregar configuração da API:', error);
+        }
+    }
+    
     initialize() {
         // Event Listeners
         this.elements.searchBtn.addEventListener('click', () => this.searchCards());
@@ -48,7 +61,13 @@ class DevotlyEditor {
         this.showState('loadingState');
 
         try {
-            const response = await fetch(`${window.ApiConfig.url(window.ApiConfig.cards.search)}?email=${encodeURIComponent(email)}`);
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
+            }
+            
+            const response = await fetch(this.apiConfig.cards.search(email));
             const data = await response.json();
 
             if (!response.ok) {
@@ -157,7 +176,13 @@ class DevotlyEditor {
         };
 
         try {
-            const response = await fetch(`${window.ApiConfig.url(window.ApiConfig.cards.edit(this.currentCardId))}`, {
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
+            }
+            
+            const response = await fetch(this.apiConfig.cards.edit(this.currentCardId), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

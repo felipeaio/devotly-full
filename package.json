@@ -1,24 +1,20 @@
 {
   "name": "devotly",
   "version": "1.0.0",
+  "description": "Devotly Card Creation and Sharing Platform",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.4",
-    "mercadopago": "^2.5.0",
-    "multer": "^1.4.5-lts.2",
-    "next": "^14.2.0",
-    "qrcode": "^1.5.4",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.4"
+    "@supabase/supabase-js": "^2.38.4",
+    "mercadopago": "^2.0.4",
+    "multiparty": "^4.2.3",
+    "uuid": "^9.0.1"
   },
-  "devDependencies": {
-    "@types/node": "^20.11.30",
-    "@types/react": "^18.2.67",
-    "typescript": "5.4.2"
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step needed - using Vercel static and serverless functions'",
+    "start": "echo 'Use vercel dev to run locally'"
   }
 }

@@ -127,8 +127,11 @@ class DevotlyViewer {    constructor() {
     async fetchCardData() {
         this.showState('loadingState');
 
-        try {            // Usar a configuração de API
-            const response = await fetch(window.ApiConfig.url(window.ApiConfig.cards.get(this.state.cardId)));
+        try {
+            // Import API config
+            const { API_CONFIG } = await import('./core/api-config.js');
+            
+            const response = await fetch(API_CONFIG.cards.get(this.state.cardId));
 
             if (!response.ok) {
                 if (response.status === 404) {

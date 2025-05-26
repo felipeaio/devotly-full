@@ -60,6 +60,9 @@ function restructurePreviewSections() {
 // main.js
 class DevotlyCreator {
     constructor() {
+        // Initialize API config
+        this.loadApiConfig();
+
         // Detectar dispositivos de baixo desempenho
         this.isLowEndDevice = this.detectLowEndDevice();
 
@@ -72,6 +75,16 @@ class DevotlyCreator {
 
         // Add preview modal instance
         this.previewModal = new PreviewModal(); // PreviewModal class is defined later
+    }
+
+    // Load API configuration
+    async loadApiConfig() {
+        try {
+            const { API_CONFIG } = await import('./core/api-config.js');
+            this.apiConfig = API_CONFIG;
+        } catch (error) {
+            console.error('Erro ao carregar configuração da API:', error);
+        }
     }
 
     // Método para detectar dispositivos de baixo desempenho
@@ -596,7 +609,13 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    const checkoutResponse = await fetch(window.ApiConfig.url(window.ApiConfig.checkout), {
+                    // Use API config
+                    if (!this.apiConfig) {
+                        const { API_CONFIG } = await import('./core/api-config.js');
+                        this.apiConfig = API_CONFIG;
+                    }
+                    
+                    const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -616,17 +635,6 @@ class DevotlyCreator {
                     
                 } catch (error) {
                     console.error('Erro no processo de seleção de plano:', error);
-                    
-                    // Verificar se o erro é de conexão recusada
-                    if (error.message && (
-                        error.message.includes('Failed to fetch') || 
-                        error.message.includes('network failure') ||
-                        error.message.includes('ERR_CONNECTION_REFUSED')
-                    )) {
-                        alert('Não foi possível conectar ao servidor. Por favor, verifique sua conexão com a internet ou tente novamente mais tarde.');
-                    } else {
-                        alert(`Erro: ${error.message}`);
-                    }
                     
                     // Ocultar overlay de loading
                     if (loadingOverlay) {
@@ -1109,6 +1117,12 @@ scrollToSection(sectionId) {
                 return;
             }
 
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
+            }
+
             for (const file of files) {
                 // Validar tipo e tamanho
                 if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
@@ -1125,16 +1139,47 @@ scrollToSection(sectionId) {
                     // Criar URL temporária para preview
                     const tempUrl = URL.createObjectURL(file);
                     
-                    // Adicionar à lista de imagens com informações necessárias
+                    // Adicionar loading indicator
+                    const loadingIndex = this.state.formData.images.length;
                     this.state.formData.images.push({
                         isTemp: true,
                         tempUrl: tempUrl,
                         blob: file,
-                        fileName: file.name
+                        fileName: file.name,
+                        loading: true
                     });
 
-                    // Adicionar preview no formulário
-                    this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                    // Adicionar preview no formulário com estado de loading
+                    this.addImagePreview(tempUrl, loadingIndex);
+                    
+                    // Upload da imagem para o servidor
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const uploadResponse = await fetch(this.apiConfig.upload, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        throw new Error(errorData.error || 'Erro ao fazer upload');
+                    }
+                    
+                    const uploadData = await uploadResponse.json();
+                    
+                    if (!uploadData.success || !uploadData.url) {
+                        throw new Error('Falha ao obter URL da imagem');
+                    }
+                    
+                    // Atualizar objeto de imagem com URL do servidor
+                    this.state.formData.images[loadingIndex] = {
+                        isTemp: false,
+                        url: uploadData.url,
+                        tempUrl: tempUrl,  // Manter URL temporária para preview local
+                        fileName: file.name,
+                        loading: false
+                    };
                     
                 } catch (error) {
                     console.error('Erro ao processar imagem:', error);
@@ -1378,7 +1423,7 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch(window.ApiConfig.url(window.ApiConfig.checkout), {
+        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1728,29 +1773,13 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    // Log para debug da URL de upload usada
-                    const uploadUrl = window.ApiConfig.url(window.ApiConfig.upload);
-                    console.log('Enviando upload para:', uploadUrl);
-                    
-                    try {
-                        const uploadResponse = await fetch(uploadUrl, {
-                            method: 'POST',
-                            body: imageFormData,
-                            // Adicionar headers apropriados para evitar problemas de CORS
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        
-                        if (!uploadResponse.ok) {
-                            const errorText = await uploadResponse.text();
-                            console.error('Resposta de erro do servidor:', errorText);
-                            const errorData = JSON.parse(errorText) || { message: 'Erro desconhecido no upload' };
-                            throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message || errorText}`);
-                        }
-                    } catch (uploadError) {
-                        console.error('Falha ao enviar imagem:', uploadError);
-                        throw new Error(`Falha na conexão ao fazer upload: ${uploadError.message}`);
+                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
+                        method: 'POST',
+                        body: imageFormData
+                    });
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
+                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
                     }
                     const uploadData = await uploadResponse.json();
                     uploadedImageUrls.push(uploadData.url); // Assuming server returns { url: '...' }
@@ -1778,41 +1807,23 @@ async selectPlan(plan) {
                 }
             };
 
-            // Log para debug
-            const createUrl = window.ApiConfig.url(window.ApiConfig.cards.create);
-            console.log('Enviando criação de cartão para:', createUrl);
-            console.log('Dados enviados:', JSON.stringify(dataToSubmit));
-            
-            try {
-                const response = await fetch(createUrl, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify(dataToSubmit)
-                });
-                
-                let responseData;
-                try {
-                    responseData = await response.json();
-                } catch (parseError) {
-                    const rawText = await response.text();
-                    console.error('Erro ao analisar resposta JSON:', rawText);
-                    throw new Error('Resposta inválida do servidor');
-                }
-                
-                if (!response.ok) {
-                    throw new Error(responseData.message || responseData.error || 'Erro ao criar cartão no servidor');
-                }
-                return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
-            } catch (fetchError) {
-                console.error('Erro na chamada fetch:', fetchError);
-                if (fetchError.message === 'Failed to fetch') {
-                    throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão.');
-                }
-                throw fetchError;
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
             }
+            
+            const response = await fetch(this.apiConfig.cards.create, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSubmit)
+            });
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
+            }
+            return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
 
         } catch (error) {
             console.error('Erro ao enviar dados do formulário:', error);
