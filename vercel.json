@@ -11,19 +11,18 @@
             "src": "frontend/**/*",
             "use": "@vercel/static"
         }
-    ],    "routes": [
-        {
+    ],    "routes": [        {
             "src": "/(.*)",
             "has": [
                 {
                     "type": "header",
-                    "key": "x-forwarded-proto",
+                    "key": "x-forwarded-proto", 
                     "value": "http"
                 }
             ],
             "status": 301,
             "headers": {
-                "Location": "https://devotly.shop/$1"
+                "Location": "https://${host}/$1"
             }
         },
         {

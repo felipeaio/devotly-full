@@ -6,11 +6,14 @@ export const API_CONFIG = (() => {  // Determine base URL based on environment
   const isLocalhost = 
     window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1';
+    // Get the current hostname with protocol
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol;
   
-  // Always use HTTPS for production
+  // Use the exact same hostname as the current page to avoid CORS issues
   const baseUrl = isLocalhost 
     ? 'http://localhost:3000' 
-    : 'https://devotly.shop';
+    : `${protocol}//${hostname}`;
   
   // Remove trailing slash if present
   const normalizedBaseUrl = baseUrl.replace(/\/$/, '');

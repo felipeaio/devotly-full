@@ -1165,7 +1165,12 @@ scrollToSection(sectionId) {
                     
                     if (!uploadResponse.ok || !responseData.success) {
                         const errorMessage = responseData.error || 'Erro desconhecido no upload';
-                        console.error('Upload error:', responseData);
+                        console.error('Upload error:', {
+                            status: uploadResponse.status,
+                            statusText: uploadResponse.statusText,
+                            response: responseData,
+                            url: uploadResponse.url
+                        });
                         throw new Error(errorMessage);
                     }
                     
@@ -1790,13 +1795,22 @@ async selectPlan(plan) {
                     }
 
                     console.log('Attempting upload to:', this.apiConfig.upload);
-                    const uploadResponse = await fetch(this.apiConfig.upload, {
+                    
+                    // Ensure the URL uses the same hostname as the current page
+                    const uploadUrl = new URL(this.apiConfig.upload);
+                    uploadUrl.hostname = window.location.hostname;
+                    
+                    console.log('Adjusted upload URL:', uploadUrl.toString());
+                    
+                    const uploadResponse = await fetch(uploadUrl.toString(), {
                         method: 'POST',
                         body: imageFormData,
                         redirect: 'follow', // Explicitly follow redirects
+                        mode: 'cors', // Use CORS mode
                         credentials: 'same-origin',
                         headers: {
-                            'Accept': 'application/json'
+                            'Accept': 'application/json',
+                            'Origin': window.location.origin
                         }
                     }).catch(err => {
                         console.error('Network error during upload:', err);

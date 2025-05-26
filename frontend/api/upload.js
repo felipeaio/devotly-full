@@ -30,13 +30,20 @@ export default async function handler(req, res) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
-    // Set CORS headers with allowed origin
+      // Set CORS headers with allowed origin
     const origin = req.headers.origin || '';
-    const allowedOrigins = ['https://devotly.shop', 'http://localhost:3000'];
+    const allowedOrigins = [
+      'https://devotly.shop',
+      'https://www.devotly.shop',
+      'http://devotly.shop',
+      'http://www.devotly.shop',
+      'http://localhost:3000'
+    ];
     
     if (allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
     }
     
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
