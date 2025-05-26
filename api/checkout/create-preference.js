@@ -104,7 +104,7 @@ export default async function handler(req) {
           pending: `${frontendUrl}/pending`
         },
         external_reference: `${cardId}|${email}|${plano}`,
-        notification_url: `${frontendUrl}/api/webhook/mercadopago`,
+        notification_url: `https://devotly.shop/api/webhook/mercadopago`,
         auto_return: 'approved'
       };
 

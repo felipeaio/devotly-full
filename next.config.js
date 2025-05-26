@@ -21,26 +21,12 @@ const nextConfig = {
         destination: '/frontend/edit/edit.html',
       },
       {
+        source: '/edit',
+        destination: '/frontend/edit/edit.html',
+      },
+      {
         source: '/view/:path*',
         destination: '/frontend/view/view.html',
-      },
-      {
-        source: '/success',
-        destination: '/frontend/success.html',
-      },
-      {
-        source: '/js/:path*',
-        destination: '/frontend/js/:path*',
-      },
-      {
-        source: '/css/:path*',
-        destination: '/frontend/css/:path*',
-      },
-      {
-        source: '/api/:path*',
-        destination: '/api/:path*',
-      }
-        destination: '/frontend/edit/edit.html',
       },
       {
         source: '/view',
@@ -58,14 +44,18 @@ const nextConfig = {
         source: '/pending',
         destination: '/frontend/pending.html',
       },
-      // Redirecionamentos para assets estáticos
       {
-        source: '/css/:path*',
-        destination: '/frontend/css/:path*',
+        source: '/api/:path*',
+        destination: '/api/:path*',
       },
+      // Redirecionamentos para assets estáticos
       {
         source: '/js/:path*',
         destination: '/frontend/js/:path*',
+      },
+      {
+        source: '/css/:path*',
+        destination: '/frontend/css/:path*',
       },
       {
         source: '/assets/:path*',

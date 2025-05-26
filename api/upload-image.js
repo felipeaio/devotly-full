@@ -11,16 +11,20 @@ export const config = {
 };
 
 export default async function handler(req) {
-  // Tratamento CORS
-  if (req.method === 'OPTIONS') {
+  // Tratamento CORS  if (req.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
       },
     });
+  }
+  
+  // Para solicitações não-OPTIONS, adicionar cabeçalhos CORS na resposta
+  if (req.method !== 'OPTIONS') {
+    req.headers.set('Access-Control-Allow-Origin', '*');
   }
   // Inicialize o Supabase
   const { supabase, error } = supabaseClient(req);

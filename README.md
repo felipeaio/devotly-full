@@ -49,6 +49,38 @@ Antes de fazer o deploy, você precisa configurar as variáveis de ambiente no d
 | `SUPABASE_ANON_KEY` | Chave anônima do Supabase |
 | `SUPABASE_SERVICE_KEY` | Chave de serviço do Supabase (opcional para funções admin) |
 | `MERCADO_PAGO_ACCESS_TOKEN` | Token de acesso do Mercado Pago |
+
+## Configuração do Webhook do Mercado Pago
+
+O projeto inclui utilitários para configurar e testar o webhook do Mercado Pago:
+
+### Configurar o Webhook
+
+Use o script `configure-webhook.js` para configurar automaticamente o webhook no painel do Mercado Pago:
+
+```bash
+# Definir o token de acesso do Mercado Pago
+$env:MP_ACCESS_TOKEN="SEU_TOKEN_AQUI"
+
+# Executar o script de configuração
+node configure-webhook.js
+```
+
+O script irá:
+1. Verificar webhooks existentes
+2. Criar um novo webhook se necessário
+3. Confirmar que a URL está configurada corretamente
+
+### Testar o Webhook
+
+O arquivo `test-webhook.js` permite simular uma notificação de pagamento:
+
+```bash
+# Testar o webhook em produção
+node test-webhook.js
+```
+
+Você pode editar o script para alterar o ambiente de teste (local ou produção) e o ID do pagamento.
 | `MERCADO_PAGO_PUBLIC_KEY` | Chave pública do Mercado Pago |
 | `FRONTEND_URL` | URL do frontend (será usada para callbacks) |
 

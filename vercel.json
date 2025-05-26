@@ -3,6 +3,7 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "routes": [
+    { "src": "https://www.devotly.shop/(.*)", "status": 308, "headers": { "Location": "https://devotly.shop/$1" } },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/success", "dest": "/frontend/success.html" },
     { "src": "/failure", "dest": "/frontend/error.html" },
