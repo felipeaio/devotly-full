@@ -1,0 +1,12 @@
+/* Estilos específicos para telas maiores/desktops - Fix para o botão de pré-visualização */
+@media (min-width: 1200px) {
+    .btn-preview {
+        padding: 1.25rem 3rem !important; /* Padding reduzido em telas grandes */
+        min-width: 360px !important; /* Largura menor em telas grandes */
+        font-size: 1.2rem !important; /* Fonte menor */
+    }
+    
+    .btn-preview i {
+        font-size: 1.4rem !important; /* Ícone menor */
+    }
+}
