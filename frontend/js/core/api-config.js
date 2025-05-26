@@ -2,18 +2,15 @@
  * API Configuration
  * Centralizes all API URL configuration for the Devotly application
  */
-export const API_CONFIG = (() => {  // Determine base URL based on environment and protocol
+export const API_CONFIG = (() => {  // Determine base URL based on environment
   const isLocalhost = 
     window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1';
   
-  // Use the same protocol as the current page
-  const protocol = window.location.protocol;
-  
-  // Base URLs - use current protocol for production
+  // Always use HTTPS for production
   const baseUrl = isLocalhost 
     ? 'http://localhost:3000' 
-    : `${protocol}//devotly.shop`;
+    : 'https://devotly.shop';
   
   // Remove trailing slash if present
   const normalizedBaseUrl = baseUrl.replace(/\/$/, '');

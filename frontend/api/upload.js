@@ -18,11 +18,32 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-    console.log('Upload handler started', { method: req.method, url: req.url, headers: req.headers });
+    console.log('Upload handler started', { 
+      method: req.method, 
+      url: req.url, 
+      headers: req.headers,
+      protocol: req.headers['x-forwarded-proto'] || req.protocol
+    });
     
-    // Set CORS headers first
-    setCorsHeaders(res);
-    console.log('Set CORS headers');
+    // Enhanced security headers
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Set CORS headers with allowed origin
+    const origin = req.headers.origin || '';
+    const allowedOrigins = ['https://devotly.shop', 'http://localhost:3000'];
+    
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    console.log('Set security and CORS headers');
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {

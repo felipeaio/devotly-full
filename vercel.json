@@ -13,13 +13,28 @@
         }
     ],    "routes": [
         {
+            "src": "/(.*)",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "x-forwarded-proto",
+                    "value": "http"
+                }
+            ],
+            "status": 301,
+            "headers": {
+                "Location": "https://devotly.shop/$1"
+            }
+        },
+        {
             "src": "/api/upload",
             "methods": ["POST", "OPTIONS"],
             "dest": "/frontend/api/upload.js",
             "headers": {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "OPTIONS, POST",
-                "Access-Control-Allow-Headers": "Content-Type"
+                "Access-Control-Allow-Headers": "Content-Type, Accept",
+                "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
             }
         },
         {

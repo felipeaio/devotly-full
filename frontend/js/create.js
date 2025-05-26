@@ -1792,7 +1792,12 @@ async selectPlan(plan) {
                     console.log('Attempting upload to:', this.apiConfig.upload);
                     const uploadResponse = await fetch(this.apiConfig.upload, {
                         method: 'POST',
-                        body: imageFormData
+                        body: imageFormData,
+                        redirect: 'follow', // Explicitly follow redirects
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
                     }).catch(err => {
                         console.error('Network error during upload:', err);
                         throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
