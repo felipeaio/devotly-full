@@ -1161,15 +1161,25 @@ scrollToSection(sectionId) {
                         body: formData
                     });
                     
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json();
-                        throw new Error(errorData.error || 'Erro ao fazer upload');
+                    const responseData = await uploadResponse.json();
+                    
+                    if (!uploadResponse.ok || !responseData.success) {
+                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
+                        console.error('Upload error:', responseData);
+                        throw new Error(errorMessage);
                     }
                     
-                    const uploadData = await uploadResponse.json();
+                    if (!responseData.url) {
+                        console.error('Invalid response:', responseData);
+                        throw new Error('URL da imagem não recebida do servidor');
+                    }
                     
-                    if (!uploadData.success || !uploadData.url) {
-                        throw new Error('Falha ao obter URL da imagem');
+                    // Validate the URL
+                    try {
+                        new URL(responseData.url);
+                    } catch (e) {
+                        console.error('Invalid URL received:', responseData.url);
+                        throw new Error('URL da imagem inválida');
                     }
                     
                     // Atualizar objeto de imagem com URL do servidor

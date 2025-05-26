@@ -20,26 +20,32 @@
         },
         {
             "src": "/api/cards/([^/]+)/edit",
+            "methods": ["PUT", "OPTIONS"],
             "dest": "/frontend/api/cards/[id]/edit"
         },
         {
             "src": "/api/cards/search",
+            "methods": ["GET", "OPTIONS"],
             "dest": "/frontend/api/cards/search"
         },
         {
             "src": "/api/cards/([^/]+)",
+            "methods": ["GET", "PUT", "OPTIONS"],
             "dest": "/frontend/api/cards/[id]"
         },
         {
             "src": "/api/cards",
+            "methods": ["POST", "OPTIONS"],
             "dest": "/frontend/api/cards"
         },
         {
             "src": "/api/checkout/create-preference",
+            "methods": ["POST", "OPTIONS"],
             "dest": "/frontend/api/checkout/create-preference"
         },
         {
             "src": "/api/webhook/mercadopago",
+            "methods": ["POST", "OPTIONS"],
             "dest": "/frontend/api/webhook/mercadopago"
         },
         {
