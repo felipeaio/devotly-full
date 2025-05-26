@@ -7,35 +7,34 @@ export const API_CONFIG = (() => {
   const isLocalhost = 
     window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1';
-  
-  // Base URLs
+    // Base URLs
   const baseUrl = isLocalhost 
     ? 'http://localhost:3000' 
-    : window.location.origin;
+    : 'https://www.devotly.shop';
+  
+  // Remove trailing slash if present
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
     
-  return {
-    // Base URLs
-    baseUrl,
+  return {    // Base URLs
+    baseUrl: normalizedBaseUrl,
     
     // Card endpoints
     cards: {
-      create: `${baseUrl}/api/cards`,
-      get: (id) => `${baseUrl}/api/cards/${id}`,
-      search: (email) => `${baseUrl}/api/cards/search?email=${encodeURIComponent(email)}`,
-      edit: (id) => `${baseUrl}/api/cards/${id}/edit`,
+      create: `${normalizedBaseUrl}/api/cards`,      get: (id) => `${normalizedBaseUrl}/api/cards/${id}`,
+      search: (email) => `${normalizedBaseUrl}/api/cards/search?email=${encodeURIComponent(email)}`,
+      edit: (id) => `${normalizedBaseUrl}/api/cards/${id}/edit`,
     },
     
     // Image upload
-    upload: `${baseUrl}/api/upload`,
-    
-    // Checkout
+    upload: `${normalizedBaseUrl}/api/upload`,
+      // Checkout
     checkout: {
-      createPreference: `${baseUrl}/api/checkout/create-preference`,
+      createPreference: `${normalizedBaseUrl}/api/checkout/create-preference`,
     },
     
     // Webhooks
     webhook: {
-      mercadoPago: `${baseUrl}/api/webhook/mercadopago`,
+      mercadoPago: `${normalizedBaseUrl}/api/webhook/mercadopago`,
     },
   };
 })();

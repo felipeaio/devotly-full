@@ -14,8 +14,33 @@
     ],
     "routes": [
         {
-            "src": "/api/(.*)",
-            "dest": "/frontend/api/$1"
+            "src": "/api/upload",
+            "methods": ["POST", "OPTIONS"],
+            "dest": "/frontend/api/upload"
+        },
+        {
+            "src": "/api/cards/([^/]+)/edit",
+            "dest": "/frontend/api/cards/[id]/edit"
+        },
+        {
+            "src": "/api/cards/search",
+            "dest": "/frontend/api/cards/search"
+        },
+        {
+            "src": "/api/cards/([^/]+)",
+            "dest": "/frontend/api/cards/[id]"
+        },
+        {
+            "src": "/api/cards",
+            "dest": "/frontend/api/cards"
+        },
+        {
+            "src": "/api/checkout/create-preference",
+            "dest": "/frontend/api/checkout/create-preference"
+        },
+        {
+            "src": "/api/webhook/mercadopago",
+            "dest": "/frontend/api/webhook/mercadopago"
         },
         {
             "src": "/(.*\\.js)",
