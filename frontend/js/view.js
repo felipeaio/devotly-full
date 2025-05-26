@@ -127,13 +127,8 @@ class DevotlyViewer {    constructor() {
     async fetchCardData() {
         this.showState('loadingState');
 
-        try {
-            // Determine server URL based on environment
-            const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'http://localhost:3000'
-                : 'https://api.devotly.com';
-
-            const response = await fetch(`${baseUrl}/api/cards/${this.state.cardId}`);
+        try {            // Usar a configuração de API
+            const response = await fetch(window.ApiConfig.url(window.ApiConfig.cards.get(this.state.cardId)));
 
             if (!response.ok) {
                 if (response.status === 404) {

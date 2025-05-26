@@ -48,7 +48,7 @@ class DevotlyEditor {
         this.showState('loadingState');
 
         try {
-            const response = await fetch(`http://localhost:3000/api/cards/search?email=${encodeURIComponent(email)}`);
+            const response = await fetch(`${window.ApiConfig.url(window.ApiConfig.cards.search)}?email=${encodeURIComponent(email)}`);
             const data = await response.json();
 
             if (!response.ok) {
@@ -157,7 +157,7 @@ class DevotlyEditor {
         };
 
         try {
-            const response = await fetch(`http://localhost:3000/api/cards/${this.currentCardId}/edit`, {
+            const response = await fetch(`${window.ApiConfig.url(window.ApiConfig.cards.edit(this.currentCardId))}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

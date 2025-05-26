@@ -596,7 +596,7 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+                    const checkoutResponse = await fetch(window.ApiConfig.url(window.ApiConfig.checkout), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -1367,7 +1367,7 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+        const checkoutResponse = await fetch(window.ApiConfig.url(window.ApiConfig.checkout), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1717,7 +1717,7 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
+                    const uploadResponse = await fetch(window.ApiConfig.url(window.ApiConfig.upload), {
                         method: 'POST',
                         body: imageFormData
                     });
@@ -1751,7 +1751,7 @@ async selectPlan(plan) {
                 }
             };
 
-            const response = await fetch('http://localhost:3000/api/cards', {
+            const response = await fetch(window.ApiConfig.url(window.ApiConfig.cards.create), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)

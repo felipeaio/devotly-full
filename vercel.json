@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/success", "dest": "/frontend/success.html" },
+    { "src": "/failure", "dest": "/frontend/error.html" },
+    { "src": "/pending", "dest": "/frontend/pending.html" },
+    { "src": "/create", "dest": "/frontend/create/create.html" },
+    { "src": "/edit", "dest": "/frontend/edit/edit.html" },
+    { "src": "/view", "dest": "/frontend/view/view.html" },
+    { "src": "/(.*)", "dest": "/frontend/$1" },
+    { "handle": "filesystem" },
+    { "src": "/", "dest": "/frontend/home.html" }
+  ],
+  "env": {
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_ANON_KEY": "@supabase_anon_key",
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
+    "MERCADO_PAGO_ACCESS_TOKEN": "@mercado_pago_access_token",
+    "MERCADO_PAGO_PUBLIC_KEY": "@mercado_pago_public_key",
+    "FRONTEND_URL": "@frontend_url",
+    "NODE_ENV": "production"
+  }
+}
