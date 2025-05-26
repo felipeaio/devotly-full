@@ -68,10 +68,8 @@ export default async function handler(req) {
           success: false,
           error: 'Configuração de pagamento incompleta'
         }, { status: 500 });
-      }
-
-      // Usar URL de callback do ambiente ou frontend_url
-      const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.vercel.app';
+      }      // Usar URL de callback do ambiente ou frontend_url
+      const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
 
       // Inicializar Mercado Pago
       const client = new MercadoPagoConfig({

@@ -61,9 +61,8 @@ export default async function handler(req) {
     try {
       const body = await req.json();
       const validatedData = cardSchema.parse(body);
-      const { email, plano, conteudo } = validatedData;
-      const cardId = uuidv4();
-      const cardUrl = `devotly.com/${cardId}-${conteudo.cardName}`;
+      const { email, plano, conteudo } = validatedData;      const cardId = uuidv4();
+      const cardUrl = `devotly.shop/${cardId}-${conteudo.cardName}`;
 
       // Antes de criar o cartão, verifique se as imagens são URLs válidas
       const { images } = conteudo;

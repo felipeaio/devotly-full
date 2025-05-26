@@ -23,10 +23,8 @@ class DevotlyPlanos {
             return;
         }
 
-        this.showLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:3000/api/checkout/create-preference', {
+        this.showLoading(true);        try {
+            const response = await fetch(window.ApiConfig.url('/checkout/create-preference'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

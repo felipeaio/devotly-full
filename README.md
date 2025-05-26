@@ -2,6 +2,17 @@
 
 Este projeto foi adaptado para ser implantado na Vercel usando a arquitetura serverless.
 
+## Migração para o Domínio devotly.shop
+
+Todas as URLs no código foram atualizadas para utilizar o novo domínio `devotly.shop` em vez de `localhost`. As principais alterações incluem:
+
+1. Configuração centralizada de API no arquivo `frontend/js/core/api-config.js`
+2. URLs de callback e redirecionamento no processamento de pagamentos
+3. Meta tags para compartilhamento em redes sociais
+4. URLs para visualização e busca de cartões
+
+Todas as referências anteriores a `localhost:3000` e domínios provisórios foram atualizadas para o domínio de produção.
+
 ## Estrutura do Projeto
 
 ```
