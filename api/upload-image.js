@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { supabaseClient } from './lib/supabase';
+import { handleCORS, addCORSHeaders } from './lib/cors';
 
 export const config = {
   runtime: 'edge',
@@ -11,21 +12,19 @@ export const config = {
 };
 
 export default async function handler(req) {
-  // Tratamento CORS  if (req.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-      },
-    });
+  // Tratamento CORS usando a biblioteca compartilhada  
+  const corsResult = handleCORS(req, {
+    allowMethods: 'POST, OPTIONS',
+    allowHeaders: 'Content-Type, X-Requested-With'
+  });
+  
+  // Se for uma requisição OPTIONS, retorna a resposta CORS imediatamente
+  if (req.method === 'OPTIONS') {
+    return corsResult;
   }
   
-  // Para solicitações não-OPTIONS, adicionar cabeçalhos CORS na resposta
-  if (req.method !== 'OPTIONS') {
-    req.headers.set('Access-Control-Allow-Origin', '*');
-  }
+  // Para solicitações não-OPTIONS, precisamos manter os cabeçalhos CORS para a resposta final
+  const { corsHeaders } = corsResult;
   // Inicialize o Supabase
   const { supabase, error } = supabaseClient(req);
   if (error) {
@@ -101,25 +100,32 @@ export default async function handler(req) {
 
       if (!urlData?.publicUrl) {
         throw new Error('Erro ao obter URL pública');
-      }
-
-      return NextResponse.json({
+      }      const response = NextResponse.json({
         success: true,
         url: urlData.publicUrl
       });
+      
+      // Adicionar cabeçalhos CORS à resposta
+      return addCORSHeaders(response, corsHeaders);
 
     } catch (error) {
       console.error('Erro no upload de imagem:', error);
-      return NextResponse.json({
+      const errorResponse = NextResponse.json({
         success: false,
         error: error.message || 'Erro interno no servidor'
       }, { status: 500 });
+      
+      // Adicionar cabeçalhos CORS à resposta de erro
+      return addCORSHeaders(errorResponse, corsHeaders);
     }
   }
 
   // Resposta padrão para outros métodos
-  return NextResponse.json({
+  const methodNotAllowedResponse = NextResponse.json({
     success: false,
     error: 'Método não suportado'
   }, { status: 405 });
+  
+  // Adicionar cabeçalhos CORS à resposta
+  return addCORSHeaders(methodNotAllowedResponse, corsHeaders);
 }

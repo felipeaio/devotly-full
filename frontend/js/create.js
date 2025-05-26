@@ -617,6 +617,17 @@ class DevotlyCreator {
                 } catch (error) {
                     console.error('Erro no processo de seleção de plano:', error);
                     
+                    // Verificar se o erro é de conexão recusada
+                    if (error.message && (
+                        error.message.includes('Failed to fetch') || 
+                        error.message.includes('network failure') ||
+                        error.message.includes('ERR_CONNECTION_REFUSED')
+                    )) {
+                        alert('Não foi possível conectar ao servidor. Por favor, verifique sua conexão com a internet ou tente novamente mais tarde.');
+                    } else {
+                        alert(`Erro: ${error.message}`);
+                    }
+                    
                     // Ocultar overlay de loading
                     if (loadingOverlay) {
                         loadingOverlay.style.display = 'none';
@@ -1717,13 +1728,29 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch(window.ApiConfig.url(window.ApiConfig.upload), {
-                        method: 'POST',
-                        body: imageFormData
-                    });
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
-                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
+                    // Log para debug da URL de upload usada
+                    const uploadUrl = window.ApiConfig.url(window.ApiConfig.upload);
+                    console.log('Enviando upload para:', uploadUrl);
+                    
+                    try {
+                        const uploadResponse = await fetch(uploadUrl, {
+                            method: 'POST',
+                            body: imageFormData,
+                            // Adicionar headers apropriados para evitar problemas de CORS
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (!uploadResponse.ok) {
+                            const errorText = await uploadResponse.text();
+                            console.error('Resposta de erro do servidor:', errorText);
+                            const errorData = JSON.parse(errorText) || { message: 'Erro desconhecido no upload' };
+                            throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message || errorText}`);
+                        }
+                    } catch (uploadError) {
+                        console.error('Falha ao enviar imagem:', uploadError);
+                        throw new Error(`Falha na conexão ao fazer upload: ${uploadError.message}`);
                     }
                     const uploadData = await uploadResponse.json();
                     uploadedImageUrls.push(uploadData.url); // Assuming server returns { url: '...' }
@@ -1751,17 +1778,41 @@ async selectPlan(plan) {
                 }
             };
 
-            const response = await fetch(window.ApiConfig.url(window.ApiConfig.cards.create), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSubmit)
-            });
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
+            // Log para debug
+            const createUrl = window.ApiConfig.url(window.ApiConfig.cards.create);
+            console.log('Enviando criação de cartão para:', createUrl);
+            console.log('Dados enviados:', JSON.stringify(dataToSubmit));
+            
+            try {
+                const response = await fetch(createUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(dataToSubmit)
+                });
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                } catch (parseError) {
+                    const rawText = await response.text();
+                    console.error('Erro ao analisar resposta JSON:', rawText);
+                    throw new Error('Resposta inválida do servidor');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(responseData.message || responseData.error || 'Erro ao criar cartão no servidor');
+                }
+                return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
+            } catch (fetchError) {
+                console.error('Erro na chamada fetch:', fetchError);
+                if (fetchError.message === 'Failed to fetch') {
+                    throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão.');
+                }
+                throw fetchError;
             }
-            return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
 
         } catch (error) {
             console.error('Erro ao enviar dados do formulário:', error);

@@ -4,9 +4,16 @@
  */
 
 const ApiConfig = {  // Base URL para API - automaticamente detecta a URL atual ou usa o domínio de produção
-  baseUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:3000/api' 
-    : 'https://devotly.shop/api',
+  baseUrl: (function() {
+    // Verificar se estamos em ambiente de desenvolvimento local
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:3000/api';
+    }
+    
+    // Em ambiente de produção, usar o mesmo protocolo e host da página atual
+    // Isso resolve problemas de CORS e conexões recusadas
+    return `${window.location.protocol}//${window.location.host}/api`;
+  })(),
   
   // Endpoints para cartões
   cards: {

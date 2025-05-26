@@ -18,6 +18,7 @@ export default function middleware(req) {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With, X-User-Email, X-Token-Edit',
         'Access-Control-Max-Age': '86400',
+        'Vary': 'Origin',
       },
     });
   }
@@ -29,6 +30,7 @@ export default function middleware(req) {
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, X-User-Email, X-Token-Edit');
+  response.headers.set('Vary', 'Origin');
   
   return response;
 }
