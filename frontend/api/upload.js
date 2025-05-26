@@ -18,7 +18,7 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-    console.log('Upload handler started', { method: req.method, url: req.url });
+    console.log('Upload handler started', { method: req.method, url: req.url, headers: req.headers });
     
     // Set CORS headers first
     setCorsHeaders(res);
@@ -26,7 +26,6 @@ export default async function handler(req, res) {
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        console.log('Handled CORS preflight');
         return res.status(200).end();
     }
     
@@ -37,8 +36,6 @@ export default async function handler(req, res) {
         error: 'Método não permitido'
       });
     }
-  
-  try {
     console.log('Starting file upload process');
       // Parse form data with multiparty
     console.log('Parsing form data...');
@@ -199,4 +196,4 @@ export default async function handler(req, res) {
       } : undefined
     });
   }
-}
+  }

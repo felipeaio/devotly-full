@@ -11,12 +11,16 @@
             "src": "frontend/**/*",
             "use": "@vercel/static"
         }
-    ],
-    "routes": [
+    ],    "routes": [
         {
             "src": "/api/upload",
             "methods": ["POST", "OPTIONS"],
-            "dest": "/frontend/api/upload"
+            "dest": "/frontend/api/upload.js",
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS, POST",
+                "Access-Control-Allow-Headers": "Content-Type"
+            }
         },
         {
             "src": "/api/cards/([^/]+)/edit",

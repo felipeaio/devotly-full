@@ -1789,16 +1789,37 @@ async selectPlan(plan) {
                         this.apiConfig = API_CONFIG;
                     }
 
+                    console.log('Attempting upload to:', this.apiConfig.upload);
                     const uploadResponse = await fetch(this.apiConfig.upload, {
                         method: 'POST',
                         body: imageFormData
+                    }).catch(err => {
+                        console.error('Network error during upload:', err);
+                        throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
                     });
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
-                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
+
+                    console.log('Upload response status:', uploadResponse.status);
+                    
+                    let responseData;
+                    try {
+                        responseData = await uploadResponse.json();
+                    } catch (err) {
+                        console.error('Error parsing response:', err);
+                        throw new Error('Erro ao processar resposta do servidor');
                     }
-                    const uploadData = await uploadResponse.json();
-                    uploadedImageUrls.push(uploadData.url); // Assuming server returns { url: '...' }
+                    
+                    if (!uploadResponse.ok || !responseData.success) {
+                        console.error('Upload failed:', responseData);
+                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
+                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorMessage}`);
+                    }
+
+                    if (!responseData.url) {
+                        console.error('Missing URL in response:', responseData);
+                        throw new Error('URL da imagem não recebida do servidor');
+                    }
+
+                    uploadedImageUrls.push(responseData.url);
                 } else if (typeof imageObj === 'string' && imageObj.startsWith('http')) { // Already an URL
                     uploadedImageUrls.push(imageObj);
                 } else if (imageObj.url) { // If imageObj has a URL property from previous uploads
