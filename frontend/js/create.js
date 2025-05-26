@@ -1773,7 +1773,13 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
+                    // Ensure API config is loaded
+                    if (!this.apiConfig) {
+                        const { API_CONFIG } = await import('./core/api-config.js');
+                        this.apiConfig = API_CONFIG;
+                    }
+
+                    const uploadResponse = await fetch(this.apiConfig.upload, {
                         method: 'POST',
                         body: imageFormData
                     });

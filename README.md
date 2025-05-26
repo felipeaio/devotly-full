@@ -17,6 +17,47 @@ frontend/             # Frontend estático
 └── public/           # Arquivos estáticos
 ```
 
+## Implantação no Vercel
+
+### Pré-requisitos
+
+1. Uma conta Vercel
+2. Uma conta Supabase com os seguintes recursos configurados:
+   - Banco de dados com tabela `cards`
+   - Buckets de armazenamento: `card-images` e `qrcodes`
+3. Conta de desenvolvedor MercadoPago para pagamentos
+
+### Como implantar no Vercel
+
+1. Conecte seu repositório GitHub ao Vercel
+2. Adicione as seguintes variáveis de ambiente nas configurações do seu projeto Vercel:
+
+```
+SUPABASE_URL=sua_url_supabase
+SUPABASE_SERVICE_KEY=sua_chave_de_servico_supabase
+SUPABASE_ANON_KEY=sua_chave_anon_supabase
+MP_ACCESS_TOKEN=seu_token_de_acesso_mercadopago
+MP_PUBLIC_KEY=sua_chave_publica_mercadopago
+SITE_URL=https://sua-url-de-implantacao-vercel.vercel.app
+```
+
+3. Implante o projeto
+
+### Desenvolvimento Local
+
+1. Instale as dependências:
+```
+npm install
+cd frontend && npm install
+```
+
+2. Crie um arquivo `.env` no diretório raiz com as variáveis listadas em `.env.example`
+
+3. Execute o servidor de desenvolvimento:
+```
+npm run dev
+```
+
 ## Tecnologias
 
 - Frontend: HTML, CSS, JavaScript puro
