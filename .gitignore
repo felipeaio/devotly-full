@@ -4,19 +4,13 @@
 .env.local
 .env.development
 .env.production
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Dependências do Node.js
 node_modules/
 npm-debug.log
 yarn-error.log
-yarn-debug.log
-.pnpm-debug.log
-
-# Vercel
-.vercel/
+yarn.lock
+package-lock.json
 
 # Arquivos temporários e logs
 *.log
@@ -56,4 +50,3 @@ coverage/
 *.key
 *.cert
 *.secret
-.vercel

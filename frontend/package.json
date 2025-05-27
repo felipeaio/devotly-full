@@ -1,17 +1,5 @@
 {
-  "name": "devotly-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "@supabase/supabase-js": "^2.38.4",
-    "mercadopago": "^2.0.4",
-    "multiparty": "^4.2.3",
-    "uuid": "^9.0.1"
-  },
   "devDependencies": {
     "purgecss": "^7.0.2"
-  },
-  "engines": {
-    "node": ">=18.x"
   }
 }

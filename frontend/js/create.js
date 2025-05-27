@@ -60,9 +60,6 @@ function restructurePreviewSections() {
 // main.js
 class DevotlyCreator {
     constructor() {
-        // Initialize API config
-        this.loadApiConfig();
-
         // Detectar dispositivos de baixo desempenho
         this.isLowEndDevice = this.detectLowEndDevice();
 
@@ -75,16 +72,6 @@ class DevotlyCreator {
 
         // Add preview modal instance
         this.previewModal = new PreviewModal(); // PreviewModal class is defined later
-    }
-
-    // Load API configuration
-    async loadApiConfig() {
-        try {
-            const { API_CONFIG } = await import('./core/api-config.js');
-            this.apiConfig = API_CONFIG;
-        } catch (error) {
-            console.error('Erro ao carregar configuração da API:', error);
-        }
     }
 
     // Método para detectar dispositivos de baixo desempenho
@@ -609,13 +596,7 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    // Use API config
-                    if (!this.apiConfig) {
-                        const { API_CONFIG } = await import('./core/api-config.js');
-                        this.apiConfig = API_CONFIG;
-                    }
-                    
-                    const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
+                    const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -1117,12 +1098,6 @@ scrollToSection(sectionId) {
                 return;
             }
 
-            // Ensure API config is loaded
-            if (!this.apiConfig) {
-                const { API_CONFIG } = await import('./core/api-config.js');
-                this.apiConfig = API_CONFIG;
-            }
-
             for (const file of files) {
                 // Validar tipo e tamanho
                 if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
@@ -1139,62 +1114,16 @@ scrollToSection(sectionId) {
                     // Criar URL temporária para preview
                     const tempUrl = URL.createObjectURL(file);
                     
-                    // Adicionar loading indicator
-                    const loadingIndex = this.state.formData.images.length;
+                    // Adicionar à lista de imagens com informações necessárias
                     this.state.formData.images.push({
                         isTemp: true,
                         tempUrl: tempUrl,
                         blob: file,
-                        fileName: file.name,
-                        loading: true
+                        fileName: file.name
                     });
 
-                    // Adicionar preview no formulário com estado de loading
-                    this.addImagePreview(tempUrl, loadingIndex);
-                    
-                    // Upload da imagem para o servidor
-                    const formData = new FormData();
-                    formData.append('image', file);
-                    
-                    const uploadResponse = await fetch(this.apiConfig.upload, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const responseData = await uploadResponse.json();
-                    
-                    if (!uploadResponse.ok || !responseData.success) {
-                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
-                        console.error('Upload error:', {
-                            status: uploadResponse.status,
-                            statusText: uploadResponse.statusText,
-                            response: responseData,
-                            url: uploadResponse.url
-                        });
-                        throw new Error(errorMessage);
-                    }
-                    
-                    if (!responseData.url) {
-                        console.error('Invalid response:', responseData);
-                        throw new Error('URL da imagem não recebida do servidor');
-                    }
-                    
-                    // Validate the URL
-                    try {
-                        new URL(responseData.url);
-                    } catch (e) {
-                        console.error('Invalid URL received:', responseData.url);
-                        throw new Error('URL da imagem inválida');
-                    }
-                    
-                    // Atualizar objeto de imagem com URL do servidor
-                    this.state.formData.images[loadingIndex] = {
-                        isTemp: false,
-                        url: uploadData.url,
-                        tempUrl: tempUrl,  // Manter URL temporária para preview local
-                        fileName: file.name,
-                        loading: false
-                    };
+                    // Adicionar preview no formulário
+                    this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
                     
                 } catch (error) {
                     console.error('Erro ao processar imagem:', error);
@@ -1788,57 +1717,16 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    // Ensure API config is loaded
-                    if (!this.apiConfig) {
-                        const { API_CONFIG } = await import('./core/api-config.js');
-                        this.apiConfig = API_CONFIG;
-                    }
-
-                    console.log('Attempting upload to:', this.apiConfig.upload);
-                    
-                    // Ensure the URL uses the same hostname as the current page
-                    const uploadUrl = new URL(this.apiConfig.upload);
-                    uploadUrl.hostname = window.location.hostname;
-                    
-                    console.log('Adjusted upload URL:', uploadUrl.toString());
-                    
-                    const uploadResponse = await fetch(uploadUrl.toString(), {
+                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
                         method: 'POST',
-                        body: imageFormData,
-                        redirect: 'follow', // Explicitly follow redirects
-                        mode: 'cors', // Use CORS mode
-                        credentials: 'same-origin',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Origin': window.location.origin
-                        }
-                    }).catch(err => {
-                        console.error('Network error during upload:', err);
-                        throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
+                        body: imageFormData
                     });
-
-                    console.log('Upload response status:', uploadResponse.status);
-                    
-                    let responseData;
-                    try {
-                        responseData = await uploadResponse.json();
-                    } catch (err) {
-                        console.error('Error parsing response:', err);
-                        throw new Error('Erro ao processar resposta do servidor');
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
+                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
                     }
-                    
-                    if (!uploadResponse.ok || !responseData.success) {
-                        console.error('Upload failed:', responseData);
-                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
-                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorMessage}`);
-                    }
-
-                    if (!responseData.url) {
-                        console.error('Missing URL in response:', responseData);
-                        throw new Error('URL da imagem não recebida do servidor');
-                    }
-
-                    uploadedImageUrls.push(responseData.url);
+                    const uploadData = await uploadResponse.json();
+                    uploadedImageUrls.push(uploadData.url); // Assuming server returns { url: '...' }
                 } else if (typeof imageObj === 'string' && imageObj.startsWith('http')) { // Already an URL
                     uploadedImageUrls.push(imageObj);
                 } else if (imageObj.url) { // If imageObj has a URL property from previous uploads
@@ -1863,13 +1751,7 @@ async selectPlan(plan) {
                 }
             };
 
-            // Ensure API config is loaded
-            if (!this.apiConfig) {
-                const { API_CONFIG } = await import('./core/api-config.js');
-                this.apiConfig = API_CONFIG;
-            }
-            
-            const response = await fetch(this.apiConfig.cards.create, {
+            const response = await fetch('http://localhost:3000/api/cards', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)
