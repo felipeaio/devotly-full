@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Frontend para o Devotly",
   "scripts": {
-    "start": "nginx -g 'daemon off;'"
+    "start": "nginx -g 'daemon off;'",
+    "build": "echo 'No build step required for static files'",
+    "deploy": "railway up"
   },
   "devDependencies": {
     "purgecss": "^7.0.2"

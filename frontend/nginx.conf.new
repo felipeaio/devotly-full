@@ -1,0 +1,32 @@
+server {
+    listen 80 default_server;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html home.html;
+    
+    # Configuração básica
+    location / {
+        try_files $uri $uri/ /home.html;
+    }
+    
+    # Servir arquivos estáticos diretamente
+    location ~* \.(html|css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        access_log off;
+        expires 30d;
+        try_files $uri =404;
+    }
+    
+    # Para requisições à API, redirecionar para o backend
+    location /api/ {
+        proxy_pass http://api.devotly.shop/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+    
+    # Error pages simples
+    error_page 404 /home.html;
+    error_page 500 502 503 504 /home.html;
+}

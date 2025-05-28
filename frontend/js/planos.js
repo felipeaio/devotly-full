@@ -26,12 +26,8 @@ class DevotlyPlanos {
         this.showLoading(true);
 
         try {
-            // Importação do API_BASE_URL
-            const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'http://localhost:3000'
-                : window.location.hostname.includes('railway.app')
-                    ? `https://${window.location.hostname}`
-                    : 'https://devotly-backend-production.up.railway.app';
+            // Importação do API_BASE_URL dinamicamente
+            const { API_BASE_URL } = await import('./core/api-config.js');
                     
             const response = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
                 method: 'POST',

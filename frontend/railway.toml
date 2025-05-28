@@ -1,0 +1,24 @@
+[build]
+builder = "nixpacks"
+buildCommand = "echo 'Building frontend...'"
+
+[deploy]
+startCommand = "nginx -g 'daemon off;'"
+restartPolicy = "always"
+
+[nixpacks]
+startPhase = false
+
+[[services]]
+name = "web"
+protocol = "http"
+port = "80"
+
+[phases.setup]
+nixPkgs = ["nginx"]
+
+[environments]
+  [environments.production]
+    API_URL = "https://devotly-full-production.up.railway.app"
+    BACKEND_URL = "https://devotly-full-production.up.railway.app"
+    FRONTEND_URL = "https://www.devotly.shop"
