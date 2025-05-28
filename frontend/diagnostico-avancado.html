@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Avançado - Devotly</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success { background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; }
+        .error { background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; }
+        .warning { background: rgba(255, 193, 7, 0.2); border: 1px solid #ffc107; }
+        .info { background: rgba(0, 123, 255, 0.2); border: 1px solid #007bff; }
+        button {
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .log { background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; margin: 10px 0; max-height: 200px; overflow-y: auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Diagnóstico Avançado - Devotly</h1>
+            <p>Verificação completa do sistema para resolver erro 502</p>
+        </div>
+
+        <div class="grid">
+            <div class="test-section">
+                <h3>🌐 Conectividade de Rede</h3>
+                <button onclick="testNetworkConnectivity()">Testar Conectividade</button>
+                <div id="network-status"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🏥 Status dos Serviços</h3>
+                <button onclick="testServices()">Verificar Serviços</button>
+                <div id="service-status"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔗 Teste de API</h3>
+                <button onclick="testAPI()">Testar API</button>
+                <div id="api-status"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🗂️ Rotas Frontend</h3>
+                <button onclick="testRoutes()">Testar Rotas</button>
+                <div id="routes-status"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🌍 DNS e Domínio</h3>
+                <button onclick="testDNS()">Verificar DNS</button>
+                <div id="dns-status"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔒 SSL e Certificados</h3>
+                <button onclick="testSSL()">Verificar SSL</button>
+                <div id="ssl-status"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Informações do Sistema</h3>
+            <button onclick="getSystemInfo()">Coletar Informações</button>
+            <div id="system-info"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Log de Atividades</h3>
+            <div id="activity-log" class="log">Aguardando testes...</div>
+        </div>
+    </div>
+
+    <script>
+        let logElement = document.getElementById('activity-log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logElement.textContent += logEntry;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function displayStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${status}">${message}</div>`;
+        }
+
+        async function testNetworkConnectivity() {
+            log('Iniciando testes de conectividade...');
+            const networkStatus = document.getElementById('network-status');
+            
+            const tests = [
+                { name: 'Google DNS', url: 'https://8.8.8.8' },
+                { name: 'CDN Cloudflare', url: 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js' },
+                { name: 'Railway Platform', url: 'https://railway.app' }
+            ];
+
+            let results = '<h4>Resultados:</h4>';
+            
+            for (const test of tests) {
+                try {
+                    const start = Date.now();
+                    await fetch(test.url, { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+                    const time = Date.now() - start;
+                    results += `<div class="status success">✅ ${test.name}: OK (${time}ms)</div>`;
+                    log(`✅ ${test.name}: OK (${time}ms)`);
+                } catch (error) {
+                    results += `<div class="status error">❌ ${test.name}: ${error.message}</div>`;
+                    log(`❌ ${test.name}: ${error.message}`);
+                }
+            }
+            
+            networkStatus.innerHTML = results;
+        }
+
+        async function testServices() {
+            log('Testando status dos serviços...');
+            const serviceStatus = document.getElementById('service-status');
+            
+            const services = [
+                { name: 'Frontend Health', url: '/health' },
+                { name: 'Backend Health', url: '/api/health' },
+                { name: 'Backend Direct', url: 'https://devotly-full-production.up.railway.app/health' }
+            ];
+
+            let results = '<h4>Status dos Serviços:</h4>';
+            
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { 
+                        signal: AbortSignal.timeout(10000),
+                        headers: {
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    const text = await response.text();
+                    results += `<div class="status success">✅ ${service.name}: ${response.status} - ${text.substring(0, 100)}</div>`;
+                    log(`✅ ${service.name}: ${response.status}`);
+                } catch (error) {
+                    results += `<div class="status error">❌ ${service.name}: ${error.message}</div>`;
+                    log(`❌ ${service.name}: ${error.message}`);
+                }
+            }
+            
+            serviceStatus.innerHTML = results;
+        }
+
+        async function testAPI() {
+            log('Testando endpoints da API...');
+            const apiStatus = document.getElementById('api-status');
+            
+            const endpoints = [
+                { name: 'API Root', url: '/api/' },
+                { name: 'API Health', url: '/api/health' },
+                { name: 'API Status', url: '/api/status' }
+            ];
+
+            let results = '<h4>Testes de API:</h4>';
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, { 
+                        signal: AbortSignal.timeout(10000),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    const text = await response.text();
+                    results += `<div class="status success">✅ ${endpoint.name}: ${response.status}</div>`;
+                    log(`✅ ${endpoint.name}: ${response.status} - ${text.substring(0, 50)}...`);
+                } catch (error) {
+                    results += `<div class="status error">❌ ${endpoint.name}: ${error.message}</div>`;
+                    log(`❌ ${endpoint.name}: ${error.message}`);
+                }
+            }
+            
+            apiStatus.innerHTML = results;
+        }
+
+        async function testRoutes() {
+            log('Testando rotas do frontend...');
+            const routesStatus = document.getElementById('routes-status');
+            
+            const routes = [
+                { name: 'Home', url: '/' },
+                { name: 'Create', url: '/create' },
+                { name: 'Edit', url: '/edit' },
+                { name: 'View', url: '/view' },
+                { name: 'Terms', url: '/termos' },
+                { name: 'Privacy', url: '/privacidade' },
+                { name: 'Success', url: '/success' }
+            ];
+
+            let results = '<h4>Rotas Frontend:</h4>';
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(route.url, { 
+                        signal: AbortSignal.timeout(5000),
+                        headers: {
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    results += `<div class="status success">✅ ${route.name}: ${response.status}</div>`;
+                    log(`✅ Rota ${route.name}: ${response.status}`);
+                } catch (error) {
+                    results += `<div class="status error">❌ ${route.name}: ${error.message}</div>`;
+                    log(`❌ Rota ${route.name}: ${error.message}`);
+                }
+            }
+            
+            routesStatus.innerHTML = results;
+        }
+
+        async function testDNS() {
+            log('Verificando configurações DNS...');
+            const dnsStatus = document.getElementById('dns-status');
+            
+            let results = '<h4>Informações DNS:</h4>';
+            results += `<div class="status info">🌐 Domínio atual: ${window.location.hostname}</div>`;
+            results += `<div class="status info">🔗 URL completa: ${window.location.href}</div>`;
+            results += `<div class="status info">🏠 Origin: ${window.location.origin}</div>`;
+            results += `<div class="status info">🔒 Protocolo: ${window.location.protocol}</div>`;
+            
+            // Verificar se estamos no domínio correto
+            if (window.location.hostname === 'www.devotly.shop') {
+                results += `<div class="status success">✅ Domínio correto: www.devotly.shop</div>`;
+                log('✅ Acessando pelo domínio correto');
+            } else {
+                results += `<div class="status warning">⚠️ Domínio diferente do esperado</div>`;
+                log(`⚠️ Domínio atual: ${window.location.hostname}, esperado: www.devotly.shop`);
+            }
+            
+            dnsStatus.innerHTML = results;
+        }
+
+        async function testSSL() {
+            log('Verificando certificado SSL...');
+            const sslStatus = document.getElementById('ssl-status');
+            
+            let results = '<h4>Status SSL:</h4>';
+            
+            if (window.location.protocol === 'https:') {
+                results += `<div class="status success">✅ HTTPS ativo</div>`;
+                log('✅ Conexão HTTPS ativa');
+            } else {
+                results += `<div class="status error">❌ HTTPS não ativo</div>`;
+                log('❌ Conexão não está usando HTTPS');
+            }
+            
+            // Tentar acessar via HTTPS se não estiver
+            if (window.location.protocol === 'http:') {
+                try {
+                    const httpsUrl = window.location.href.replace('http:', 'https:');
+                    const response = await fetch(httpsUrl, { 
+                        mode: 'no-cors',
+                        signal: AbortSignal.timeout(5000) 
+                    });
+                    results += `<div class="status success">✅ HTTPS disponível</div>`;
+                    log('✅ HTTPS está disponível');
+                } catch (error) {
+                    results += `<div class="status error">❌ HTTPS não disponível: ${error.message}</div>`;
+                    log(`❌ HTTPS não disponível: ${error.message}`);
+                }
+            }
+            
+            sslStatus.innerHTML = results;
+        }
+
+        function getSystemInfo() {
+            log('Coletando informações do sistema...');
+            const systemInfo = document.getElementById('system-info');
+            
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Idioma': navigator.language,
+                'Cookies Habilitados': navigator.cookieEnabled,
+                'Online': navigator.onLine,
+                'Viewport': `${window.innerWidth}x${window.innerHeight}`,
+                'Screen': `${screen.width}x${screen.height}`,
+                'Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+                'Timestamp': new Date().toISOString()
+            };
+            
+            let results = '<h4>Informações do Sistema:</h4>';
+            for (const [key, value] of Object.entries(info)) {
+                results += `<div class="status info"><strong>${key}:</strong> ${value}</div>`;
+            }
+            
+            // Headers disponíveis
+            results += '<h4>Headers HTTP (estimados):</h4>';
+            results += `<div class="status info"><strong>Referer:</strong> ${document.referrer || 'N/A'}</div>`;
+            results += `<div class="status info"><strong>Host:</strong> ${window.location.host}</div>`;
+            
+            systemInfo.innerHTML = results;
+            log('✅ Informações do sistema coletadas');
+        }
+
+        // Executar alguns testes automaticamente
+        window.addEventListener('load', function() {
+            log('🚀 Diagnóstico iniciado automaticamente');
+            setTimeout(() => {
+                getSystemInfo();
+                testDNS();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

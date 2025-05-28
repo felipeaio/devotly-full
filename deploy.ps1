@@ -36,7 +36,15 @@ if (-not (railway service list | Select-String -Pattern "devotly-frontend")) {
 # Configura o serviço frontend
 Write-Host "Selecionando serviço frontend..." -ForegroundColor Yellow
 railway service devotly-frontend
+
+# Configurar variáveis de ambiente para o frontend
+Write-Host "Configurando variáveis de ambiente do frontend..." -ForegroundColor Yellow
+railway variables set API_URL=https://devotly-full-production.up.railway.app
+railway variables set BACKEND_URL=https://devotly-full-production.up.railway.app
+railway variables set FRONTEND_URL=https://www.devotly.shop
+
 # Faz o deploy do frontend
+Write-Host "Executando deploy do frontend..." -ForegroundColor Yellow
 railway up
 Set-Location -Path ".."
 

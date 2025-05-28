@@ -12,7 +12,8 @@ restartPolicy = "always"
   [environments.production]
     PORT = "3000"
     NODE_ENV = "production"
-    FRONTEND_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+    FRONTEND_URL = "https://www.devotly.shop"
+    BACKEND_URL = "https://devotly-full-production.up.railway.app"
     
   [environments.development]
     PORT = "3000"

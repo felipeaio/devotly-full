@@ -46,9 +46,9 @@ router.post('/create-preference', async (req, res) => {
         console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
 
         // Obter base URL para callbacks
-        let baseUrl = process.env.NGROK_URL;
+        let baseUrl = process.env.BACKEND_URL;
         if (!baseUrl || !baseUrl.startsWith('http')) {
-            console.warn('NGROK_URL não configurado ou inválido. Usando URL da requisição como fallback.');
+            console.warn('BACKEND_URL não configurado ou inválido. Usando URL da requisição como fallback.');
             baseUrl = `${req.protocol}://${req.get('host')}`;
         }
         console.log('Base URL para callbacks:', baseUrl);

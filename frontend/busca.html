@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devotly - Buscar Cartão</title>
+    <link rel="stylesheet" href="css/home.css">
+    <style>
+        .search-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 40px;
+            background: #242424;
+            border-radius: 12px;
+        }
+        .search-form {
+            margin: 20px 0;
+        }
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #e6e6e6;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #f4c440;
+        }
+        .btn {
+            background: #d4af37;
+            color: #1a1a1a;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        .search-help {
+            color: #b3b3b3;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1 style="color: #d4af37; text-align: center;">🔍 Buscar Cartão</h1>
+        <p style="text-align: center; color: #e6e6e6;">Digite o código do seu cartão para visualizá-lo</p>
+        
+        <form class="search-form" onsubmit="searchCard(event)">
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Digite o código do cartão (ex: ABC123)"
+                id="cardCode"
+                required
+            >
+            <button type="submit" class="btn">Buscar Cartão</button>
+        </form>
+        
+        <div class="search-help">
+            <p>💡 <strong>Dica:</strong> O código do cartão está no QR Code ou foi enviado para você por email.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" style="color: #d4af37; text-decoration: none;">← Voltar ao Início</a>
+        </div>
+    </div>
+
+    <script>
+        function searchCard(event) {
+            event.preventDefault();
+            const code = document.getElementById('cardCode').value.trim();
+            if (code) {
+                window.location.href = `/view?card=${encodeURIComponent(code)}`;
+            }
+        }
+    </script>
+</body>
+</html>

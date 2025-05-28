@@ -19,7 +19,8 @@ console.log(`[${new Date().toISOString()}] Variáveis de ambiente carregadas:`);
 console.log(`SUPABASE_URL: ${process.env.SUPABASE_URL ? 'Definida' : 'Indefinida'}`);
 console.log(`SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? 'Definida' : 'Indefinida'}`);
 console.log(`MERCADO_PAGO_ACCESS_TOKEN: ${process.env.MERCADO_PAGO_ACCESS_TOKEN ? 'Definida' : 'Indefinida'}`);
-console.log(`NGROK_URL: ${process.env.NGROK_URL ? 'Definida' : 'Indefinida'}`);
+console.log(`BACKEND_URL: ${process.env.BACKEND_URL ? 'Definida' : 'Indefinida'}`);
+console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL ? 'Definida' : 'Indefinida'}`);
 
 // Importar o middleware de Supabase
 import supabaseMiddleware from './middleware/supabase.js';
@@ -50,7 +51,7 @@ try {
 }
 
 // Valida variáveis de ambiente
-const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'MERCADO_PAGO_ACCESS_TOKEN', 'NGROK_URL'];
+const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'MERCADO_PAGO_ACCESS_TOKEN', 'BACKEND_URL', 'FRONTEND_URL'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingEnvVars.length > 0) {
     console.warn(`[${new Date().toISOString()}] Aviso: Algumas variáveis de ambiente estão faltando: ${missingEnvVars.join(', ')}`);
@@ -65,8 +66,9 @@ app.set('trust proxy', 1);
 
 // Middlewares
 app.use(cors({ 
-    origin: '*', 
-    methods: ['GET', 'POST', 'PUT'],
+    origin: [process.env.FRONTEND_URL, 'https://www.devotly.shop', 'https://devotly.shop', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
+    credentials: true,
     allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] 
 }));
 app.use(helmet());

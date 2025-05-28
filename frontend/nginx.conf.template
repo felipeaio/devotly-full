@@ -1,0 +1,141 @@
+server {
+    listen $PORT;
+    server_name frontend-production-2eeb.up.railway.app _;
+    root /usr/share/nginx/html;
+    index home.html;
+    
+    # Logs para debug
+    access_log /var/log/nginx/access.log combined;
+    error_log /var/log/nginx/error.log info;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Debug-Config "nginx-railway-frontend" always;
+    add_header X-Debug-Port "$PORT" always;
+    
+    # Health check for Railway - MUITO SIMPLES
+    location /health {
+        access_log off;
+        return 200 "OK";
+        add_header Content-Type text/plain always;
+        add_header X-Health-Status "healthy" always;
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+    }
+    
+    # Endpoint de status para debug
+    location /status {
+        return 200 "Frontend OK on port $PORT";
+        add_header Content-Type text/plain always;
+    }
+      # API proxy to backend
+    location /api/ {
+        # Remove /api/ do path e envia para o backend
+        rewrite ^/api/(.*)$ /$1 break;
+        
+        proxy_pass https://devotly-full-production.up.railway.app;
+        proxy_set_header Host devotly-full-production.up.railway.app;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_redirect off;
+        
+        # Timeout settings
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        
+        # Buffering
+        proxy_buffering on;
+        proxy_buffer_size 64k;
+        proxy_buffers 4 128k;
+        proxy_busy_buffers_size 128k;
+          # Headers de debug
+        add_header X-Proxy-Target "backend" always;
+    }
+    
+    # Static files com cache otimizado
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        add_header X-Served-By "nginx-static" always;
+        try_files $uri =404;
+    }
+    
+    # Rota principal (homepage)
+    location = / {
+        try_files /home.html =404;
+        add_header X-Page-Type "homepage" always;
+    }
+    
+    # Rotas das páginas principais
+    location = /create {
+        try_files /create/create.html =404;
+        add_header X-Page-Type "create" always;
+    }
+    
+    location = /edit {
+        try_files /edit/edit.html =404;
+        add_header X-Page-Type "edit" always;
+    }
+    
+    location = /view {
+        try_files /view/view.html =404;
+        add_header X-Page-Type "view" always;
+    }
+      location = /checkout {
+        try_files /checkout.html /home.html;
+        add_header X-Page-Type "checkout" always;
+    }
+    
+    location = /demo {
+        try_files /demo.html /home.html;
+        add_header X-Page-Type "demo" always;
+    }
+    
+    location = /busca {
+        try_files /busca.html /home.html;
+        add_header X-Page-Type "search" always;
+    }
+    
+    # Páginas estáticas
+    location = /termos {
+        try_files /termos.html =404;
+        add_header X-Page-Type "terms" always;
+    }
+    
+    location = /privacidade {
+        try_files /privacidade.html =404;
+        add_header X-Page-Type "privacy" always;
+    }
+    
+    location = /success {
+        try_files /success.html =404;
+        add_header X-Page-Type "success" always;
+    }
+    
+    # Fallback para outras rotas - SPA behavior
+    location / {
+        try_files $uri $uri/ @fallback;
+        add_header X-Request-Type "direct" always;
+    }
+    
+    # Fallback para rotas não encontradas
+    location @fallback {
+        try_files /home.html =404;
+        add_header X-Request-Type "spa-fallback" always;
+    }
+    
+    # Error pages
+    error_page 404 /home.html;
+    error_page 500 502 503 504 /50x.html;
+    
+    location = /50x.html {
+        root /usr/share/nginx/html;
+        internal;
+        add_header X-Error-Page "50x" always;
+    }
+}
