@@ -48,7 +48,10 @@ class DevotlyEditor {
         this.showState('loadingState');
 
         try {
-            const response = await fetch(`http://localhost:3000/api/cards/search?email=${encodeURIComponent(email)}`);
+            // Import API_BASE_URL from api-config.js
+            const { API_BASE_URL } = await import('./core/api-config.js');
+            
+            const response = await fetch(`${API_BASE_URL}/api/cards/search?email=${encodeURIComponent(email)}`);
             const data = await response.json();
 
             if (!response.ok) {
@@ -157,7 +160,8 @@ class DevotlyEditor {
         };
 
         try {
-            const response = await fetch(`http://localhost:3000/api/cards/${this.currentCardId}/edit`, {
+            // Reutilizar o API_BASE_URL já importado
+            const response = await fetch(`${API_BASE_URL}/api/cards/${this.currentCardId}/edit`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

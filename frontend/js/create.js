@@ -596,7 +596,9 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+                    // Import API_BASE_URL from api-config.js
+                    const { API_BASE_URL } = await import('./core/api-config.js');
+                    const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -1367,7 +1369,8 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+        // Reutilizar o API_BASE_URL importado anteriormente
+        const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1717,7 +1720,8 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch('http://localhost:3000/api/upload-image', {
+                    // Reutilizar o API_BASE_URL importado anteriormente
+                    const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-image`, {
                         method: 'POST',
                         body: imageFormData
                     });
@@ -1751,7 +1755,8 @@ async selectPlan(plan) {
                 }
             };
 
-            const response = await fetch('http://localhost:3000/api/cards', {
+            // Reutilizar o API_BASE_URL importado anteriormente
+            const response = await fetch(`${API_BASE_URL}/api/cards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)
