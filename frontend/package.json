@@ -1,5 +1,14 @@
 {
+  "name": "devotly-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para o Devotly",
+  "scripts": {
+    "start": "nginx -g 'daemon off;'"
+  },
   "devDependencies": {
     "purgecss": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

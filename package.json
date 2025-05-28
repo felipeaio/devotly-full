@@ -1,0 +1,15 @@
+{
+  "name": "devotly",
+  "version": "1.0.0",
+  "description": "Devotly - Cartões Cristãos Inspiradores",
+  "scripts": {
+    "start": "cd backend && node index.js",
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "install": "npm run install-backend && npm run install-frontend",
+    "build": "echo 'No build step required'"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
