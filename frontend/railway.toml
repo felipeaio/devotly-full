@@ -6,8 +6,7 @@ healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicy = "always"
 
-[environments]
-  [environments.production]
+[environments]  [environments.production]
     API_URL = "https://devotly-full-production.up.railway.app"
     BACKEND_URL = "https://devotly-full-production.up.railway.app"
-    FRONTEND_URL = "https://frontend-production-2eeb.up.railway.app"
+    FRONTEND_URL = "https://devotly.shop"

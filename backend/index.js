@@ -66,7 +66,13 @@ app.set('trust proxy', 1);
 
 // Middlewares
 app.use(cors({ 
-    origin: [process.env.FRONTEND_URL, 'https://www.devotly.shop', 'https://devotly.shop', 'http://localhost:3000'],
+    origin: [
+        process.env.FRONTEND_URL, 
+        'https://devotly.shop',
+        'https://www.devotly.shop', 
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] 

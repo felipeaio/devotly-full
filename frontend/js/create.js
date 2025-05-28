@@ -6,7 +6,7 @@
 // API Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : '/api';
+    : 'https://devotly-full-production.up.railway.app';
 
 if (!HTMLCanvasElement.prototype.toBlob) {
     // Polyfill para navegadores antigos
@@ -601,7 +601,7 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    const checkoutResponse = await fetch(`${API_BASE_URL}/checkout/create-preference`, {
+                    const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -1372,7 +1372,7 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch(`${API_BASE_URL}/checkout/create-preference`, {
+        const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1722,7 +1722,7 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch(`${API_BASE_URL}/upload-image`, {
+                    const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-image`, {
                         method: 'POST',
                         body: imageFormData
                     });
@@ -1756,7 +1756,7 @@ async selectPlan(plan) {
                 }
             };
 
-            const response = await fetch(`${API_BASE_URL}/cards`, {
+            const response = await fetch(`${API_BASE_URL}/api/cards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)

@@ -1,6 +1,6 @@
 server {
     listen $PORT;
-    server_name frontend-production-2eeb.up.railway.app _;
+    server_name devotly.shop www.devotly.shop _;
     root /usr/share/nginx/html;
     index home.html;
     

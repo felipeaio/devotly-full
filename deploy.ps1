@@ -41,7 +41,7 @@ railway service devotly-frontend
 Write-Host "Configurando variáveis de ambiente do frontend..." -ForegroundColor Yellow
 railway variables set API_URL=https://devotly-full-production.up.railway.app
 railway variables set BACKEND_URL=https://devotly-full-production.up.railway.app
-railway variables set FRONTEND_URL=https://www.devotly.shop
+railway variables set FRONTEND_URL=https://devotly.shop
 
 # Faz o deploy do frontend
 Write-Host "Executando deploy do frontend..." -ForegroundColor Yellow

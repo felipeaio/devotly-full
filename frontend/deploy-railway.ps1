@@ -24,8 +24,8 @@ echo "✓ Todos os arquivos necessários encontrados"
 
 # Fazer o deploy
 echo "🚀 Iniciando deploy na Railway..."
-echo "📍 URL esperada: https://frontend-production-2eeb.up.railway.app"
-echo "🔍 Healthcheck: https://frontend-production-2eeb.up.railway.app/health"
+echo "📍 URL esperada: https://devotly.shop"
+echo "🔍 Healthcheck: https://devotly.shop/health"
 
 # Instruções para o usuário
 echo ""
@@ -35,9 +35,9 @@ echo "2. Execute: railway link (selecione o projeto Devotly)"
 echo "3. Execute: railway up"
 echo ""
 echo "=== URLs DE TESTE ==="
-echo "🏠 Homepage: https://frontend-production-2eeb.up.railway.app"
-echo "❤️ Health: https://frontend-production-2eeb.up.railway.app/health"
-echo "📊 Status: https://frontend-production-2eeb.up.railway.app/status"
+echo "🏠 Homepage: https://devotly.shop"
+echo "❤️ Health: https://devotly.shop/health"
+echo "📊 Status: https://devotly.shop/status"
 echo ""
 echo "=== LOGS DE DEBUG ==="
 echo "Para ver os logs: railway logs"
