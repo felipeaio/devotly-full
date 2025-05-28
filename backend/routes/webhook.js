@@ -1,6 +1,8 @@
 import express from 'express';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
+import { sendPaymentConfirmationEmail } from '../services/emailService.js';
+import QRCode from 'qrcode';
 const router = express.Router();
 
 router.post('/mercadopago', async (req, res) => {
@@ -151,6 +153,43 @@ router.post('/mercadopago', async (req, res) => {
             }
 
             console.log('\n✅ Status atualizado com sucesso:', JSON.stringify(data, null, 2));
+            
+            // Enviar email de confirmação com QR code
+            try {
+                console.log('\n10. Preparando envio de email de confirmação...');
+                
+                // URL base do frontend
+                const frontendUrl = process.env.FRONTEND_URL;
+                
+                if (!frontendUrl) {
+                    console.warn('⚠️ Variável de ambiente FRONTEND_URL não configurada. Usando URL padrão.');
+                }
+                
+                // URL completa do cartão
+                const cardUrl = `${frontendUrl || 'https://devotly.shop'}/view/?id=${cardId}`;
+                
+                // Extrair nome e título do cartão dos dados
+                const cardData = data[0];
+                const name = email.split('@')[0]; // Usa a primeira parte do email como nome se não houver outro
+                const title = cardData.title || 'Seu Cartão Cristão';
+                
+                console.log(`Enviando email para ${email} com link: ${cardUrl}`);
+                
+                // Enviar o email
+                const emailResult = await sendPaymentConfirmationEmail({
+                    email,
+                    cardId,
+                    name,
+                    title,
+                    cardUrl
+                });
+                
+                console.log('\n✅ Email enviado com sucesso:', emailResult);
+            } catch (emailError) {
+                // Não falha o processo se o email falhar, apenas loga o erro
+                console.error('\n⚠️ Erro ao enviar email de confirmação:', emailError);
+                console.error('Detalhes:', emailError.message);
+            }
         } else {
             console.log(`Status do pagamento não aprovado: ${paymentInfo.status}`);
         }
