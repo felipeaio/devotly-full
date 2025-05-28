@@ -1,3 +1,8 @@
+// API Configuration
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : '/api';
+
 class DevotlyEditor {
     constructor() {
         this.elements = {
@@ -48,10 +53,7 @@ class DevotlyEditor {
         this.showState('loadingState');
 
         try {
-            // Import API_BASE_URL from api-config.js
-            const { API_BASE_URL } = await import('./core/api-config.js');
-            
-            const response = await fetch(`${API_BASE_URL}/api/cards/search?email=${encodeURIComponent(email)}`);
+            const response = await fetch(`${API_BASE_URL}/cards/search?email=${encodeURIComponent(email)}`);
             const data = await response.json();
 
             if (!response.ok) {
@@ -160,8 +162,7 @@ class DevotlyEditor {
         };
 
         try {
-            // Reutilizar o API_BASE_URL já importado
-            const response = await fetch(`${API_BASE_URL}/api/cards/${this.currentCardId}/edit`, {
+            const response = await fetch(`${API_BASE_URL}/cards/${this.currentCardId}/edit`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

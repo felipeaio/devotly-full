@@ -3,6 +3,11 @@
  * * Controle completo do fluxo de criação de cartões com pré-visualização em tempo real
  */
 
+// API Configuration
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : '/api';
+
 if (!HTMLCanvasElement.prototype.toBlob) {
     // Polyfill para navegadores antigos
     HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
@@ -596,9 +601,7 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    // Import API_BASE_URL from api-config.js
-                    const { API_BASE_URL } = await import('./core/api-config.js');
-                    const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
+                    const checkoutResponse = await fetch(`${API_BASE_URL}/checkout/create-preference`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -1369,8 +1372,7 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        // Reutilizar o API_BASE_URL importado anteriormente
-        const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
+        const checkoutResponse = await fetch(`${API_BASE_URL}/checkout/create-preference`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1720,8 +1722,7 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    // Reutilizar o API_BASE_URL importado anteriormente
-                    const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-image`, {
+                    const uploadResponse = await fetch(`${API_BASE_URL}/upload-image`, {
                         method: 'POST',
                         body: imageFormData
                     });
@@ -1755,8 +1756,7 @@ async selectPlan(plan) {
                 }
             };
 
-            // Reutilizar o API_BASE_URL importado anteriormente
-            const response = await fetch(`${API_BASE_URL}/api/cards`, {
+            const response = await fetch(`${API_BASE_URL}/cards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)
