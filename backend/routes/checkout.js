@@ -36,15 +36,22 @@ router.post('/create-preference', async (req, res) => {
 
         // Verificar access token
         if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
-            throw new Error('MERCADO_PAGO_ACCESS_TOKEN não configurado');
+            console.warn('MERCADO_PAGO_ACCESS_TOKEN não configurado. Modo de demonstração ativado.');
+            return res.json({
+                success: true,
+                init_point: `${req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:3000'}/success?demo=true&cardId=${cardId}`,
+                message: 'Modo de demonstração: Pagamento simulado'
+            });
         }
         console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
 
-        // Validar NGROK_URL
-        if (!process.env.NGROK_URL || !process.env.NGROK_URL.startsWith('http')) {
-            throw new Error('NGROK_URL inválido: deve começar com http ou https');
+        // Obter base URL para callbacks
+        let baseUrl = process.env.NGROK_URL;
+        if (!baseUrl || !baseUrl.startsWith('http')) {
+            console.warn('NGROK_URL não configurado ou inválido. Usando URL da requisição como fallback.');
+            baseUrl = `${req.protocol}://${req.get('host')}`;
         }
-        console.log('NGROK URL:', process.env.NGROK_URL);
+        console.log('Base URL para callbacks:', baseUrl);
 
         // Inicializar Mercado Pago
         const client = new MercadoPagoConfig({
@@ -77,12 +84,12 @@ router.post('/create-preference', async (req, res) => {
                 email: email
             },
             back_urls: {
-                success: `${process.env.NGROK_URL}/success`,
-                failure: `${process.env.NGROK_URL}/failure`,
-                pending: `${process.env.NGROK_URL}/pending`
+                success: `${baseUrl}/success`,
+                failure: `${baseUrl}/failure`,
+                pending: `${baseUrl}/pending`
             },
             external_reference: `${cardId}|${email}|${plano}`,
-            notification_url: `${process.env.NGROK_URL}/webhook/mercadopago`,
+            notification_url: `${baseUrl}/webhook/mercadopago`,
             auto_return: 'approved'
         };
 

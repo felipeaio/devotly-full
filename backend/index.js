@@ -32,31 +32,29 @@ import webhookRouter from './routes/webhook.js';
 const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
 
-// Verifica se o arquivo .env existe
+// Verifica se o arquivo .env existe e carrega se disponível
 try {
-    if (!fs.existsSync(envPath)) {
-        console.error(`[${new Date().toISOString()}] Erro: Arquivo .env não encontrado em: ${envPath}`);
-        process.exit(1);
+    if (fs.existsSync(envPath)) {
+        console.log(`[${new Date().toISOString()}] Arquivo .env encontrado em: ${envPath}`);
+        // Carrega variáveis de ambiente do arquivo
+        const dotenvResult = dotenv.config({ path: envPath });
+        if (dotenvResult.error) {
+            console.warn(`[${new Date().toISOString()}] Aviso ao carregar .env: ${dotenvResult.error.message}`);
+        }
+    } else {
+        console.log(`[${new Date().toISOString()}] Arquivo .env não encontrado. Usando variáveis de ambiente do sistema.`);
     }
-    console.log(`[${new Date().toISOString()}] Arquivo .env encontrado em: ${envPath}`);
 } catch (err) {
-    console.error(`[${new Date().toISOString()}] Erro ao verificar .env:`, err.message);
-    process.exit(1);
-}
-
-// Carrega variáveis de ambiente
-const dotenvResult = dotenv.config({ path: envPath });
-if (dotenvResult.error) {
-    console.error(`[${new Date().toISOString()}] Erro ao carregar .env:`, dotenvResult.error.message);
-    process.exit(1);
+    console.warn(`[${new Date().toISOString()}] Erro ao verificar .env: ${err.message}`);
+    console.log(`[${new Date().toISOString()}] Continuando com as variáveis de ambiente do sistema.`);
 }
 
 // Valida variáveis de ambiente
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'MERCADO_PAGO_ACCESS_TOKEN', 'NGROK_URL'];
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingEnvVars.length > 0) {
-    console.error(`[${new Date().toISOString()}] Erro: Variáveis de ambiente faltando: ${missingEnvVars.join(', ')}`);
-    process.exit(1);
+    console.warn(`[${new Date().toISOString()}] Aviso: Algumas variáveis de ambiente estão faltando: ${missingEnvVars.join(', ')}`);
+    console.warn(`[${new Date().toISOString()}] Certas funcionalidades podem não funcionar corretamente.`);
 }
 
 // Inicializa o aplicativo Express
@@ -100,9 +98,21 @@ app.use('/api/checkout', supabaseMiddleware, checkoutRouter);
 app.use('/webhook', supabaseMiddleware);
 app.use('/webhook', webhookRouter);
 
-// Rota raiz
+// Rota raiz e health check
 app.get('/', (req, res) => {
-    res.json({ message: 'Devotly Backend' });
+    // Verificar status dos serviços
+    const serviceStatus = {
+        supabase: !!process.env.SUPABASE_URL && !!process.env.SUPABASE_ANON_KEY,
+        mercadoPago: !!process.env.MERCADO_PAGO_ACCESS_TOKEN,
+        email: !!process.env.RESEND_API_KEY
+    };
+    
+    res.json({ 
+        message: 'Devotly Backend',
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        serviceStatus
+    });
 });
 
 // Rotas para páginas de retorno do Mercado Pago
