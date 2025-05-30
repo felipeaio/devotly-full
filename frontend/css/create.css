@@ -2974,6 +2974,102 @@ html.modal-active {
     }
 }
 
+/* Mobile-specific aggressive scroll prevention for preview modal */
+@media (max-width: 768px) {
+    /* When modal is active, apply aggressive mobile scroll prevention */
+    body.modal-active {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        touch-action: none !important;
+        -webkit-overflow-scrolling: auto !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+    }
+
+    html.modal-active {
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+
+    /* Modal specific mobile rules */
+    .preview-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        height: 100dvh !important; /* Dynamic viewport height for mobile */
+        overflow: hidden !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .preview-modal.active {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .preview-modal-content {
+        position: relative !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 1rem !important;
+        overflow: hidden !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+
+    .preview-modal-body {
+        flex: 1 !important;
+        overflow: hidden !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        height: calc(100% - 60px) !important; /* Account for close button */
+        max-height: calc(100% - 60px) !important;
+    }
+
+    /* Prevent scrolling on any child elements within modal */
+    .preview-modal * {
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+
+    /* Specific rules for preview sections in modal on mobile */
+    .preview-modal .preview-sections {
+        overflow: hidden !important;
+        touch-action: manipulation !important; /* Allow only pan and zoom touch actions */
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+
+    .preview-modal .preview-section {
+        overflow: hidden !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+}
+
 /* ========== Estilos dos Botões de Preview (Restaurados) ========== */
 
 /* Botão principal de Pré-visualização */
@@ -3609,4 +3705,67 @@ html.modal-active {
     margin: 0 0.25%;
     padding: clamp(1rem, 4vw, 2rem);
   }
+}
+
+/* Adicionar ao final do arquivo create.css */
+
+/* Prevenção de scroll mais agressiva para mobile */
+@media (max-width: 768px) {
+    body.modal-active {
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        -webkit-overflow-scrolling: auto !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        touch-action: none !important;
+    }
+
+    html.modal-active {
+        overflow: hidden !important;
+        height: 100% !important;
+        position: fixed !important;
+        width: 100% !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+    }
+
+    .preview-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        -webkit-overflow-scrolling: auto !important;
+        -webkit-overscroll-behavior: none !important;
+        touch-action: none !important;
+    }
+
+    .preview-modal-content {
+        height: 100vh !important;
+        overflow: hidden !important;
+        position: relative !important;
+        touch-action: none !important;
+    }
+
+    .preview-modal-body {
+        height: calc(100% - 80px) !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        touch-action: none !important;
+        position: relative !important;
+    }
+
+    .preview-modal .preview-sections {
+        height: 100% !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        touch-action: manipulation !important;
+        scroll-behavior: smooth !important;
+    }
 }

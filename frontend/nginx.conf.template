@@ -55,13 +55,14 @@ server {
         proxy_busy_buffers_size 128k;
           # Headers de debug
         add_header X-Proxy-Target "backend" always;
-    }
-    
-    # Static files com cache otimizado
+    }    # Static files sem cache (para forçar atualizações)
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-        add_header X-Served-By "nginx-static" always;
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0" always;
+        add_header Pragma "no-cache" always;
+        add_header Surrogate-Control "no-store" always;
+        add_header X-Served-By "nginx-static-no-cache" always;
+        add_header X-Cache-Status "BYPASS" always;
         try_files $uri =404;
     }
     

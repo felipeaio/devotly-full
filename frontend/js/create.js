@@ -2258,6 +2258,11 @@ class PreviewModal {
         this.previewContentContainer = document.querySelector('.preview-sections');
         this.originalParent = this.previewContentContainer?.parentNode; // Store original parent
 
+        // Mobile scroll prevention variables
+        this.scrollPosition = 0;
+        this.touchStartY = 0;
+        this.isModalActive = false;
+
         if (!this.modalBody || !this.openButton || !this.closeButton || !this.previewContentContainer) {
             console.error("One or more PreviewModal critical elements are missing:",
                 {
@@ -2277,6 +2282,118 @@ class PreviewModal {
                 this.closeModal();
             }
         });
+
+        // Mobile touch event handlers for scroll prevention
+        this.modal.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+        this.modal.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+        this.modal.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+    }
+
+    // Handle touch start for mobile scroll prevention
+    handleTouchStart(e) {
+        if (!this.isModalActive) return;
+        this.touchStartY = e.touches[0].clientY;
+    }
+
+    // Handle touch move for mobile scroll prevention
+    handleTouchMove(e) {
+        if (!this.isModalActive) return;
+        
+        const touchY = e.touches[0].clientY;
+        const touchDiff = this.touchStartY - touchY;
+        
+        // Check if we're in the modal content area
+        const modalContent = this.modal.querySelector('.preview-modal-content');
+        const modalBody = this.modal.querySelector('.preview-modal-body');
+        
+        if (modalContent && modalBody) {
+            const isScrollable = modalBody.scrollHeight > modalBody.clientHeight;
+            
+            if (!isScrollable) {
+                // No scrollable content, prevent all movement
+                e.preventDefault();
+                return;
+            }
+            
+            // If scrollable, only allow scrolling within bounds
+            const atTop = modalBody.scrollTop === 0;
+            const atBottom = modalBody.scrollTop >= (modalBody.scrollHeight - modalBody.clientHeight);
+            
+            if ((atTop && touchDiff < 0) || (atBottom && touchDiff > 0)) {
+                e.preventDefault();
+            }
+        } else {
+            // Fallback: prevent all movement if modal structure not found
+            e.preventDefault();
+        }
+    }
+
+    // Handle wheel events for desktop scroll prevention
+    handleWheel(e) {
+        if (!this.isModalActive) return;
+        
+        const modalBody = this.modal.querySelector('.preview-modal-body');
+        if (modalBody) {
+            const isScrollable = modalBody.scrollHeight > modalBody.clientHeight;
+            
+            if (!isScrollable) {
+                e.preventDefault();
+                return;
+            }
+            
+            const atTop = modalBody.scrollTop === 0;
+            const atBottom = modalBody.scrollTop >= (modalBody.scrollHeight - modalBody.clientHeight);
+            
+            if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+                e.preventDefault();
+            }
+        } else {
+            e.preventDefault();
+        }
+    }
+
+    // Enhanced body scroll prevention
+    preventBodyScroll() {
+        // Save current scroll position
+        this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Apply modal-active classes
+        document.body.classList.add('modal-active');
+        document.documentElement.classList.add('modal-active');
+        
+        // Set body position to prevent scroll
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.scrollPosition}px`;
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+        
+        // Additional mobile-specific fixes
+        document.body.style.touchAction = 'none';
+        document.body.style.overscrollBehavior = 'none';
+        document.body.style.webkitOverflowScrolling = 'auto';
+        
+        this.isModalActive = true;
+    }
+
+    // Restore body scroll
+    restoreBodyScroll() {
+        // Remove modal-active classes
+        document.body.classList.remove('modal-active');
+        document.documentElement.classList.remove('modal-active');
+        
+        // Reset body styles
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        document.body.style.overscrollBehavior = '';
+        document.body.style.webkitOverflowScrolling = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, this.scrollPosition);
+        
+        this.isModalActive = false;
     }
 
     openModal() {
@@ -2292,7 +2409,9 @@ class PreviewModal {
             this.previewContentContainer.style.height = '100%';
         }
 
-        document.body.style.overflow = 'hidden';
+        // Enhanced scroll prevention
+        this.preventBodyScroll();
+        
         this.modal.classList.add('active');
 
         // Inicializar navegador vertical se ainda não existir
@@ -2305,7 +2424,9 @@ class PreviewModal {
 
     closeModal() {
         this.modal.classList.remove('active');
-        document.body.style.overflow = '';
+        
+        // Enhanced scroll restoration
+        this.restoreBodyScroll();
 
         // Move preview content back to its original place if it was moved
         if (this.previewContentContainer && this.originalParent && !this.originalParent.contains(this.previewContentContainer)) {
