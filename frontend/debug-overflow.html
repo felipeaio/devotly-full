@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Overflow Test</title>
+    <style>
+        * { 
+            outline: 1px solid red; 
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: black;
+            color: white;
+            padding: 10px;
+            z-index: 9999;
+            font-family: monospace;
+        }
+    </style>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/create.css">
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        Viewport: <span id="viewport"></span><br>
+        Document Width: <span id="docWidth"></span><br>
+        Body Width: <span id="bodyWidth"></span>
+    </div>
+    
+    <iframe src="create.html" style="width: 1100px; height: 800px; border: 2px solid blue;"></iframe>
+    
+    <script>
+        function updateDebugInfo() {
+            document.getElementById('viewport').textContent = window.innerWidth + 'x' + window.innerHeight;
+            document.getElementById('docWidth').textContent = document.documentElement.scrollWidth;
+            document.getElementById('bodyWidth').textContent = document.body.scrollWidth;
+        }
+        
+        updateDebugInfo();
+        window.addEventListener('resize', updateDebugInfo);
+        setInterval(updateDebugInfo, 1000);
+    </script>
+</body>
+</html>

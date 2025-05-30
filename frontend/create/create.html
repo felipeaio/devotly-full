@@ -292,7 +292,7 @@
                                     <label for="musicLink">Link do YouTube ou Spotify <span
                                             class="required-mark">*</span></label>
                                     <input type="url" id="musicLink" name="musicLink" value=""
-                                        placeholder="https://youtube.com/watch?v=... ou https://open.spotify.com/track/..."
+                                        placeholder="Cole aqui o link do YouTube ou Spotify"
                                         required>
                                     <div class="input-hint">
                                         <i class="fas fa-info-circle"></i>
@@ -431,7 +431,7 @@
             <aside class="card-preview-container">
                 <div class="card-preview">
                     <div class="preview-theme" id="previewTheme">
-                        <div class="preview-sections" style="height: 100%; max-height: calc(100vh - 4rem);">
+                        <div class="preview-sections" style="height: 100%; overflow: hidden;">
                             <!-- Seção 1: Título -->
                             <section class="preview-section" id="titleSection">
                                 <div class="section-content">
@@ -505,7 +505,7 @@
                                     <div class="final-message">
                                         <p id="previewFinalMessage">Que esta mensagem toque seu coração</p>
                                         <div class="message-decoration">
-                                            <i class="fas fa-heart"></i>
+                                            <i class="fas fa-times"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -552,7 +552,7 @@
         </div>
     </div>
 
-    <!-- Add before the closing </body> tag -->
+    <!-- Add before the closing -->
     <div id="previewModal" class="preview-modal">
         <div class="preview-modal-content">
             <div class="preview-modal-body"></div>
@@ -566,7 +566,7 @@
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
-    <!-- Modifique o script existente no final do arquivo create.html -->
+   
     <script>
         // Solução robusta para o problema do 'undefined'
         document.addEventListener('DOMContentLoaded', function () {
@@ -616,7 +616,7 @@
         });
     </script>
 
-    <!-- Adicione este HTML antes da tag </body> no final do arquivo -->
+    <!-- Adicione este HTML antes da tag no -->
     <div id="planLoadingOverlay" class="plan-loading-wrapper" style="display: none;">
         <div class="plan-loading-container">
             <div class="plan-loading-spinner"></div>
@@ -624,6 +624,8 @@
             <div class="plan-loading-subtext">Aguarde um momento...</div>
         </div>
     </div>
+    
+
 </body>
 
 </html>

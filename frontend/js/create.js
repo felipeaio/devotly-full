@@ -3,11 +3,6 @@
  * * Controle completo do fluxo de criação de cartões com pré-visualização em tempo real
  */
 
-// API Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'
-    : 'https://devotly-full-production.up.railway.app';
-
 if (!HTMLCanvasElement.prototype.toBlob) {
     // Polyfill para navegadores antigos
     HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
@@ -65,6 +60,9 @@ function restructurePreviewSections() {
 // main.js
 class DevotlyCreator {
     constructor() {
+        // Initialize API config
+        this.loadApiConfig();
+
         // Detectar dispositivos de baixo desempenho
         this.isLowEndDevice = this.detectLowEndDevice();
 
@@ -77,6 +75,16 @@ class DevotlyCreator {
 
         // Add preview modal instance
         this.previewModal = new PreviewModal(); // PreviewModal class is defined later
+    }
+
+    // Load API configuration
+    async loadApiConfig() {
+        try {
+            const { API_CONFIG } = await import('./core/api-config.js');
+            this.apiConfig = API_CONFIG;
+        } catch (error) {
+            console.error('Erro ao carregar configuração da API:', error);
+        }
     }
 
     // Método para detectar dispositivos de baixo desempenho
@@ -163,8 +171,13 @@ class DevotlyCreator {
 
         this.sectionObserver = null; // Used by setupSectionObserver
 
-        // Remover inicialização duplicada
-        // this.state.formData.finalMessage = ''; // Already initialized above
+        // Configurar salvamento automático
+        this.autoSaveInterval = null;
+        this.STORAGE_KEY = 'devotly_form_draft';
+        this.STORAGE_TIMESTAMP_KEY = 'devotly_form_draft_timestamp';
+
+        // Carregar dados salvos do localStorage
+        this.loadFromLocalStorage();
 
         // Inicializar elementos uma única vez (alguns já em this.elements)
         this.finalMessageInput = document.getElementById('cardFinalMessage');
@@ -173,6 +186,9 @@ class DevotlyCreator {
 
         this.init(); // Called again, was also in initialize()
         this.setupMessageHandlers();
+        
+        // Iniciar salvamento automático
+        this.startAutoSave();
     }
 
     setupMessageHandlers() {
@@ -217,6 +233,9 @@ class DevotlyCreator {
 
 
     init() {
+        // Garantir que sempre comece do primeiro passo ao carregar a página
+        this.state.currentStep = 0;
+        
         // Estado inicial
         this.showStep(this.state.currentStep);
 
@@ -418,6 +437,7 @@ class DevotlyCreator {
                 const previewUrlElem = document.getElementById('previewUrl');
                 if (previewUrlElem) previewUrlElem.textContent = urlFriendlyValue || 'seunome';
                 this.updatePreview();
+                this.saveToLocalStorage();
             });
         }
 
@@ -494,6 +514,9 @@ class DevotlyCreator {
                             
                             // Adicionar preview
                             await this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                            
+                            // Salvar ao localStorage após adicionar imagem
+                            this.saveToLocalStorage();
                         } catch (imageError) {
                             console.error('Erro ao processar imagem individual:', imageError);
                             URL.revokeObjectURL(tempUrl); // Limpar URL se houver erro
@@ -503,6 +526,9 @@ class DevotlyCreator {
 
                     // Atualizar preview apenas uma vez após processar todas as imagens
                     this.updatePreview();
+                    
+                    // Salvar ao localStorage após adicionar imagens
+                    this.saveToLocalStorage();
                 } catch (error) {
                     console.error('Erro ao processar imagens:', error);
                     alert('Ocorreu um erro ao processar as imagens. Por favor, tente novamente.');
@@ -601,7 +627,13 @@ class DevotlyCreator {
                     };
                     console.log('Enviando dados para checkout:', checkoutData);
                     
-                    const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
+                    // Use API config
+                    if (!this.apiConfig) {
+                        const { API_CONFIG } = await import('./core/api-config.js');
+                        this.apiConfig = API_CONFIG;
+                    }
+                    
+                    const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(checkoutData)
@@ -780,7 +812,10 @@ class DevotlyCreator {
 
         // Centralized input handlers
         const inputHandlers = {
-            'cardName': (e) => { /* Already handled above with cloning, this is a duplicate setup */ },
+            'cardName': (e) => { 
+                this.state.formData.cardName = e.target.value;
+                this.saveToLocalStorage();
+            },
             'cardTitle': (e) => {
                 const text = e.target.value;
                 const titleCounterElem = document.getElementById('titleCounter');
@@ -788,6 +823,7 @@ class DevotlyCreator {
                 const previewCardTitleElem = document.getElementById('previewCardTitle');
                 if (previewCardTitleElem) previewCardTitleElem.textContent = text || "Mensagem de Fé para Você";
                 this.state.formData.cardTitle = text;
+                this.saveToLocalStorage();
             },
             'cardMessage': (e) => {
                 const text = e.target.value;
@@ -796,17 +832,35 @@ class DevotlyCreator {
                 const previewCardMessageElem = document.getElementById('previewCardMessage');
                 if (previewCardMessageElem) previewCardMessageElem.textContent = text || "Sua mensagem aparecerá aqui...";
                 this.state.formData.cardMessage = text;
+                this.saveToLocalStorage();
             },
-            'cardFinalMessage': (e) => { // This is also handled by setupMessageHandlers, potential duplicate
+            'cardFinalMessage': (e) => {
                 const text = e.target.value;
                 const finalMessageCounterElem = document.getElementById('finalMessageCounter');
                 if (finalMessageCounterElem) finalMessageCounterElem.textContent = text.length;
-                const finalMessagePreviewElem = document.querySelector('#finalSection .final-message'); // More specific selector for preview
-                if (finalMessagePreviewElem) { // Check if the element exists
-                    const pElement = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem; // Handle if p is direct child or the element itself
+                const finalMessagePreviewElem = document.querySelector('#finalSection .final-message');
+                if (finalMessagePreviewElem) {
+                    const pElement = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem;
                     pElement.textContent = text || "Que esta mensagem toque seu coração";
                 }
                 this.state.formData.finalMessage = text;
+                this.saveToLocalStorage();
+            },
+            'musicLink': (e) => {
+                this.state.formData.musicLink = e.target.value;
+                this.saveToLocalStorage();
+            },
+            'bibleBook': (e) => {
+                this.state.formData.bibleVerse.book = e.target.value;
+                this.saveToLocalStorage();
+            },
+            'bibleChapter': (e) => {
+                this.state.formData.bibleVerse.chapter = e.target.value;
+                this.saveToLocalStorage();
+            },
+            'bibleVerse': (e) => {
+                this.state.formData.bibleVerse.verse = e.target.value;
+                this.saveToLocalStorage();
             }
         };
 
@@ -1103,6 +1157,12 @@ scrollToSection(sectionId) {
                 return;
             }
 
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
+            }
+
             for (const file of files) {
                 // Validar tipo e tamanho
                 if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
@@ -1119,28 +1179,75 @@ scrollToSection(sectionId) {
                     // Criar URL temporária para preview
                     const tempUrl = URL.createObjectURL(file);
                     
-                    // Adicionar à lista de imagens com informações necessárias
+                    // Adicionar loading indicator
+                    const loadingIndex = this.state.formData.images.length;
                     this.state.formData.images.push({
                         isTemp: true,
                         tempUrl: tempUrl,
                         blob: file,
-                        fileName: file.name
+                        fileName: file.name,
+                        loading: true
                     });
 
-                    // Adicionar preview no formulário
-                    this.addImagePreview(tempUrl, this.state.formData.images.length - 1);
+                    // Adicionar preview no formulário com estado de loading
+                    this.addImagePreview(tempUrl, loadingIndex);
+                    
+                    // Upload da imagem para o servidor
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const uploadResponse = await fetch(this.apiConfig.upload, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const responseData = await uploadResponse.json();
+                    
+                    if (!uploadResponse.ok || !responseData.success) {
+                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
+                        console.error('Upload error:', {
+                            status: uploadResponse.status,
+                            statusText: uploadResponse.statusText,
+                            response: responseData,
+                            url: uploadResponse.url
+                        });
+                        throw new Error(errorMessage);
+                    }
+                    
+                    if (!responseData.url) {
+                        console.error('Invalid response:', responseData);
+                        throw new Error('URL da imagem não recebida do servidor');
+                    }
+                    
+                    // Validate the URL
+                    try {
+                        new URL(responseData.url);
+                    } catch (e) {
+                        console.error('Invalid URL received:', responseData.url);
+                        throw new Error('URL da imagem inválida');
+                    }
+                    
+                    // Atualizar objeto de imagem com URL do servidor
+                    this.state.formData.images[loadingIndex] = {
+                        isTemp: false,
+                        url: uploadData.url,
+                        tempUrl: tempUrl,  // Manter URL temporária para preview local
+                        fileName: file.name,
+                        loading: false
+                    };
                     
                 } catch (error) {
                     console.error('Erro ao processar imagem:', error);
                     this.showError(this.elements.imageUpload, 'Erro ao processar imagem');
                 }
-            }
-
-            // Atualizar o preview principal
-            this.updatePreview();
-            
-            // Limpar o input após processamento bem-sucedido
-            this.elements.imageUpload.value = '';
+            }                    // Atualizar o preview principal
+                    this.updatePreview();
+                    
+                    // Salvar ao localStorage após adicionar imagem
+                    this.saveToLocalStorage();
+                    
+                    // Limpar o input após processamento bem-sucedido
+                    this.elements.imageUpload.value = '';
 
         } catch (error) {
             console.error('Erro ao fazer upload das imagens:', error);
@@ -1337,6 +1444,7 @@ async fetchBibleVerse() {
         this.state.formData.theme = theme;
         if (window.applyPreviewTheme) window.applyPreviewTheme(theme); // Assuming global function for CSS effects
         this.updatePreview();
+        this.saveToLocalStorage();
     }
 
 async selectPlan(plan) {
@@ -1361,6 +1469,9 @@ async selectPlan(plan) {
         const planoPtBr = planMapping[plan] || plan;
         this.state.formData.selectedPlan = planoPtBr;
         
+        // Salvar seleção de plano no localStorage
+        this.saveToLocalStorage();
+        
         const cardCreationResponse = await this.submitFormData();
         if (!cardCreationResponse.success) {
             throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
@@ -1372,7 +1483,7 @@ async selectPlan(plan) {
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch(`${API_BASE_URL}/api/checkout/create-preference`, {
+        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
@@ -1691,6 +1802,7 @@ async selectPlan(plan) {
 
         this.reindexImages(); // Re-index data attributes on form remove buttons
         this.updatePreview(); // Update the main preview sections (which calls updateGalleryPreview)
+        this.saveToLocalStorage(); // Save state after removing image
     }
 
     // reindexFormImages() was removed
@@ -1722,16 +1834,69 @@ async selectPlan(plan) {
                     const imageFormData = new FormData();
                     imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
 
-                    const uploadResponse = await fetch(`${API_BASE_URL}/api/upload-image`, {
-                        method: 'POST',
-                        body: imageFormData
-                    });
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json().catch(() => ({ message: 'Erro desconhecido no upload' }));
-                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorData.message}`);
+                    // Ensure API config is loaded
+                    if (!this.apiConfig) {
+                        const { API_CONFIG } = await import('./core/api-config.js');
+                        this.apiConfig = API_CONFIG;
                     }
-                    const uploadData = await uploadResponse.json();
-                    uploadedImageUrls.push(uploadData.url); // Assuming server returns { url: '...' }
+
+                    console.log('Attempting upload to:', this.apiConfig.upload);
+                    
+                    // Ensure the URL uses the same hostname as the current page
+                    const uploadUrl = new URL(this.apiConfig.upload);
+                    uploadUrl.hostname = window.location.hostname;
+                    
+                    console.log('Adjusted upload URL:', uploadUrl.toString());
+                    
+                    const uploadResponse = await fetch(uploadUrl.toString(), {
+                        method: 'POST',
+                        body: imageFormData,
+                        redirect: 'follow', // Explicitly follow redirects
+                        mode: 'cors', // Use CORS mode
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Origin': window.location.origin
+                        }
+                    }).catch(err => {
+                        console.error('Network error during upload:', err);
+                        throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
+                    });
+
+                    console.log('Upload response status:', uploadResponse.status);
+                    
+                    let responseData;
+                    let responseText;
+                    try {
+                        // First get the raw text to see what's happening
+                        responseText = await uploadResponse.text();
+                        console.log('Response text:', responseText.substring(0, 100) + (responseText.length > 100 ? '...' : ''));
+                        
+                        // Try to parse as JSON
+                        try {
+                            responseData = JSON.parse(responseText);
+                        } catch (jsonErr) {
+                            console.error('Invalid JSON response:', jsonErr);
+                            console.error('Response starts with:', responseText.substring(0, 100));
+                            throw new Error('Resposta do servidor não é um JSON válido');
+                        }
+                    } catch (err) {
+                        console.error('Error processing response:', err);
+                        throw new Error('Erro ao processar resposta do servidor: ' + err.message);
+                    }
+                    
+                    if (!uploadResponse.ok || !responseData.success) {
+                        console.error('Upload failed:', responseData);
+                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
+                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorMessage}`);
+                    }
+
+                    if (!responseData.url) {
+                        console.error('Missing URL in response:', responseData);
+                        throw new Error('URL da imagem não recebida do servidor');
+                    }
+
+                    uploadedImageUrls.push(responseData.url);
                 } else if (typeof imageObj === 'string' && imageObj.startsWith('http')) { // Already an URL
                     uploadedImageUrls.push(imageObj);
                 } else if (imageObj.url) { // If imageObj has a URL property from previous uploads
@@ -1756,7 +1921,13 @@ async selectPlan(plan) {
                 }
             };
 
-            const response = await fetch(`${API_BASE_URL}/api/cards`, {
+            // Ensure API config is loaded
+            if (!this.apiConfig) {
+                const { API_CONFIG } = await import('./core/api-config.js');
+                this.apiConfig = API_CONFIG;
+            }
+            
+            const response = await fetch(this.apiConfig.cards.create, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)
@@ -1766,6 +1937,13 @@ async selectPlan(plan) {
             if (!response.ok) {
                 throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
             }
+            
+            // Clear localStorage after successful submission
+            this.clearLocalStorage();
+            
+            // Stop auto-save since form is successfully submitted
+            this.stopAutoSave();
+            
             return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
 
         } catch (error) {
@@ -1805,29 +1983,255 @@ async selectPlan(plan) {
             rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
-    }
-
-    saveToLocalStorage() {
+    }    saveToLocalStorage() {
         try {
-            // Create a serializable version of formData, especially for images
+            // Criar versão serializável dos dados do formulário
             const serializableFormData = { ...this.state.formData };
-            // For images, only store URLs if they are not temporary blobs.
-            // Blobs cannot be directly stringified. For draft saving, consider storing metadata or temp IDs.
-            // For simplicity here, if images are complex objects with blobs, they won't be saved correctly.
-            // A better approach would be to save image metadata or not save images in localStorage if they are blobs.
-            // Or, if images are already URLs (after upload), then it's fine.
-            serializableFormData.images = this.state.formData.images.map(img => {
-                if (typeof img === 'string') return img; // It's already a URL
-                if (img.url) return img.url; // It's an object with a URL (e.g., after upload)
-                // If it's a temp blob, don't save it or save placeholder/metadata
-                // Blobs cannot be directly stringified. For draft saving, consider storing metadata or temp IDs.
-                return null; // Or some placeholder
+            
+            // Para imagens, salvar apenas metadados (não blobs)
+            serializableFormData.images = this.state.formData.images.map((img, index) => {
+                if (typeof img === 'string') return { type: 'url', url: img, index };
+                if (img.url && !img.isTemp) return { type: 'url', url: img.url, index };
+                if (img.isTemp && img.fileName) {
+                    // Para imagens temporárias, salvar apenas metadados
+                    return { 
+                        type: 'temp', 
+                        fileName: img.fileName, 
+                        index,
+                        // Não salvar o blob - será necessário fazer upload novamente
+                        needsReupload: true
+                    };
+                }
+                return null;
             }).filter(img => img !== null);
 
-
-            localStorage.setItem('devotlyDraft', JSON.stringify(serializableFormData));
+            // Salvar dados e timestamp
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                formData: serializableFormData,
+                currentStep: this.state.currentStep,
+                currentImageIndex: this.state.currentImageIndex
+            }));
+            localStorage.setItem(this.STORAGE_TIMESTAMP_KEY, Date.now().toString());
+            
+            console.log('Dados salvos automaticamente no localStorage');
         } catch (e) {
-            console.error("Error saving to localStorage:", e);
+            console.error("Erro ao salvar no localStorage:", e);
+        }
+    }
+
+    loadFromLocalStorage() {
+        try {
+            const savedData = localStorage.getItem(this.STORAGE_KEY);
+            const timestamp = localStorage.getItem(this.STORAGE_TIMESTAMP_KEY);
+            
+            if (!savedData || !timestamp) return;
+
+            // Verificar se os dados não são muito antigos (7 dias)
+            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+            if (Date.now() - parseInt(timestamp) > sevenDaysInMs) {
+                this.clearLocalStorage();
+                return;
+            }
+
+            const parsed = JSON.parse(savedData);
+            
+            // Restaurar dados do formulário
+            if (parsed.formData) {
+                this.state.formData = { ...this.state.formData, ...parsed.formData };
+                
+                // Restaurar imagens (apenas URLs válidas)
+                if (parsed.formData.images) {
+                    this.state.formData.images = parsed.formData.images.filter(img => 
+                        img.type === 'url' && img.url
+                    );
+                }
+            }
+            
+            // Restaurar estado - SEMPRE voltar para o primeiro passo ao recarregar a página
+            // mas manter os dados salvos
+            this.state.currentStep = 0; // Sempre começar do primeiro passo
+            
+            if (typeof parsed.currentImageIndex === 'number') {
+                this.state.currentImageIndex = parsed.currentImageIndex;
+            }
+            
+            console.log('Dados carregados do localStorage - usuário redirecionado para o primeiro passo');
+            
+            // Agendar restauração dos campos do formulário após o DOM estar pronto
+            setTimeout(() => this.restoreFormFields(), 100);
+            
+        } catch (e) {
+            console.error("Erro ao carregar do localStorage:", e);
+            this.clearLocalStorage();
+        }
+    }
+
+    restoreFormFields() {
+        try {
+            const data = this.state.formData;
+            
+            // Verificar se há dados para restaurar
+            const hasDataToRestore = data.cardName || data.cardTitle || data.cardMessage || 
+                                   data.finalMessage || data.musicLink || data.bibleVerse?.book ||
+                                   data.images?.length > 0 || data.theme !== 'stars' || data.selectedPlan;
+            
+            // Restaurar campos de texto
+            const fieldMappings = {
+                'cardName': data.cardName,
+                'cardTitle': data.cardTitle,
+                'cardMessage': data.cardMessage,
+                'cardFinalMessage': data.finalMessage,
+                'musicLink': data.musicLink,
+                'bibleBook': data.bibleVerse?.book,
+                'bibleChapter': data.bibleVerse?.chapter,
+                'bibleVerse': data.bibleVerse?.verse
+            };
+
+            Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+                const field = document.getElementById(fieldId);
+                if (field && value) {
+                    field.value = value;
+                    // Disparar evento de input para atualizar contadores
+                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+
+            // Restaurar tema selecionado
+            if (data.theme) {
+                this.selectTheme(data.theme);
+            }
+
+            // Restaurar plano selecionado
+            if (data.selectedPlan) {
+                const planButton = document.querySelector(`.btn-select-plan[data-plan="${data.selectedPlan}"]`);
+                if (planButton) {
+                    planButton.classList.add('selected');
+                }
+            }
+
+            // Atualizar preview
+            this.updatePreview();
+            
+            // Mostrar notificação amigável se há dados restaurados
+            if (hasDataToRestore) {
+                this.showRestoreNotification();
+            }
+            
+            console.log('Campos do formulário restaurados');
+        } catch (e) {
+            console.error("Erro ao restaurar campos do formulário:", e);
+        }
+    }
+
+    showRestoreNotification() {
+        // Criar elemento de notificação
+        const notification = document.createElement('div');
+        notification.className = 'restore-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-info-circle"></i>
+                <span>Seus dados foram restaurados! Continue de onde parou.</span>
+                <button class="notification-close" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        // Estilos inline para a notificação
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            font-family: 'Poppins', sans-serif;
+        `;
+
+        // Estilos para o conteúdo
+        const content = notification.querySelector('.notification-content');
+        content.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+
+        // Estilos para o botão de fechar
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+            margin-left: auto;
+        `;
+
+        // Adicionar ao body
+        document.body.appendChild(notification);
+
+        // Animar entrada
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Função para remover notificação
+        const removeNotification = () => {
+            notification.style.transform = 'translateX(400px)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        };
+
+        // Event listener para o botão de fechar
+        closeBtn.addEventListener('click', removeNotification);
+
+        // Hover effect no botão de fechar
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.backgroundColor = 'rgba(255,255,255,0.2)';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.backgroundColor = 'transparent';
+        });
+
+        // Remover automaticamente após 5 segundos
+        setTimeout(removeNotification, 5000);
+    }
+
+    clearLocalStorage() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.STORAGE_TIMESTAMP_KEY);
+            console.log('Dados do localStorage limpos');
+        } catch (e) {
+            console.error("Erro ao limpar localStorage:", e);
+        }
+    }
+
+    startAutoSave() {
+        // Salvar a cada 3 segundos
+        this.autoSaveInterval = setInterval(() => {
+            this.saveToLocalStorage();
+        }, 3000);
+        
+        console.log('Salvamento automático iniciado');
+    }
+
+    stopAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+            console.log('Salvamento automático interrompido');
         }
     }
     // validateAllSteps() was removed
@@ -1883,8 +2287,9 @@ class PreviewModal {
         if (this.previewContentContainer && this.modalBody) {
             this.modalBody.appendChild(this.previewContentContainer); // Move preview into modal
             this.previewContentContainer.style.display = 'block'; // Ensure it's visible
-            // Potentially adjust styles for modal view, e.g., height
-            this.previewContentContainer.style.height = 'calc(100vh - 4rem - 60px)'; // Example: full height minus padding and close button
+            // Garantir que não haja scroll vertical livre no modal
+            this.previewContentContainer.style.overflow = 'hidden';
+            this.previewContentContainer.style.height = '100%';
         }
 
         document.body.style.overflow = 'hidden';
@@ -1906,6 +2311,7 @@ class PreviewModal {
         if (this.previewContentContainer && this.originalParent && !this.originalParent.contains(this.previewContentContainer)) {
             this.originalParent.appendChild(this.previewContentContainer);
             this.previewContentContainer.style.height = ''; // Reset height or to original
+            this.previewContentContainer.style.overflow = ''; // Reset overflow
             // this.previewContentContainer.style.display = 'block'; // Or original display style
         }
         // If the preview was inside .card-preview-container and that was hidden:

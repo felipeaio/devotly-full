@@ -11,6 +11,24 @@ html {
     /* Prevenir scroll horizontal */
 }
 
+/* Prevenir scroll quando modal está ativo */
+body.modal-active {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* Prevenir scroll inercial em iOS */
+    -webkit-overflow-scrolling: auto !important;
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+}
+
+html.modal-active {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+}
+
 /* Ajuste do container principal */
 .creation-flow {
     position: relative;
@@ -50,6 +68,7 @@ html {
     gap: 2rem;
     overflow: visible;
     /* Permitir que o conteúdo seja visível */
+    box-sizing: border-box;
 }
 
 .form-container {
@@ -57,6 +76,7 @@ html {
     max-width: 800px;
     /* Match grid column width */
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 /* Novo Design do Preview */
@@ -158,34 +178,52 @@ html {
 .gallery-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    max-height: 500px;
+    max-width: 533px; /* Fixed width based on 4:3 aspect ratio */
+    height: 400px; /* Fixed height for consistent display */
+    min-height: 400px; /* Maintain fixed size */
+    max-height: 400px; /* Prevent resizing based on content */
+    aspect-ratio: 4/3; /* Fixed aspect ratio */
     background: rgba(0, 0, 0, 0.2);
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(244, 196, 64, 0.15);
+    margin: 0 auto; /* Center the container */
+    flex: 0 0 auto; /* Prevent flex growth/shrinking */
+    box-sizing: border-box; /* Include padding and border in element's dimensions */
 }
 
 .gallery-inner {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* Ensure no overflow */
+    aspect-ratio: 4/3; /* Match container's aspect ratio */
 }
 
 .gallery-inner img {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100%;
+    min-height: 100%;
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
+    object-fit: cover; /* Force cover to fill entire container */
+    object-position: center; /* Center the image */
     transition: opacity 0.5s ease, transform 0.5s ease;
     transform-origin: center;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
     border-radius: 8px;
+    display: block; /* Ensure block display */
+    aspect-ratio: 4/3; /* Force aspect ratio to match container */
+    position: absolute; /* Position absolutely within container */
+    top: 0;
+    left: 0;
+    pointer-events: auto; /* Ensure image clicks are registered */
 }
 
 .gallery-inner img.active {
@@ -245,60 +283,6 @@ html {
 .carousel-prev:active,
 .carousel-next:active {
     transform: scale(0.95);
-}
-
-/* Indicadores de imagem aprimorados */
-.gallery-indicators {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 5;
-    padding: 8px 15px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 20px;
-    backdrop-filter: blur(4px);
-}
-
-.gallery-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.gallery-indicator::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.gallery-indicator:hover {
-    background: rgba(244, 196, 64, 0.7);
-    transform: scale(1.2);
-}
-
-.gallery-indicator.active {
-    width: 24px;
-    border-radius: 10px;
-    background: #f4c440;
-    box-shadow: 0 0 8px rgba(244, 196, 64, 0.6);
-}
-
-.gallery-indicator.active::after {
-    opacity: 1;
 }
 
 /* Contador de imagens aprimorado */
@@ -392,6 +376,11 @@ html {
 @media (max-width: 768px) {
     .gallery-container {
         border-radius: 12px;
+        max-width: 95%; /* Use percentage instead of fixed width */
+        width: 95%;
+        height: 350px; /* Fixed height for medium screens */
+        min-height: 350px;
+        max-height: 350px;
     }
 
     .carousel-prev,
@@ -399,11 +388,6 @@ html {
         width: 38px;
         height: 38px;
         font-size: 1rem;
-    }
-
-    .gallery-indicators {
-        bottom: 15px;
-        padding: 6px 12px;
     }
 
     .image-counter {
@@ -419,8 +403,12 @@ html {
 }
 
 @media (max-width: 480px) {
-    .gallery-inner {
-        min-height: 250px;
+    .gallery-container {
+        max-width: 95%; /* Use percentage for better responsiveness */
+        width: 95%;
+        height: 280px; /* Slightly reduced fixed height for small screens */
+        min-height: 280px;
+        max-height: 280px;
     }
 
     .carousel-prev,
@@ -430,18 +418,47 @@ html {
         font-size: 0.9rem;
     }
 
-    .gallery-indicator {
-        width: 8px;
-        height: 8px;
-    }
-
-    .gallery-indicator.active {
-        width: 20px;
-    }
-
     .image-counter {
         padding: 4px 10px;
         font-size: 0.8rem;
+    }
+}
+
+/* For very small mobile screens */
+@media (max-width: 360px) {
+    .gallery-container {
+        max-width: 100%; /* Full width on very small screens */
+        width: 100%;
+        height: 240px; /* Reduced height for very small screens */
+        min-height: 240px;
+        max-height: 240px;
+    }
+
+    /* Make controls smaller for very small screens */
+    .carousel-prev,
+    .carousel-next {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}
+
+/* For large screens */
+@media (min-width: 992px) {
+    .gallery-container {
+        height: 450px; /* Fixed height for large screens */
+        min-height: 450px;
+        max-height: 450px;
+    }
+}
+
+/* Para telas em modo paisagem em dispositivos móveis */
+@media (max-width: 850px) and (orientation: landscape) {
+    .gallery-container {
+        max-width: 90%; /* Adjusted width for landscape mode */
+        height: 220px; /* Lower height for landscape mode */
+        min-height: 220px;
+        max-height: 220px;
     }
 }
 
@@ -1129,6 +1146,359 @@ html {
     margin-top: 1rem;
 }
 
+.bible-selector h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--gold-light);
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    font-weight: 600;
+}
+
+.bible-selector h3 i {
+    color: var(--color-accent);
+    font-size: clamp(1.2rem, 3vw, 1.4rem);
+}
+
+/* Sugestões de Versículos - Layout Aprimorado e Ultra Responsivo */
+.verse-suggestions {
+    margin-top: clamp(1.5rem, 4vw, 2.5rem);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.25), 
+        rgba(18, 18, 20, 0.15), 
+        rgba(24, 24, 28, 0.1)
+    );
+    border-radius: clamp(12px, 3vw, 20px);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    backdrop-filter: blur(12px);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 2px 8px rgba(212, 175, 55, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.verse-suggestions:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 4px 16px rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(212, 175, 55, 0.3);
+}
+
+.verse-suggestions::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.verse-suggestions:hover::before {
+    opacity: 1;
+}
+
+.verse-suggestions h4 {
+    color: var(--color-accent);
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0 0 clamp(1rem, 3vw, 1.8rem) 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.8rem, 2.5vw, 1.2rem);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.4px;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, var(--color-accent), #f4e7c0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.verse-suggestions h4::before,
+.verse-suggestions h4::after {
+    content: '';
+    width: clamp(30px, 8vw, 60px);
+    height: clamp(1.5px, 0.3vw, 3px);
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    opacity: 0.9;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(212, 175, 55, 0.3);
+    transition: all 0.3s ease;
+}
+
+.verse-suggestions:hover h4::before,
+.verse-suggestions:hover h4::after {
+    width: clamp(40px, 10vw, 80px);
+    opacity: 1;
+    box-shadow: 0 2px 6px rgba(212, 175, 55, 0.5);
+}
+
+.verse-suggestions h4::before {
+    background: linear-gradient(90deg, transparent, var(--color-accent));
+    animation: lineExpand 2s ease-in-out infinite alternate;
+}
+
+.verse-suggestions h4::after {
+    background: linear-gradient(90deg, var(--color-accent), transparent);
+    animation: lineExpand 2s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes lineExpand {
+    0% { 
+        transform: scaleX(0.8);
+        opacity: 0.7;
+    }
+    100% { 
+        transform: scaleX(1.1);
+        opacity: 1;
+    }
+}
+
+.suggestion-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: clamp(0.8rem, 2vw, 1.2rem);
+    position: relative;
+    z-index: 1;
+    width: 100%;
+}
+
+/* Responsividade específica para diferentes tamanhos */
+@media (min-width: 768px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.5rem, 2vw, 0.8rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .suggestion-list {
+        grid-template-columns: 1fr;
+        gap: clamp(0.6rem, 2vw, 0.8rem);
+    }
+}
+
+.suggestion-item {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.12), 
+        rgba(255, 255, 255, 0.04),
+        rgba(212, 175, 55, 0.08)
+    );
+    border: 1.5px solid rgba(212, 175, 55, 0.3);
+    border-radius: clamp(8px, 2vw, 14px);
+    padding: clamp(0.8rem, 3vw, 1.4rem) clamp(1rem, 3.5vw, 1.6rem);
+    color: var(--color-light);
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 2vw, 0.9rem);
+    text-align: left;
+    backdrop-filter: blur(8px);
+    box-shadow: 
+        0 3px 12px rgba(0, 0, 0, 0.15),
+        0 1px 4px rgba(212, 175, 55, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    line-height: 1.4;
+    min-height: clamp(44px, 12vw, 56px);
+    text-decoration: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.suggestion-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(212, 175, 55, 0.2), 
+        rgba(255, 255, 255, 0.08),
+        rgba(212, 175, 55, 0.2),
+        transparent
+    );
+    transition: left 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 0;
+}
+
+.suggestion-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--color-accent), 
+        rgba(244, 231, 192, 0.8),
+        var(--color-accent),
+        transparent
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 0 0 4px 4px;
+}
+
+.suggestion-item:hover::before {
+    left: 100%;
+}
+
+.suggestion-item:hover::after {
+    opacity: 1;
+}
+
+.suggestion-item:hover {
+    background: linear-gradient(135deg, 
+        rgba(212, 175, 55, 0.18), 
+        rgba(255, 255, 255, 0.08),
+        rgba(212, 175, 55, 0.12)
+    );
+    border-color: rgba(212, 175, 55, 0.5);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 8px 25px rgba(212, 175, 55, 0.25), 
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.suggestion-item:active {
+    transform: translateY(-1px) scale(1.01);
+    transition: transform 0.1s ease;
+    box-shadow: 
+        0 4px 15px rgba(212, 175, 55, 0.3), 
+        0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.suggestion-item:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 
+        0 0 0 3px rgba(212, 175, 55, 0.3),
+        0 6px 20px rgba(212, 175, 55, 0.2),
+        0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-item i {
+    color: var(--color-accent);
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    z-index: 1;
+    position: relative;
+    min-width: clamp(16px, 4vw, 20px);
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.verse-item {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 1;
+    position: relative;
+}
+
+.verse-item:hover i {
+    animation: bookGlow 0.8s ease-in-out;
+    transform: scale(1.15);
+}
+
+@keyframes bookGlow {
+    0%, 100% { 
+        color: var(--color-accent); 
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        transform: scale(1);
+    }
+    25% { 
+        color: #f4e7c0; 
+        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+        transform: scale(1.1);
+    }
+    50% { 
+        color: #fff; 
+        filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.8));
+        transform: scale(1.15);
+    }
+    75% { 
+        color: #f4e7c0; 
+        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+        transform: scale(1.1);
+    }
+}
+
+.verse-item {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: 0.2px;
+    line-height: 1.4;
+}
+
+.verse-item:hover i {
+    animation: bookGlow 0.8s ease-in-out;
+    transform: scale(1.1);
+}
+
+@keyframes bookGlow {
+    0%, 100% { 
+        color: var(--color-accent); 
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+    25% { 
+        color: #f4e7c0; 
+        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+        transform: scale(1.15);
+    }
+    50% { 
+        color: #fff; 
+        filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.8));
+        transform: scale(1.2);
+    }
+    75% { 
+        color: #f4e7c0; 
+        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+        transform: scale(1.15);
+    }
+}
+
 .verse-preview {
     /* Este é o preview do versículo dentro do formulário */
     background-color: var(--color-secondary);
@@ -1265,7 +1635,279 @@ html {
         font-size: 2rem;
         top: -1.5rem;
     }
+}
     
+/* Responsividade Aprimorada - Versículos Sugeridos */
+@media (max-width: 1024px) {
+    .verse-suggestions {
+        padding: clamp(1.5rem, 3.5vw, 2rem);
+        margin-top: clamp(1.5rem, 3vw, 2rem);
+    }
+    
+    .verse-suggestions h4 {
+        font-size: clamp(1.3rem, 3.5vw, 1.5rem);
+        margin-bottom: clamp(1.2rem, 3vw, 1.5rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .verse-suggestions {
+        padding: clamp(1.2rem, 4vw, 1.8rem);
+        margin-top: clamp(1.2rem, 3vw, 1.8rem);
+        border-radius: clamp(12px, 2.5vw, 16px);
+        box-shadow: 
+            0 6px 24px rgba(0, 0, 0, 0.25),
+            0 2px 8px rgba(212, 175, 55, 0.1);
+    }
+    
+    .verse-suggestions h4 {
+        font-size: clamp(1.2rem, 4vw, 1.4rem);
+        margin-bottom: clamp(1rem, 3vw, 1.3rem);
+        gap: clamp(0.6rem, 2vw, 0.8rem);
+    }
+    
+    .verse-suggestions h4::before,
+    .verse-suggestions h4::after {
+        width: clamp(30px, 6vw, 45px);
+    }
+    
+    .suggestion-list {
+        gap: clamp(0.6rem, 2vw, 0.9rem);
+    }
+    
+    .suggestion-item {
+        padding: clamp(0.7rem, 3vw, 1rem) clamp(0.8rem, 3vw, 1.2rem);
+        font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+        border-radius: clamp(8px, 2vw, 12px);
+        gap: clamp(0.4rem, 2vw, 0.6rem);
+        min-height: clamp(48px, 10vw, 54px);
+    }
+    
+    .suggestion-item i {
+        font-size: clamp(1.1rem, 3vw, 1.3rem);
+        min-width: clamp(16px, 3.5vw, 18px);
+    }
+    
+    .suggestion-item:hover {
+        transform: translateY(-2px) scale(1.01);
+    }
+}
+
+@media (max-width: 640px) {
+    .verse-suggestions {
+        padding: clamp(1rem, 4vw, 1.5rem);
+        margin-top: clamp(1rem, 3vw, 1.5rem);
+    }
+    
+    .suggestion-list {
+        gap: clamp(0.5rem, 2vw, 0.7rem);
+    }
+    
+    .suggestion-item {
+        white-space: normal;
+        line-height: 1.3;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .verse-suggestions {
+        padding: clamp(1rem, 5vw, 1.4rem);
+        margin-top: clamp(1rem, 3vw, 1.4rem);
+        border-radius: clamp(10px, 2vw, 14px);
+    }
+    
+    .verse-suggestions h4 {
+        font-size: clamp(1.1rem, 4.5vw, 1.3rem);
+        margin-bottom: clamp(0.8rem, 3vw, 1.1rem);
+        gap: clamp(0.4rem, 2vw, 0.6rem);
+        letter-spacing: 0.2px;
+    }
+    
+    .verse-suggestions h4::before,
+    .verse-suggestions h4::after {
+        width: clamp(20px, 5vw, 35px);
+        height: clamp(1px, 0.3vw, 2px);
+    }
+    
+    .suggestion-item {
+        padding: clamp(0.6rem, 3.5vw, 0.9rem) clamp(0.7rem, 3.5vw, 1rem);
+        font-size: clamp(0.85rem, 3vw, 1rem);
+        gap: clamp(0.3rem, 1.5vw, 0.5rem);
+        border-radius: clamp(6px, 1.5vw, 10px);
+        min-height: clamp(42px, 9vw, 50px);
+    }
+    
+    .suggestion-item i {
+        font-size: clamp(1rem, 3.5vw, 1.2rem);
+        min-width: clamp(14px, 3vw, 16px);
+    }
+    
+    .suggestion-item:hover {
+        transform: translateY(-1px) scale(1.01);
+        box-shadow: 
+            0 4px 15px rgba(212, 175, 55, 0.2), 
+            0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+}
+
+@media (max-width: 360px) {
+    .verse-suggestions {
+        padding: clamp(0.8rem, 5vw, 1.2rem);
+        margin-top: clamp(0.8rem, 3vw, 1.2rem);
+    }
+    
+    .verse-suggestions h4 {
+        font-size: clamp(1rem, 5vw, 1.2rem);
+        margin-bottom: clamp(0.7rem, 3vw, 1rem);
+        flex-direction: column;
+        gap: clamp(0.3rem, 2vw, 0.5rem);
+    }
+    
+    .verse-suggestions h4::before,
+    .verse-suggestions h4::after {
+        width: clamp(15px, 4vw, 25px);
+    }
+    
+    .suggestion-item {
+        padding: clamp(0.5rem, 4vw, 0.8rem) clamp(0.6rem, 4vw, 0.9rem);
+        font-size: clamp(0.8rem, 3.5vw, 0.95rem);
+        gap: clamp(0.25rem, 1.5vw, 0.4rem);
+        border-radius: clamp(5px, 1.5vw, 8px);
+        min-height: clamp(38px, 8vw, 46px);
+        line-height: 1.2;
+    }
+    
+    .suggestion-item i {
+        font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+        min-width: clamp(12px, 3vw, 14px);
+    }
+}
+
+@media (max-width: 320px) {
+    .verse-suggestions {
+        padding: clamp(0.7rem, 6vw, 1rem);
+        border-radius: clamp(8px, 2vw, 12px);
+    }
+    
+    .verse-suggestions h4 {
+        font-size: clamp(0.95rem, 5.5vw, 1.1rem);
+        margin-bottom: clamp(0.6rem, 3vw, 0.9rem);
+    }
+    
+    .suggestion-item {
+        padding: clamp(0.4rem, 4.5vw, 0.7rem) clamp(0.5rem, 4.5vw, 0.8rem);
+        font-size: clamp(0.75rem, 4vw, 0.9rem);
+        gap: clamp(0.2rem, 1.5vw, 0.35rem);
+        border-radius: clamp(4px, 1.5vw, 7px);
+        min-height: clamp(36px, 7.5vw, 44px);
+    }
+    
+    .suggestion-item i {
+        font-size: clamp(0.85rem, 4vw, 1rem);
+        min-width: clamp(10px, 3vw, 12px);
+        gap: 0.5rem;
+        letter-spacing: 0.3px;
+    }
+    
+    .verse-suggestions h4::before,
+    .verse-suggestions h4::after {
+        width: 30px;
+        height: 1.5px;
+    }
+    
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .suggestion-item {
+        padding: 0.7rem 0.5rem;
+        font-size: 0.9rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        gap: 0.3rem;
+        border-radius: 8px;
+        line-height: 1.3;
+    }
+    
+    .suggestion-item i {
+        font-size: 1.1rem;
+        min-width: 14px;
+    }
+    
+    .suggestion-item:hover {
+        transform: translateY(-1px) scale(1.005);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.2), 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 360px) {
+    .verse-suggestions {
+        padding: 0.875rem;
+    }
+    
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 0.375rem;
+    }
+    
+    .suggestion-item {
+        padding: 0.4rem 0.3rem;
+        font-size: 0.8rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border-width: 1px;
+    }
+    
+    .verse-suggestions h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .verse-suggestions h4::before,
+    .verse-suggestions h4::after {
+        width: 20px;
+        height: 1px;
+    }
+}
+
+/* Para telas ultra pequenas */
+@media (max-width: 320px) {
+    .verse-suggestions {
+        padding: 0.75rem;
+    }
+    
+    .verse-suggestions h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        gap: 0.25rem;
+    }
+    
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .suggestion-item {
+        padding: 0.35rem 0.25rem;
+        font-size: 0.75rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        gap: 0.2rem;
+        border-radius: 6px;
+        line-height: 1.2;
+    }
+    
+    .suggestion-item i {
+        font-size: 0.9rem;
+        min-width: 12px;
+    }
+}
+
+@media (max-width: 480px) {
     .decoration-line {
         width: 60px;
     }
@@ -1502,12 +2144,138 @@ html {
     letter-spacing: 0.02em;
 }
 
+/* Estilos para o título do cartão de preview */
+#previewCardTitle {
+    font-family: var(--font-decorative);
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    color: var(--color-light);
+    margin: 0;
+    padding: 0;
+    text-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        0 0 20px rgba(255, 255, 255, 0.1);
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: titleEnter 0.8s ease-out 0.3s forwards;
+    transition: all 0.3s ease;
+}
+
+#previewCardTitle:hover {
+    transform: translateY(-2px);
+    text-shadow: 
+        0 6px 15px rgba(0, 0, 0, 0.4),
+        0 3px 6px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+/* Adiciona decoração em torno do título */
+#previewCardTitle::before,
+#previewCardTitle::after {
+    content: '';
+    position: absolute;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    height: 2px;
+    width: 0%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    opacity: 0;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    animation: lineExpand 1s ease-out 0.8s forwards;
+}
+
+#previewCardTitle::before {
+    top: -20px;
+    animation-delay: 0.8s;
+}
+
+#previewCardTitle::after {
+    bottom: -20px;
+    animation-delay: 1s;
+}
+
+/* Animações */
+@keyframes titleEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes lineExpand {
+    0% {
+        width: 0%;
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        width: 50%;
+        opacity: 0.7;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #titleSection .section-content {
+        padding: 1.5rem;
+        max-width: 95%;
+    }
+    
+    #previewCardTitle {
+        animation-delay: 0.2s;
+    }
+    
+    #previewCardTitle::before {
+        top: -15px;
+        animation-delay: 0.6s;
+    }
+    
+    #previewCardTitle::after {
+        bottom: -15px;
+        animation-delay: 0.8s;
+    }
+}
+
 @media (max-width: 480px) {
-    #previewCardMessage {
-        font-size: clamp(1.3rem, 3vw, 1.3rem);
-        /* Mantido o valor original, pois o outro era clamp(1rem, 3vw, 1.2rem) */
+    #titleSection .section-content {
         padding: 1rem;
-        line-height: 1.6;
+    }
+    
+    #previewCardTitle {
+        font-size: clamp(1.8rem, 7vw, 2.5rem);
+        animation-delay: 0.1s;
+    }
+    
+    #previewCardTitle::before,
+    #previewCardTitle::after {
+        height: 1px;
+    }
+    
+    @keyframes lineExpand {
+        0% {
+            width: 0%;
+            opacity: 0;
+        }
+        50% {
+            opacity: 0.7;
+        }
+        100% {
+            width: 70%;
+            opacity: 0.7;
+        }
     }
 }
 
@@ -1580,6 +2348,237 @@ html {
         width: 36px;
         height: 36px;
         font-size: 1rem;
+    }
+}
+
+/* Media query específica para resolução 1025px-1220px - Correção de responsividade sem scroll */
+@media (min-width: 1025px) and (max-width: 1220px) {
+    /* FORÇA ZERO OVERFLOW HORIZONTAL COM MÁXIMA ESPECIFICIDADE */
+    html, body, *, *::before, *::after {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+    }
+    
+    /* Garantir que não haja overflow horizontal em toda a página */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Ajustar container principal */
+    .creation-flow {
+        padding: 1.5rem 0 !important;
+        padding-bottom: calc(60px + 1.5rem) !important;
+        overflow: hidden !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Layout responsivo - reduzir largura máxima para garantir que caiba */
+    .creation-layout {
+        max-width: 80% !important;
+        width: 80% !important;
+        margin: 0 auto !important;
+        gap: 1.5rem !important;
+        padding: 0 1rem !important;
+    }
+    
+    /* Ajustar containers do formulário */
+    .form-container {
+        max-width: 100%;
+        padding: 1.5rem;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar container de preview */
+    .card-preview-container {
+        max-width: 100%;
+        min-width: 280px;
+        flex: 0 0 auto;
+    }
+    
+    /* Ajustar formulário */
+    .creation-form {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar inputs e elementos do formulário */
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar sugestões de versículo */
+    .verse-suggestions {
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 1.5rem;
+    }
+    
+    /* Ajustar lista de sugestões */
+    .suggestion-list {
+        grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    /* Ajustar área de upload */
+    .upload-area {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar preview de imagens */
+    .image-preview-container {
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    /* Ajustar cards de plano */
+    .plan-cards {
+        grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+        gap: 1.5rem;
+        max-width: 100%;
+    }
+    
+    .plan-card {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar botões */
+    .btn-preview {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Garantir que elementos flexíveis não quebrem o layout */
+    .step-actions {
+        flex-wrap: wrap;
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    /* Ajustar progress bar */
+    .progress-container {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .progress-header {
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0 1rem;
+    }
+    
+    /* Prevenir overflow em qualquer elemento */
+    *, *::before, *::after {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Elementos problemáticos específicos */
+    .form-step,
+    .step-content,
+    .input-group,
+    .btn,
+    .plan-card,
+    .suggestion-item,
+    .upload-area,
+    .image-preview,
+    .verse-suggestions,
+    .bible-selector {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Elementos que podem causar problemas de largura */
+    .wide-element,
+    .table-responsive,
+    .overflow-prone {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar modais */
+    .modal-content {
+        max-width: 90%;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar preview sections */
+    .preview-sections {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    
+    .preview-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Garantir responsividade de imagens */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* Ajustar grids responsivos */
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    /* Ajustar flexbox */
+    .flex-container {
+        flex-wrap: wrap;
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    /* Ajustar texto longo */
+    .long-text {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        max-width: 100%;
+    }
+}
+
+/* Ajustes responsivos para o espaçamento mobile */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 4.5rem;
+    }
+    
+    .form-container {
+        padding-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-bottom: 4rem;
+    }
+    
+    .form-container {
+        padding-bottom: 1rem;
     }
 }
 
@@ -1729,7 +2728,7 @@ html {
 /* Indicadores horizontais (substituindo os verticais) */
 .vertical-section-indicators {
     position: fixed;
-    bottom: 70px; /* Posicionado acima do botão de voltar */
+    bottom: 90px; /* Mais distância do botão de voltar */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -1760,8 +2759,19 @@ html {
 
 /* Ajustes para diferentes contextos */
 .preview-modal .vertical-section-indicators {
-    bottom: 80px;
+    bottom: 100px;
     z-index: 1100; /* Maior que o z-index do modal */
+}
+
+/* Ajustes específicos para desktop - mais espaço entre elementos */
+@media (min-width: 1025px) {
+    .vertical-section-indicators {
+        bottom: 110px; /* Ainda mais distância em telas grandes */
+    }
+    
+    .btn-close-preview {
+        padding: 1.125rem; /* Padding ligeiramente maior em desktop */
+    }
 }
 
 /* Responsividade */
@@ -1879,6 +2889,12 @@ html {
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
+    /* Prevenir scroll além dos limites do modal */
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Fix para iOS - prevenir bouncing */
+    -webkit-overscroll-behavior: none;
 }
 
 .preview-modal.active {
@@ -1889,709 +2905,708 @@ html {
 
 .preview-modal-content {
     width: 100%;
-    height: 100%;
+    height: 100vh; /* Altura total da viewport */
     max-width: 500px;
     /* Ou o tamanho desejado para o conteúdo do modal */
     margin: 0 auto;
     padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    padding-bottom: 1rem; /* Reduzir padding inferior para dar espaço ao botão */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem; /* Reduzir gap para otimizar espaço */
     /* Aqui dentro iria o .preview-sections ou similar */
+    position: relative;
+    overflow: visible; /* Permitir que o botão seja visível */
+    box-sizing: border-box; /* Incluir padding no cálculo da altura */
 }
 
 .preview-modal-body {
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
+    /* Remover scroll vertical livre */
+    overscroll-behavior: none;
+    -webkit-overscroll-behavior: none;
+    /* Garantir que o scroll não vaze para o fundo */
+    position: relative;
+    height: calc(100% - 80px); /* Reservar espaço para o botão */
+    max-height: calc(100% - 80px);
+    min-height: 0; /* Permitir encolhimento */
 }
 
-/* Preview Button (botão grande fixo) */
-.btn-preview {
-    position: fixed;
-    background: linear-gradient(45deg, var(--color-accent), var(--gold-dark));
-    color: var(--color-dark);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    z-index: 1000;
-    /* Mesmo z-index de outros modais/overlays */
-    border: none;
-    transition: all 0.3s ease;
+/* Estilos específicos para preview sections dentro do modal */
+.preview-modal .preview-sections {
+    height: 100% !important;
+    overflow: hidden !important;
+    /* Remover scroll vertical livre conforme solicitado */
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+    /* Manter comportamento de scroll suave apenas para navegação programática */
+    scroll-behavior: smooth;
 }
 
-/* Desktop styles for .btn-preview */
-@media (min-width: 769px) {
-    .btn-preview {
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        min-width: 500px;
-        padding: 2.5rem 5rem;
-        /* Padding original era 1.5rem 3rem, depois 2.5rem 5rem */
-        border-radius: 50px;
-        font-size: 1.6rem;
-        /* Original 1.2rem, depois 1.4rem, depois 1.6rem */
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
-        letter-spacing: 0.5px;
-    }
-
-    .btn-preview i {
-        font-size: 1.8rem;
-        /* Original 1rem, depois 1.2rem, depois 1.4rem */
-    }
+.preview-modal .preview-section {
+    /* Garantir que as seções não causem overflow horizontal */
+    max-width: 100% !important;
+    overflow: hidden !important;
 }
 
-/* Estilos específicos para telas maiores/desktops */
-@media (min-width: 1200px) {
-    .btn-preview {
-        padding: 1.5rem 3rem; /* Menor padding em telas grandes */
-        min-width: 400px; /* Menor largura em telas grandes */
-        font-size: 1.3rem; /* Fonte menor */
+/* Fixes específicos para iOS e mobile */
+@media (max-width: 768px) {
+    .preview-modal {
+        /* iOS specific fixes */
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
     }
     
-    .btn-preview i {
-        font-size: 1.5rem; /* Ícone menor */
-    }
-}
-
-@media (min-width: 769px) {
-    .btn-preview:hover {
-        transform: translateX(-50%) translateY(-4px);
-        box-shadow: 0 8px 35px rgba(212, 175, 55, 0.5);
-        background: linear-gradient(45deg, var(--gold-dark), var(--color-accent));
-    }
-
-    .btn-preview:active {
-        transform: translateX(-50%) translateY(-2px);
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-    }
-
-    /* Ajuste de padding no .creation-flow para acomodar o botão */
-    .creation-flow {
-        padding-bottom: calc(4rem + 60px);
-        /* (altura do botão + margem) */
-        /* A regra anterior era calc(2.5rem + 80px), esta é a mais recente */
-    }
-}
-
-/* Mobile styles for .btn-preview */
-@media (max-width: 768px) {
-    .btn-preview {
-        bottom: 0;
-        /* Originalmente 1rem, depois 0 */
-        left: 0;
-        width: 100%;
-        height: 65px;
-        /* Originalmente padding, depois height 60px, depois 65px */
-        padding: 0;
-        /* Removido padding para usar height */
-        margin: 0;
-        border-radius: 0;
-        font-size: 1.3rem;
-        /* Original 0.9rem, depois 1.1rem, depois 1.3rem */
-        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-preview i {
-        font-size: 1.4rem;
-        /* Original 1rem, depois 1.2rem, depois 1.4rem */
-    }
-
-    /* Ajuste de padding no .creation-flow para acomodar o botão */
-    .creation-flow {
-        padding-bottom: 60px;
-        /* Altura do botão no mobile */
-    }
-
     .preview-modal-content {
-        /* Para o modal de preview em mobile */
-        padding: 1rem;
+        padding: 1rem !important;
+        /* Reduzir padding em mobile para mais espaço */
+    }
+    
+    .preview-modal-body {
+        /* Remover configurações de scroll para mobile também */
+        overflow: hidden;
+        /* Prevenir bounce effect no iOS */
+        overscroll-behavior: none;
+        -webkit-overscroll-behavior: none;
     }
 }
 
-/* Small screen adjustments for .btn-preview */
-@media (max-width: 480px) {
-    .btn-preview {
-        height: 60px;
-        font-size: 1.2rem;
-    }
+/* ========== Estilos dos Botões de Preview (Restaurados) ========== */
 
-    .btn-preview i {
-        font-size: 1.3rem;
-    }
-}
-
-
-.btn-close-preview {
-    /* Para fechar o .preview-modal */
-    width: 100%;
-    padding: 1rem;
-    background: var(--color-secondary);
-    color: var(--color-light);
+/* Botão principal de Pré-visualização */
+.btn-preview {
+    /* Desktop: Botão normal */
+    position: relative;
+    display: inline-flex;
+    background: linear-gradient(135deg, var(--color-accent), #b8941f);
+    color: var(--color-dark);
     border: none;
-    border-radius: var(--border-radius);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 700;
     font-size: 1rem;
-    font-weight: 600;
-    display: flex;
+    letter-spacing: 0.5px;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        0 2px 6px rgba(212, 175, 55, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.btn-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.2),
+        0 3px 8px rgba(212, 175, 55, 0.4);
+}
+
+.btn-preview:active {
+    transform: translateY(0);
+    transition: transform 0.1s ease;
+}
+
+/* Mobile: Botão fixo retangular ocupando toda a largura */
+@media (max-width: 1024px) {
+    /* Centralização básica da página */
+    .creation-flow {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem 0;
+    }
+    
+    .creation-layout {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .form-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .creation-form {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        text-align: left; /* Manter texto do formulário alinhado à esquerda para legibilidade */
+    }
+    
+    .btn-preview {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        padding: 1.2rem 2rem;
+        border-radius: 0;
+        font-size: 1.1rem;
+        gap: 0.75rem;
+        z-index: 1000;
+        box-shadow: 
+            0 -4px 20px rgba(0, 0, 0, 0.15),
+            0 -2px 8px rgba(212, 175, 55, 0.3);
+        border-top: 3px solid rgba(255, 255, 255, 0.2);
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        margin-top: 0;
+    }
+    
+    .btn-preview:hover {
+        transform: none;
+        box-shadow: 
+            0 -4px 20px rgba(0, 0, 0, 0.15),
+            0 -2px 8px rgba(212, 175, 55, 0.3);
+    }
+}
+
+.btn-preview i {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+/* Botão de fechar/voltar do modal */
+.btn-close-preview {
+    /* Para fechar o .preview-modal */
+    width: 100% !important;
+    padding: 1rem !important;
+    background: var(--color-secondary) !important;
+    color: var(--color-light) !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    margin-top: auto !important; /* Empurrar para o fundo */
+    flex-shrink: 0 !important; /* Não permitir encolhimento */
+    z-index: 1001 !important; /* Garantir que fique acima de outros elementos */
+    position: relative !important;
+    visibility: visible !important; /* Garantir visibilidade */
+    opacity: 1 !important; /* Garantir opacidade total */
 }
 
 .btn-close-preview:hover {
-    background: var(--color-accent);
-    color: var(--color-dark);
+    background: var(--color-accent) !important;
+    color: var(--color-dark) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-
-/* Reset da Progress Container (Redundante, o novo estilo já está acima) */
-/* .progress-container * { box-sizing: border-box; margin: 0; padding: 0; } */
-
-/* Forçar conteúdo a ficar dentro dos limites */
-* {
-    max-width: 100vw;
-    /* Cuidado com esta regra global, pode ter efeitos colaterais */
-    box-sizing: border-box;
+/* Responsividade para os botões de preview */
+/* Tablets - manter estilo retangular fixo e centralizado */
+@media (max-width: 1024px) and (min-width: 769px) {
+    /* Centralização para tablets */
+    .creation-flow {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    
+    .creation-layout {
+        max-width: 700px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .form-container {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .btn-preview {
+        padding: 1.1rem 2rem;
+        font-size: 1.05rem;
+    }
+    
+    .btn-preview i {
+        font-size: 1.2rem;
+    }
 }
 
-/* Melhoria visual para o título do card no preview */
-#titleSection .section-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    position: relative;
-    max-width: 85%;
-    transform: translateY(-20px); /* Move ligeiramente para cima */
-}
-
-#previewCardTitle {
-    font-family: var(--font-decorative);
-    font-size: clamp(2.2rem, 6vw, 3.2rem);
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.2;
-    color: var(--color-light);
-    margin: 0;
-    padding: 0;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    letter-spacing: -0.02em;
-    position: relative;
-    z-index: 2;
-}
-
-/* Adiciona decoração em torno do título */
-#previewCardTitle::before,
-#previewCardTitle::after {
-    content: '';
-    position: absolute;
-    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
-    height: 1px;
-    width: 50%;
-    left: 25%;
-    z-index: 1;
-    opacity: 0.7;
-}
-
-#previewCardTitle::before {
-    top: -20px;
-}
-
-#previewCardTitle::after {
-    bottom: -20px;
-}
-
-/* Efeito de brilho sutil */
-#titleSection .section-content::before {
-    content: '';
-    position: absolute;
-    width: 120%;
-    height: 120%;
-    background: radial-gradient(circle, rgba(244, 196, 64, 0.1) 0%, transparent 70%);
-    z-index: 1;
-    opacity: 0.7;
-    animation: pulseGlow 4s ease-in-out infinite;
-}
-
-@keyframes pulseGlow {
-    0%, 100% { opacity: 0.3; transform: scale(0.95); }
-    50% { opacity: 0.7; transform: scale(1.05); }
-}
-
-/* Responsividade */
 @media (max-width: 768px) {
-    #titleSection .section-content {
-        padding: 1.5rem;
-        max-width: 95%;
+    .btn-preview {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
     }
     
-    #previewCardTitle::before {
-        top: -15px;
+    .btn-preview i {
+        font-size: 1.1rem;
     }
     
-    #previewCardTitle::after {
-        bottom: -15px;
+    .btn-close-preview {
+        padding: 0.75rem 1.5rem;
+        min-width: 160px;
+        font-size: 0.95rem;
+        bottom: auto; /* Remover posicionamento absoluto */
+        position: relative; /* Garantir posicionamento normal */
+        margin-top: 1rem; /* Adicionar margem superior */
     }
 }
 
 @media (max-width: 480px) {
-    #titleSection .section-content {
-        padding: 1rem;
+    .btn-preview {
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
     }
     
-    #previewCardTitle {
-        font-size: clamp(1.8rem, 7vw, 2.5rem);
+    .btn-preview i {
+        font-size: 1rem;
     }
     
-    #previewCardTitle::before,
-    #previewCardTitle::after {
-        width: 70%;
-        left: 15%;
+    .btn-close-preview {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+        margin-top: 1rem; /* Garantir espaço superior */
+        position: relative; /* Garantir posicionamento normal */
     }
 }
 
-/* Aprimoramento visual da seção final */
-.final-section-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    max-width: 85%;
+/* Estados especiais para os botões */
+.btn-preview:disabled,
+.btn-close-preview:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Efeito de pulsação para chamar atenção */
+@keyframes pulse-preview {
+    0% {
+        box-shadow: 
+            0 8px 25px rgba(212, 175, 55, 0.4),
+            0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 12px 35px rgba(212, 175, 55, 0.6),
+            0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        box-shadow: 
+            0 8px 25px rgba(212, 175, 55, 0.4),
+            0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.btn-preview.pulse {
+    animation: pulse-preview 2s infinite;
+}
+
+/* Adicionar efeito de pulsação sutil para o botão fixo retangular */
+@keyframes subtle-pulse {
+    0%, 100% {
+        box-shadow: 
+            0 -4px 20px rgba(0, 0, 0, 0.15),
+            0 -2px 8px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 -6px 25px rgba(0, 0, 0, 0.2),
+            0 -3px 12px rgba(212, 175, 55, 0.4);
+    }
+}
+
+.btn-preview.pulse {
+    animation: subtle-pulse 3s infinite ease-in-out;
+}
+
+/* Adicionar gradiente animado para o fundo do botão */
+.btn-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transition: left 0.8s ease;
+    pointer-events: none;
+}
+
+.btn-preview:hover::before {
+    left: 100%;
+}
+
+/* Espaçamento adicional para acomodar o botão fixo apenas no mobile */
+@media (max-width: 1024px) {
+    body {
+        padding-bottom: 5rem; /* Espaço para o botão fixo retangular */
+    }
+
+    .form-container {
+        padding-bottom: 2rem; /* Espaço adicional para o conteúdo */
+    }
+
+    .creation-layout {
+        padding-bottom: 1rem;
+    }
+}
+
+/* Ajustes responsivos para o espaçamento mobile */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 4.5rem;
+    }
+    
+    .form-container {
+        padding-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-bottom: 4rem;
+    }
+    
+    .form-container {
+        padding-bottom: 1rem;
+    }
+}
+
+/* Efeitos visuais adicionais para versículos sugeridos */
+.verse-suggestions:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(212, 175, 55, 0.1);
+    border-color: rgba(212, 175, 55, 0.25);
+}
+
+/* Efeito de foco para acessibilidade */
+.suggestion-item:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+/* Animação suave de entrada */
+.verse-suggestions {
+    animation: slideUpFadeIn 0.6s ease-out;
+}
+
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efeito de carregamento para os itens */
+.suggestion-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
     position: relative;
 }
 
-.final-message {
+.suggestion-item.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Indicador visual de seleção */
+.suggestion-item.selected {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(255, 255, 255, 0.08));
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.suggestion-item.selected i {
+    color: #fff;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+}
+
+/* Efeito de ondulação ao clicar */
+.suggestion-item {
     position: relative;
-    padding: 2.5rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(244, 196, 64, 0.15);
-    text-align: center;
     overflow: hidden;
+}
+
+.suggestion-item .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.3);
+    transform: scale(0);
+    animation: ripple-effect 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-effect {
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Final Message Section - Matching view.css styling exactly */
+.final-message {
+  width: 100%;
+  max-width: 98%;
+  padding: clamp(1.5rem, 5vw, 2.8rem);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(244, 196, 64, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  margin: auto;
+  backdrop-filter: blur(4px);
+  opacity: 0.95;
 }
 
 .final-message::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(244, 196, 64, 0.08) 0%, transparent 70%);
-    z-index: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(244, 196, 64, 0.4), transparent);
+  opacity: 0.8;
 }
 
-#previewFinalMessage {
-    position: relative;
-    font-family: var(--font-decorative, 'Great Vibes', cursive);
-    font-size: clamp(1.8rem, 5vw, 2.6rem);
-    line-height: 1.6;
-    color: var(--color-light);
-    margin: 0 0 1.5rem 0;
-    font-weight: normal;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    z-index: 1;
+.final-message::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(244, 196, 64, 0.05) 0%, transparent 60%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+#previewCardMessage, #finalMessage {
+  font-family: var(--font-decorative, 'Crimson Pro', serif);
+  font-size: clamp(1.3rem, 4vw, 1.7rem);
+  color: var(--color-light);
+  margin: 0 0 1.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
 }
 
 .message-decoration {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 0.5rem;
-    z-index: 1;
-}
-
-.message-decoration::before,
-.message-decoration::after {
-    content: '';
-    height: 1px;
-    width: 80px;
-    background: linear-gradient(90deg, transparent, rgba(244, 196, 64, 0.5), transparent);
-    margin: 0 15px;
+  margin: 1rem 0 1.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(244, 196, 64, 0.1), transparent 70%);
+  border: 1px solid rgba(244, 196, 64, 0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .message-decoration i {
-    color: #f4c440;
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
-    animation: pulse 3s infinite ease-in-out;
+  color: rgba(244, 196, 64, 0.8);
+  font-size: clamp(1.5rem, 3vw, 1.8rem);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.4s ease, color 0.4s ease, filter 0.4s ease;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.15); opacity: 1; }
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .final-message {
-        padding: 2rem;
-    }
-    
-    .message-decoration::before,
-    .message-decoration::after {
-        width: 60px;
-    }
-}
-
-@media (max-width: 480px) {
-    .final-message {
-        padding: 1.5rem;
-    }
-    
-    #previewFinalMessage {
-        font-size: clamp(1.6rem, 6vw, 2.2rem);
-    }
-    
-    .message-decoration::before,
-    .message-decoration::after {
-        width: 40px;
-        margin: 0 10px;
-    }
-}
-
-/* Aprimoramento das Sugestões de Versículos */
-.verse-suggestions {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, rgba(244, 196, 64, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(244, 196, 64, 0.1);
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-}
-
-.verse-suggestions::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: linear-gradient(90deg, transparent, rgba(244, 196, 64, 0.5), transparent);
-}
-
-.verse-suggestions h4 {
-    color: #f4c440;
-    font-size: 1.2rem;
-    margin-bottom: 1.2rem;
-    text-align: center;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.verse-suggestions h4::before,
-.verse-suggestions h4::after {
-    content: '';
-    height: 1px;
-    flex: 1;
-    background: linear-gradient(90deg, transparent, rgba(244, 196, 64, 0.3), transparent);
-}
-
-.suggestion-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 0.75rem;
-    position: relative;
-}
-
-.suggestion-item {
-    position: relative;
-    background: rgba(0, 0, 0, 0.2);
-    color: var(--color-light);
-    font-size: 0.95rem;
-    padding: 0.8rem 1rem;
-    border-radius: 10px;
-    border: 1px solid rgba(244, 196, 64, 0.15);
-    backdrop-filter: blur(4px);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-align: left;
-    overflow: hidden;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
-
-.suggestion-item i {
-    color: #f4c440;
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
-}
-
-.suggestion-item:hover {
-    transform: translateY(-2px);
-    background: rgba(244, 196, 64, 0.1);
-    border-color: rgba(244, 196, 64, 0.3);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
-}
-
-.suggestion-item:hover i {
-    transform: scale(1.2);
-}
-
-.suggestion-item::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #f4c440, transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.suggestion-item:hover::after {
-    opacity: 1;
-}
-
-.suggestion-item:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-}
-
-/* Estados */
-.verse-item.selected {
-    background: rgba(244, 196, 64, 0.15);
-    border-color: #f4c440;
-    font-weight: 500;
-    box-shadow: 0 0 0 1px #f4c440, 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.verse-item.selected i {
-    transform: scale(1.1);
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .verse-suggestions {
-        padding: 1.2rem;
-        margin-top: 1.5rem;
-    }
-
-    .suggestion-list {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 0.6rem;
-    }
-
-    .suggestion-item {
-        font-size: 0.9rem;
-        padding: 0.7rem 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .verse-suggestions h4 {
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-    }
-
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .suggestion-item {
-        font-size: 0.85rem;
-        padding: 0.65rem 0.8rem;
-    }
-
-    .suggestion-item i {
-        font-size: 0.9rem;
-    }
-}
-
-/* Estilo aprimorado para o título de adicionar versículo */
-.bible-selector h3 {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.3rem;
-  margin-bottom: 1.8rem;
-  padding: 10px 16px;
-  background: linear-gradient(135deg, rgba(244, 196, 64, 0.08) 0%, rgba(0, 0, 0, 0.05) 100%);
-  border-radius: 12px;
-  border-left: 3px solid #f4c440;
-  color: #f4c440;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.bible-selector h3 i {
-  font-size: 1.4rem;
-  color: #f4c440;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-  transition: transform 0.3s ease;
-}
-
-.bible-selector h3:hover {
+.message-decoration:hover {
+  background: radial-gradient(circle at center, rgba(244, 196, 64, 0.15), transparent 80%);
+  border-color: rgba(244, 196, 64, 0.3);
   transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(244, 196, 64, 0.12) 0%, rgba(0, 0, 0, 0.07) 100%);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.bible-selector h3:hover i {
-  transform: scale(1.1) rotate(5deg);
+.message-decoration:hover i {
+  transform: scale(1.2) rotate(5deg);
+  color: var(--color-accent);
+  filter: drop-shadow(0 3px 10px rgba(244, 196, 64, 0.6));
 }
 
-/* Responsividade */
+.final-message:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(244, 196, 64, 0.15);
+  border-color: rgba(244, 196, 64, 0.3);
+}
+
+/* Message ornament styling for the specific structure mentioned */
+.message-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.ornament-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, rgba(244, 196, 64, 0.4), transparent);
+  opacity: 0.7;
+}
+
+.message-ornament i {
+  color: rgba(244, 196, 64, 0.8);
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Active state animations */
+.final-message.active {
+  opacity: 1;
+  transform: translateZ(0);
+  transition: opacity 0.6s ease, transform 0.4s ease;
+}
+
+.final-message.active .message-decoration {
+  animation: pulseGlow 2s 0.3s ease-out forwards, shimmer 3s infinite;
+}
+
+/* Animation keyframes */
+@keyframes pulseGlow {
+  0% { 
+    box-shadow: 0 0 0 rgba(244, 196, 64, 0); 
+    transform: scale(0.95); 
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(244, 196, 64, 0.4); 
+    transform: scale(1.05); 
+  }
+  100% { 
+    box-shadow: 0 0 12px rgba(244, 196, 64, 0.3); 
+    transform: scale(1); 
+  }
+}
+
+@keyframes shimmer {
+  0% { 
+    opacity: 0.8; 
+    filter: brightness(0.95); 
+  }
+  50% { 
+    opacity: 1; 
+    filter: brightness(1.1); 
+  }
+  100% { 
+    opacity: 0.8; 
+    filter: brightness(0.95); 
+  }
+}
+
+/* Heartbeat animations */
+@keyframes heartbeat {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  20% { 
+    transform: scale(1.4) rotate(10deg); 
+    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.9)); 
+  }
+  40% { 
+    transform: scale(1) rotate(0deg); 
+    filter: drop-shadow(0 2px 10px rgba(244, 196, 64, 0.7)); 
+  }
+  60% { 
+    transform: scale(1.4) rotate(-10deg); 
+    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.9)); 
+  }
+  80% { 
+    transform: scale(1) rotate(0deg); 
+    filter: drop-shadow(0 2px 8px rgba(244, 196, 64, 0.5)); 
+  }
+}
+
+@keyframes heartbeat-intense {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  20% { 
+    transform: scale(1.6) rotate(15deg); 
+    filter: drop-shadow(0 4px 15px rgba(244, 196, 64, 1)); 
+  }
+  40% { 
+    transform: scale(1.1) rotate(-5deg); 
+    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.8)); 
+  }
+  60% { 
+    transform: scale(1.5) rotate(-15deg); 
+    filter: drop-shadow(0 4px 15px rgba(244, 196, 64, 1)); 
+  }
+  80% { 
+    transform: scale(1.1) rotate(5deg); 
+    filter: drop-shadow(0 3px 10px rgba(244, 196, 64, 0.6)); 
+  }
+}
+
+.message-decoration i.heartbeat {
+  animation: heartbeat 2s infinite;
+}
+
+.message-decoration i.heartbeat-intense {
+  animation: heartbeat-intense 1.2s 1;
+}
+
+/* Mobile-specific adjustments for final-message box */
 @media (max-width: 768px) {
-  .bible-selector h3 {
-    font-size: 1.2rem;
-    padding: 8px 14px;
-    margin-bottom: 1.5rem;
-  }
-  
-  .bible-selector h3 i {
-    font-size: 1.3rem;
+  .final-message {
+    max-width: 99%;
+    margin: 0 0.5%;
   }
 }
 
-/* Adicione este estilo ao final do arquivo */
-@keyframes highlight-pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 15px rgba(244, 196, 64, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(244, 196, 64, 0);
-    }
-}
-
-.highlight-pulse {
-    animation: highlight-pulse 2s ease-out;
-}
-
-/* Melhorar a aparência do verse-preview no formulário */
-.verse-preview {
-    display: none;
-    background-color: rgba(244, 196, 64, 0.05);
-    border: 1px solid rgba(244, 196, 64, 0.2);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin: 1.5rem 0;
-    transition: all 0.3s ease;
-}
-
-.verse-preview .verse-text {
-    font-family: 'Crimson Pro', serif;
-    font-style: italic;
-    font-size: 1.2rem;
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
-    color: var(--color-light);
-    text-align: center;
-}
-
-.verse-preview .verse-reference {
-    display: block;
-    text-align: right;
-    font-size: 0.95rem;
-    color: #f4c440;
-    margin-top: 0.5rem;
-}
-
-/* Adicione estes estilos ao final do arquivo ou modifique os existentes */
-.message-container {
-    /* Quebra de palavras e texto */
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
-    
-    /* Garante que o texto não ultrapasse o container */
-    max-width: 100%;
-    
-    /* Melhora a leitura em dispositivos móveis */
-    text-align: center;
-    padding: 1rem;
-    
-    /* Evita comportamentos inesperados do text-overflow */
-    white-space: pre-wrap;
-    
-    /* Garante que o container se ajuste ao conteúdo */
-    display: block;
-    
-    /* Compatibilidade com navegadores mais antigos */
-    -ms-word-break: break-all;
-    -ms-hyphens: auto;
-    -webkit-hyphens: auto;
-}
-
-/* Adicione este CSS ao final do arquivo create.css */
-
-.plan-loading-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.plan-loading-container {
-    background: var(--color-secondary);
-    padding: 2rem;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-.plan-loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(244, 196, 64, 0.3);
-    border-radius: 50%;
-    border-top-color: #f4c440;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-.plan-loading-text {
-    color: var(--color-light);
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.plan-loading-subtext {
-    color: var(--color-text);
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Estilo para o botão em estado de loading */
-.btn-select-plan:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.btn-select-plan .fa-spinner {
-    margin-right: 8px;
+@media (max-width: 480px) {
+  .final-message {
+    max-width: 99.5%;
+    margin: 0 0.25%;
+    padding: clamp(1rem, 4vw, 2rem);
+  }
 }

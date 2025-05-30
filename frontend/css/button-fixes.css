@@ -1,12 +1,62 @@
-/* Estilos específicos para telas maiores/desktops - Fix para o botão de pré-visualização */
-@media (min-width: 1200px) {
+/* Estilos específicos para telas maiores/desktops - Botão normal e centralizado */
+@media (min-width: 1025px) {
     .btn-preview {
-        padding: 1.25rem 3rem !important; /* Padding reduzido em telas grandes */
-        min-width: 360px !important; /* Largura menor em telas grandes */
-        font-size: 1.2rem !important; /* Fonte menor */
+        /* Desktop: Botão normal sem fixação */
+        position: relative !important;
+        display: block !important;
+        width: auto !important;
+        margin: 2rem auto !important; /* Centralizar horizontalmente */
+        padding: 1.2rem 2.5rem !important;
+        font-size: 1.1rem !important;
+        border-radius: 8px !important;
+        border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            0 2px 6px rgba(212, 175, 55, 0.3) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        text-align: center !important;
+        max-width: 300px !important; /* Largura máxima para não ficar muito largo */
+    }
+    
+    /* Centralizar o container do botão */
+    .form-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    .btn-preview:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 
+            0 6px 16px rgba(0, 0, 0, 0.2),
+            0 3px 8px rgba(212, 175, 55, 0.4) !important;
+    }
+    
+    .btn-preview:active {
+        transform: translateY(0) !important;
     }
     
     .btn-preview i {
-        font-size: 1.4rem !important; /* Ícone menor */
+        font-size: 1.2rem !important;
+    }
+    
+    .btn-close-preview {
+        padding: 1rem 2.5rem !important;
+        min-width: 200px !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* Remove o espaçamento inferior do body no desktop */
+    body {
+        padding-bottom: 0 !important;
+    }
+    
+    .form-container {
+        padding-bottom: 0 !important;
+    }
+    
+    .creation-layout {
+        padding-bottom: 0 !important;
     }
 }
