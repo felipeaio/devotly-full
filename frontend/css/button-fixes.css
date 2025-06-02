@@ -42,9 +42,11 @@
     }
     
     .btn-close-preview {
-        padding: 1rem 2.5rem !important;
-        min-width: 200px !important;
+        /* Manter posicionamento fixo mas ajustar para desktop */
+        max-width: 500px !important; /* Máximo maior para desktop */
+        padding: 1rem 2rem !important;
         font-size: 1.1rem !important;
+        bottom: 25px !important; /* Mais espaço da borda em desktop */
     }
     
     /* Remove o espaçamento inferior do body no desktop */

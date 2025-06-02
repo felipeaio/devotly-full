@@ -1754,12 +1754,12 @@ html.modal-active {
 
 @media (max-width: 360px) {
     .verse-suggestions {
-        padding: clamp(0.8rem, 5vw, 1.2rem);
+        padding: 0.875rem;
         margin-top: clamp(0.8rem, 3vw, 1.2rem);
     }
     
     .verse-suggestions h4 {
-        font-size: clamp(1rem, 5vw, 1.2rem);
+        font-size: clamp(0.95rem, 5.5vw, 1.1rem);
         margin-bottom: clamp(0.7rem, 3vw, 1rem);
         flex-direction: column;
         gap: clamp(0.3rem, 2vw, 0.5rem);
@@ -1771,50 +1771,23 @@ html.modal-active {
     }
     
     .suggestion-item {
-        padding: clamp(0.5rem, 4vw, 0.8rem) clamp(0.6rem, 4vw, 0.9rem);
-        font-size: clamp(0.8rem, 3.5vw, 0.95rem);
-        gap: clamp(0.25rem, 1.5vw, 0.4rem);
-        border-radius: clamp(5px, 1.5vw, 8px);
-        min-height: clamp(38px, 8vw, 46px);
-        line-height: 1.2;
-    }
-    
-    .suggestion-item i {
-        font-size: clamp(0.9rem, 3.5vw, 1.1rem);
-        min-width: clamp(12px, 3vw, 14px);
+        padding: 0.4rem 0.3rem;
+        font-size: 0.8rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border-width: 1px;
     }
 }
 
 @media (max-width: 320px) {
     .verse-suggestions {
-        padding: clamp(0.7rem, 6vw, 1rem);
+        padding: 0.875rem;
         border-radius: clamp(8px, 2vw, 12px);
     }
     
     .verse-suggestions h4 {
-        font-size: clamp(0.95rem, 5.5vw, 1.1rem);
-        margin-bottom: clamp(0.6rem, 3vw, 0.9rem);
-    }
-    
-    .suggestion-item {
-        padding: clamp(0.4rem, 4.5vw, 0.7rem) clamp(0.5rem, 4.5vw, 0.8rem);
-        font-size: clamp(0.75rem, 4vw, 0.9rem);
-        gap: clamp(0.2rem, 1.5vw, 0.35rem);
-        border-radius: clamp(4px, 1.5vw, 7px);
-        min-height: clamp(36px, 7.5vw, 44px);
-    }
-    
-    .suggestion-item i {
-        font-size: clamp(0.85rem, 4vw, 1rem);
-        min-width: clamp(10px, 3vw, 12px);
-        gap: 0.5rem;
-        letter-spacing: 0.3px;
-    }
-    
-    .verse-suggestions h4::before,
-    .verse-suggestions h4::after {
-        width: 30px;
-        height: 1.5px;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        gap: 0.25rem;
     }
     
     .suggestion-list {
@@ -1856,21 +1829,17 @@ html.modal-active {
     }
     
     .suggestion-item {
-        padding: 0.4rem 0.3rem;
-        font-size: 0.8rem;
+        padding: 0.35rem 0.25rem;
+        font-size: 0.75rem;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        border-width: 1px;
+        gap: 0.2rem;
+        border-radius: 6px;
+        line-height: 1.2;
     }
     
-    .verse-suggestions h4 {
-        font-size: 1.1rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .verse-suggestions h4::before,
-    .verse-suggestions h4::after {
-        width: 20px;
-        height: 1px;
+    .suggestion-item i {
+        font-size: 0.9rem;
+        min-width: 12px;
     }
 }
 
@@ -2892,14 +2861,17 @@ html.modal-active {
     /* Prevenir scroll além dos limites do modal */
     overflow: hidden;
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
+    /* REMOVIDO: -webkit-overflow-scrolling: touch - causava scroll livre em iOS */
     /* Fix para iOS - prevenir bouncing */
     -webkit-overscroll-behavior: none;
+    /* Aplicar touch-action apenas para prevenir gestos indesejados */
+    touch-action: none;
 }
 
 .preview-modal.active {
     display: flex;
-    /* Ou o display apropriado para o conteúdo */
+    align-items: center; /* Garantir centralização vertical */
+    justify-content: center; /* Garantir centralização horizontal */
     opacity: 1;
 }
 
@@ -2907,166 +2879,131 @@ html.modal-active {
     width: 100%;
     height: 100vh; /* Altura total da viewport */
     max-width: 500px;
-    /* Ou o tamanho desejado para o conteúdo do modal */
+    max-height: 100vh; /* Garantir que não ultrapasse a viewport */
     margin: 0 auto;
     padding: 2rem;
-    padding-bottom: 1rem; /* Reduzir padding inferior para dar espaço ao botão */
+    padding-bottom: 80px; /* Espaço para o botão fixo */
     display: flex !important;
     flex-direction: column !important;
-    gap: 1rem; /* Reduzir gap para otimizar espaço */
-    /* Aqui dentro iria o .preview-sections ou similar */
+    gap: 1rem;
     position: relative;
-    overflow: visible; /* Permitir que o botão seja visível */
-    box-sizing: border-box; /* Incluir padding no cálculo da altura */
+    overflow: hidden; /* Garantir que nada vaze */
+    box-sizing: border-box;
+    /* Melhorar centralização em mobile */
+    align-self: center;
+    justify-self: center;
 }
 
 .preview-modal-body {
     flex: 1;
     overflow: hidden;
-    /* Remover scroll vertical livre */
+    /* Garantir prevenção total de scroll livre */
     overscroll-behavior: none;
     -webkit-overscroll-behavior: none;
     /* Garantir que o scroll não vaze para o fundo */
     position: relative;
-    height: calc(100% - 80px); /* Reservar espaço para o botão */
+    height: calc(100% - 80px);
     max-height: calc(100% - 80px);
-    min-height: 0; /* Permitir encolhimento */
+    min-height: 0;
+    /* Aplicar touch-action específico para o conteúdo */
+    touch-action: none;
 }
 
 /* Estilos específicos para preview sections dentro do modal */
 .preview-modal .preview-sections {
     height: 100% !important;
     overflow: hidden !important;
-    /* Remover scroll vertical livre conforme solicitado */
+    /* Garantir prevenção total de scroll livre */
     overscroll-behavior: none !important;
     -webkit-overscroll-behavior: none !important;
-    /* Manter comportamento de scroll suave apenas para navegação programática */
-    scroll-behavior: smooth;
+    /* REMOVIDO scroll-behavior para prevenir scroll indesejado */
+    /* Aplicar touch-action para prevenir gestos */
+    touch-action: none !important;
+    /* Garantir posicionamento adequado */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .preview-modal .preview-section {
     /* Garantir que as seções não causem overflow horizontal */
     max-width: 100% !important;
     overflow: hidden !important;
+    /* Aplicar touch-action para prevenir gestos */
+    touch-action: none !important;
+    /* Melhorar centralização das seções */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.preview-modal .preview-section.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 1 !important;
 }
 
 /* Fixes específicos para iOS e mobile */
 @media (max-width: 768px) {
     .preview-modal {
-        /* iOS specific fixes */
+        /* iOS specific fixes - remover seleção e highlights */
         -webkit-user-select: none;
         user-select: none;
         -webkit-touch-callout: none;
         -webkit-tap-highlight-color: transparent;
+        /* Garantir touch-action consistente */
+        touch-action: none !important;
     }
     
     .preview-modal-content {
         padding: 1rem !important;
         /* Reduzir padding em mobile para mais espaço */
+        /* Garantir centralização em mobile */
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        margin: 0 !important;
     }
     
     .preview-modal-body {
-        /* Remover configurações de scroll para mobile também */
-        overflow: hidden;
+        /* Prevenir qualquer tipo de scroll */
+        overflow: hidden !important;
         /* Prevenir bounce effect no iOS */
-        overscroll-behavior: none;
-        -webkit-overscroll-behavior: none;
-    }
-}
-
-/* Mobile-specific aggressive scroll prevention for preview modal */
-@media (max-width: 768px) {
-    /* When modal is active, apply aggressive mobile scroll prevention */
-    body.modal-active {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        overscroll-behavior: none !important;
+        -webkit-overscroll-behavior: none !important;
+        /* Garantir touch-action consistente */
         touch-action: none !important;
-        -webkit-overflow-scrolling: auto !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        -webkit-user-select: none !important;
-        user-select: none !important;
+        height: calc(100vh - 80px) !important;
+        max-height: calc(100vh - 80px) !important;
     }
-
-    html.modal-active {
-        position: fixed !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
-        touch-action: none !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-    }
-
-    /* Modal specific mobile rules */
-    .preview-modal {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100vh !important;
-        height: 100dvh !important; /* Dynamic viewport height for mobile */
-        overflow: hidden !important;
-        touch-action: none !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        -webkit-touch-callout: none !important;
-        -webkit-user-select: none !important;
-        user-select: none !important;
-        -webkit-tap-highlight-color: transparent !important;
-    }
-
-    .preview-modal.active {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .preview-modal-content {
-        position: relative !important;
-        width: 100% !important;
-        height: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 1rem !important;
-        overflow: hidden !important;
-        touch-action: none !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-    }
-
-    .preview-modal-body {
-        flex: 1 !important;
-        overflow: hidden !important;
-        touch-action: none !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        height: calc(100% - 60px) !important; /* Account for close button */
-        max-height: calc(100% - 60px) !important;
-    }
-
-    /* Prevent scrolling on any child elements within modal */
-    .preview-modal * {
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-    }
-
-    /* Specific rules for preview sections in modal on mobile */
+    
+    /* Aplicar fixes nas seções também */
     .preview-modal .preview-sections {
-        overflow: hidden !important;
-        touch-action: manipulation !important; /* Allow only pan and zoom touch actions */
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-    }
-
-    .preview-modal .preview-section {
-        overflow: hidden !important;
+        height: 100% !important;
+        max-height: 100% !important;
         touch-action: none !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 80px !important; /* Espaço para o botão */
+    }
+    
+    .preview-modal .preview-section {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        touch-action: none !important;
     }
 }
 
@@ -3188,7 +3125,12 @@ html.modal-active {
 /* Botão de fechar/voltar do modal */
 .btn-close-preview {
     /* Para fechar o .preview-modal */
-    width: 100% !important;
+    position: fixed !important; /* Posição fixa na tela */
+    bottom: 20px !important; /* Sempre 20px do bottom da viewport */
+    left: 50% !important; /* Centralizar horizontalmente */
+    transform: translateX(-50%) !important; /* Ajustar para centro exato */
+    width: calc(100% - 40px) !important; /* Largura responsiva com margem */
+    max-width: 460px !important; /* Máximo width para telas grandes */
     padding: 1rem !important;
     background: var(--color-secondary) !important;
     color: var(--color-light) !important;
@@ -3202,12 +3144,11 @@ html.modal-active {
     gap: 0.75rem !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
-    margin-top: auto !important; /* Empurrar para o fundo */
-    flex-shrink: 0 !important; /* Não permitir encolhimento */
-    z-index: 1001 !important; /* Garantir que fique acima de outros elementos */
-    position: relative !important;
+    z-index: 1002 !important; /* Z-index alto para ficar sempre visível */
     visibility: visible !important; /* Garantir visibilidade */
     opacity: 1 !important; /* Garantir opacidade total */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important; /* Sombra para destacar */
+    backdrop-filter: blur(10px) !important; /* Efeito blur no fundo */
 }
 
 .btn-close-preview:hover {
@@ -3259,12 +3200,12 @@ html.modal-active {
     }
     
     .btn-close-preview {
-        padding: 0.75rem 1.5rem;
-        min-width: 160px;
-        font-size: 0.95rem;
-        bottom: auto; /* Remover posicionamento absoluto */
-        position: relative; /* Garantir posicionamento normal */
-        margin-top: 1rem; /* Adicionar margem superior */
+        bottom: 15px !important; /* Menor distância da borda em tablets */
+        width: calc(100% - 30px) !important; /* Menos margem lateral */
+        max-width: 400px !important; /* Máximo menor para tablets */
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        border-radius: 12px !important; /* Border radius menor */
     }
 }
 
@@ -3279,493 +3220,96 @@ html.modal-active {
     }
     
     .btn-close-preview {
-        padding: 0.875rem;
-        font-size: 0.9rem;
-        margin-top: 1rem; /* Garantir espaço superior */
-        position: relative; /* Garantir posicionamento normal */
+        bottom: 10px !important; /* Ainda menor distância em mobile */
+        width: calc(100% - 20px) !important; /* Margens mínimas */
+        max-width: 350px !important; /* Máximo ainda menor */
+        padding: 0.875rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 10px !important; /* Border radius menor */
+        gap: 0.5rem !important; /* Gap menor entre ícone e texto */
     }
 }
 
-/* Estados especiais para os botões */
-.btn-preview:disabled,
-.btn-close-preview:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* Efeito de pulsação para chamar atenção */
-@keyframes pulse-preview {
-    0% {
-        box-shadow: 
-            0 8px 25px rgba(212, 175, 55, 0.4),
-            0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    50% {
-        box-shadow: 
-            0 12px 35px rgba(212, 175, 55, 0.6),
-            0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-    100% {
-        box-shadow: 
-            0 8px 25px rgba(212, 175, 55, 0.4),
-            0 4px 12px rgba(0, 0, 0, 0.3);
+/* Ajustes específicos para telas muito pequenas */
+@media (max-width: 360px) {
+    .btn-close-preview {
+        bottom: 8px !important;
+        width: calc(100% - 16px) !important;
+        padding: 0.75rem !important;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
     }
 }
 
-.btn-preview.pulse {
-    animation: pulse-preview 2s infinite;
-}
-
-/* Adicionar efeito de pulsação sutil para o botão fixo retangular */
-@keyframes subtle-pulse {
-    0%, 100% {
-        box-shadow: 
-            0 -4px 20px rgba(0, 0, 0, 0.15),
-            0 -2px 8px rgba(212, 175, 55, 0.3);
-    }
-    50% {
-        box-shadow: 
-            0 -6px 25px rgba(0, 0, 0, 0.2),
-            0 -3px 12px rgba(212, 175, 55, 0.4);
+/* Ajustes para dispositivos em modo paisagem */
+@media (max-height: 500px) and (orientation: landscape) {
+    .btn-close-preview {
+        bottom: 5px !important; /* Menor distância para economizar espaço vertical */
+        padding: 0.6rem 1rem !important; /* Padding reduzido */
+        font-size: 0.8rem !important; /* Fonte menor */
+        max-width: 300px !important; /* Largura reduzida */
+        border-radius: 6px !important;
     }
 }
 
-.btn-preview.pulse {
-    animation: subtle-pulse 3s infinite ease-in-out;
-}
-
-/* Adicionar gradiente animado para o fundo do botão */
-.btn-preview::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transition: left 0.8s ease;
-    pointer-events: none;
-}
-
-.btn-preview:hover::before {
-    left: 100%;
-}
-
-/* Espaçamento adicional para acomodar o botão fixo apenas no mobile */
-@media (max-width: 1024px) {
-    body {
-        padding-bottom: 5rem; /* Espaço para o botão fixo retangular */
-    }
-
-    .form-container {
-        padding-bottom: 2rem; /* Espaço adicional para o conteúdo */
-    }
-
-    .creation-layout {
-        padding-bottom: 1rem;
-    }
-}
-
-/* Ajustes responsivos para o espaçamento mobile */
-@media (max-width: 768px) {
-    body {
-        padding-bottom: 4.5rem;
+/* Ajustes para dispositivos muito baixos (como iPhone em landscape) */
+@media (max-height: 400px) {
+    .btn-close-preview {
+        bottom: 3px !important;
+        padding: 0.5rem 0.8rem !important;
+        font-size: 0.75rem !important;
+        max-width: 250px !important;
+        border-radius: 5px !important;
+        gap: 0.3rem !important;
     }
     
-    .form-container {
-        padding-bottom: 1.5rem;
+    .btn-close-preview i {
+        font-size: 0.8rem !important;
     }
 }
 
-@media (max-width: 480px) {
-    body {
-        padding-bottom: 4rem;
-    }
-    
-    .form-container {
-        padding-bottom: 1rem;
-    }
-}
-
-/* Efeitos visuais adicionais para versículos sugeridos */
-.verse-suggestions:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(212, 175, 55, 0.1);
-    border-color: rgba(212, 175, 55, 0.25);
-}
-
-/* Efeito de foco para acessibilidade */
-.suggestion-item:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(255, 255, 255, 0.03));
-}
-
-/* Animação suave de entrada */
-.verse-suggestions {
-    animation: slideUpFadeIn 0.6s ease-out;
-}
-
-@keyframes slideUpFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+/* Garantia extra para iPhone SE e similares */
+@media (max-width: 320px) {
+    .btn-close-preview {
+        bottom: 5px !important;
+        width: calc(100% - 10px) !important;
+        padding: 0.7rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
     }
 }
 
-/* Efeito de carregamento para os itens */
-.suggestion-item.loading {
-    opacity: 0.6;
-    pointer-events: none;
-    position: relative;
-}
-
-.suggestion-item.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top-color: var(--color-accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-/* Indicador visual de seleção */
-.suggestion-item.selected {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(255, 255, 255, 0.08));
-    border-color: var(--color-accent);
-    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
-}
-
-.suggestion-item.selected i {
-    color: #fff;
-    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
-}
-
-/* Efeito de ondulação ao clicar */
-.suggestion-item {
-    position: relative;
-    overflow: hidden;
-}
-
-.suggestion-item .ripple {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(212, 175, 55, 0.3);
-    transform: scale(0);
-    animation: ripple-effect 0.6s linear;
-    pointer-events: none;
-}
-
-@keyframes ripple-effect {
-    to {
-        transform: scale(2);
-        opacity: 0;
-    }
-}
-
-/* Final Message Section - Matching view.css styling exactly */
-.final-message {
-  width: 100%;
-  max-width: 98%;
-  padding: clamp(1.5rem, 5vw, 2.8rem);
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(244, 196, 64, 0.15);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  margin: auto;
-  backdrop-filter: blur(4px);
-  opacity: 0.95;
-}
-
-.final-message::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(244, 196, 64, 0.4), transparent);
-  opacity: 0.8;
-}
-
-.final-message::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 30% 20%, rgba(244, 196, 64, 0.05) 0%, transparent 60%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-#previewCardMessage, #finalMessage {
-  font-family: var(--font-decorative, 'Crimson Pro', serif);
-  font-size: clamp(1.3rem, 4vw, 1.7rem);
-  color: var(--color-light);
-  margin: 0 0 1.5rem;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  text-align: center;
-  font-style: italic;
-  letter-spacing: 0.01em;
-  line-height: 1.6;
-}
-
-.message-decoration {
-  margin: 1rem 0 1.5rem;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(244, 196, 64, 0.1), transparent 70%);
-  border: 1px solid rgba(244, 196, 64, 0.15);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.message-decoration i {
-  color: rgba(244, 196, 64, 0.8);
-  font-size: clamp(1.5rem, 3vw, 1.8rem);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  transition: transform 0.4s ease, color 0.4s ease, filter 0.4s ease;
-}
-
-.message-decoration:hover {
-  background: radial-gradient(circle at center, rgba(244, 196, 64, 0.15), transparent 80%);
-  border-color: rgba(244, 196, 64, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.message-decoration:hover i {
-  transform: scale(1.2) rotate(5deg);
-  color: var(--color-accent);
-  filter: drop-shadow(0 3px 10px rgba(244, 196, 64, 0.6));
-}
-
-.final-message:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(244, 196, 64, 0.15);
-  border-color: rgba(244, 196, 64, 0.3);
-}
-
-/* Message ornament styling for the specific structure mentioned */
-.message-ornament {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin: 1rem 0;
-  width: 100%;
-}
-
-.ornament-line {
-  height: 1px;
-  flex: 1;
-  background: linear-gradient(to right, transparent, rgba(244, 196, 64, 0.4), transparent);
-  opacity: 0.7;
-}
-
-.message-ornament i {
-  color: rgba(244, 196, 64, 0.8);
-  font-size: 1.2rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-/* Active state animations */
-.final-message.active {
-  opacity: 1;
-  transform: translateZ(0);
-  transition: opacity 0.6s ease, transform 0.4s ease;
-}
-
-.final-message.active .message-decoration {
-  animation: pulseGlow 2s 0.3s ease-out forwards, shimmer 3s infinite;
-}
-
-/* Animation keyframes */
-@keyframes pulseGlow {
-  0% { 
-    box-shadow: 0 0 0 rgba(244, 196, 64, 0); 
-    transform: scale(0.95); 
-  }
-  50% { 
-    box-shadow: 0 0 20px rgba(244, 196, 64, 0.4); 
-    transform: scale(1.05); 
-  }
-  100% { 
-    box-shadow: 0 0 12px rgba(244, 196, 64, 0.3); 
-    transform: scale(1); 
-  }
-}
-
-@keyframes shimmer {
-  0% { 
-    opacity: 0.8; 
-    filter: brightness(0.95); 
-  }
-  50% { 
-    opacity: 1; 
-    filter: brightness(1.1); 
-  }
-  100% { 
-    opacity: 0.8; 
-    filter: brightness(0.95); 
-  }
-}
-
-/* Heartbeat animations */
-@keyframes heartbeat {
-  0%, 100% { 
-    transform: scale(1); 
-  }
-  20% { 
-    transform: scale(1.4) rotate(10deg); 
-    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.9)); 
-  }
-  40% { 
-    transform: scale(1) rotate(0deg); 
-    filter: drop-shadow(0 2px 10px rgba(244, 196, 64, 0.7)); 
-  }
-  60% { 
-    transform: scale(1.4) rotate(-10deg); 
-    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.9)); 
-  }
-  80% { 
-    transform: scale(1) rotate(0deg); 
-    filter: drop-shadow(0 2px 8px rgba(244, 196, 64, 0.5)); 
-  }
-}
-
-@keyframes heartbeat-intense {
-  0%, 100% { 
-    transform: scale(1); 
-  }
-  20% { 
-    transform: scale(1.6) rotate(15deg); 
-    filter: drop-shadow(0 4px 15px rgba(244, 196, 64, 1)); 
-  }
-  40% { 
-    transform: scale(1.1) rotate(-5deg); 
-    filter: drop-shadow(0 3px 12px rgba(244, 196, 64, 0.8)); 
-  }
-  60% { 
-    transform: scale(1.5) rotate(-15deg); 
-    filter: drop-shadow(0 4px 15px rgba(244, 196, 64, 1)); 
-  }
-  80% { 
-    transform: scale(1.1) rotate(5deg); 
-    filter: drop-shadow(0 3px 10px rgba(244, 196, 64, 0.6)); 
-  }
-}
-
-.message-decoration i.heartbeat {
-  animation: heartbeat 2s infinite;
-}
-
-.message-decoration i.heartbeat-intense {
-  animation: heartbeat-intense 1.2s 1;
-}
-
-/* Mobile-specific adjustments for final-message box */
+/* Ajustes responsivos para o padding-bottom do modal */
 @media (max-width: 768px) {
-  .final-message {
-    max-width: 99%;
-    margin: 0 0.5%;
-  }
-}
-
-@media (max-width: 480px) {
-  .final-message {
-    max-width: 99.5%;
-    margin: 0 0.25%;
-    padding: clamp(1rem, 4vw, 2rem);
-  }
-}
-
-/* Adicionar ao final do arquivo create.css */
-
-/* Prevenção de scroll mais agressiva para mobile */
-@media (max-width: 768px) {
-    body.modal-active {
-        position: fixed !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
-        -webkit-overflow-scrolling: auto !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        touch-action: none !important;
-    }
-
-    html.modal-active {
-        overflow: hidden !important;
-        height: 100% !important;
-        position: fixed !important;
-        width: 100% !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-    }
-
-    .preview-modal {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
-        overscroll-behavior: none !important;
-        -webkit-overflow-scrolling: auto !important;
-        -webkit-overscroll-behavior: none !important;
-        touch-action: none !important;
-    }
-
     .preview-modal-content {
-        height: 100vh !important;
-        overflow: hidden !important;
-        position: relative !important;
-        touch-action: none !important;
+        padding-bottom: 75px !important; /* Espaço para botão em tablets */
     }
+}
 
-    .preview-modal-body {
-        height: calc(100% - 80px) !important;
-        overflow: hidden !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        touch-action: none !important;
-        position: relative !important;
+@media (max-width: 480px) {
+    .preview-modal-content {
+        padding-bottom: 70px !important; /* Espaço para botão em mobile */
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
+}
 
-    .preview-modal .preview-sections {
-        height: 100% !important;
-        overflow: hidden !important;
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        touch-action: manipulation !important;
-        scroll-behavior: smooth !important;
+@media (max-width: 360px) {
+    .preview-modal-content {
+        padding-bottom: 65px !important; /* Espaço reduzido para telas pequenas */
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .preview-modal-content {
+        padding-bottom: 55px !important; /* Menos espaço em landscape */
+        padding-top: 1rem;
+    }
+}
+
+@media (max-height: 400px) {
+    .preview-modal-content {
+        padding-bottom: 45px !important; /* Espaço mínimo para telas muito baixas */
+        padding-top: 0.5rem;
     }
 }

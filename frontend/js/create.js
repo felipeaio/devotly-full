@@ -294,11 +294,25 @@ class DevotlyCreator {
                 previewSectionsContainer.scrollBy(0, 1);
                 previewSectionsContainer.scrollBy(0, -1);
             }
-        }, 500);
-
-        // Definir manualmente a seção ativa no carregamento da página
-        document.querySelector('.section-dot[data-section="titleSection"]')?.classList.add('active');
-        document.querySelector('.preview-section#titleSection')?.classList.add('active');
+        }, 500);        // Definir manualmente a seção ativa no carregamento da página
+        setTimeout(() => {
+            // Garantir que a primeira seção esteja ativa por padrão
+            const firstSection = document.querySelector('.preview-section#titleSection');
+            if (firstSection) {
+                // Remover active de todas as seções primeiro
+                document.querySelectorAll('.preview-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                // Ativar a primeira seção
+                firstSection.classList.add('active');
+            }
+            
+            // Ativar também o indicador correspondente
+            document.querySelectorAll('.section-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector('.section-dot[data-section="titleSection"]')?.classList.add('active');
+        }, 100);
 
         this.updateProgress(); // Calls the method within this class
 
@@ -2258,7 +2272,7 @@ class PreviewModal {
         this.previewContentContainer = document.querySelector('.preview-sections');
         this.originalParent = this.previewContentContainer?.parentNode; // Store original parent
 
-        // Mobile scroll prevention variables
+        // Variáveis de controle de scroll
         this.scrollPosition = 0;
         this.touchStartY = 0;
         this.isModalActive = false;
@@ -2282,121 +2296,7 @@ class PreviewModal {
                 this.closeModal();
             }
         });
-
-        // Mobile touch event handlers for scroll prevention
-        this.modal.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-        this.modal.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-        this.modal.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
-    }
-
-    // Handle touch start for mobile scroll prevention
-    handleTouchStart(e) {
-        if (!this.isModalActive) return;
-        this.touchStartY = e.touches[0].clientY;
-    }
-
-    // Handle touch move for mobile scroll prevention
-    handleTouchMove(e) {
-        if (!this.isModalActive) return;
-        
-        const touchY = e.touches[0].clientY;
-        const touchDiff = this.touchStartY - touchY;
-        
-        // Check if we're in the modal content area
-        const modalContent = this.modal.querySelector('.preview-modal-content');
-        const modalBody = this.modal.querySelector('.preview-modal-body');
-        
-        if (modalContent && modalBody) {
-            const isScrollable = modalBody.scrollHeight > modalBody.clientHeight;
-            
-            if (!isScrollable) {
-                // No scrollable content, prevent all movement
-                e.preventDefault();
-                return;
-            }
-            
-            // If scrollable, only allow scrolling within bounds
-            const atTop = modalBody.scrollTop === 0;
-            const atBottom = modalBody.scrollTop >= (modalBody.scrollHeight - modalBody.clientHeight);
-            
-            if ((atTop && touchDiff < 0) || (atBottom && touchDiff > 0)) {
-                e.preventDefault();
-            }
-        } else {
-            // Fallback: prevent all movement if modal structure not found
-            e.preventDefault();
-        }
-    }
-
-    // Handle wheel events for desktop scroll prevention
-    handleWheel(e) {
-        if (!this.isModalActive) return;
-        
-        const modalBody = this.modal.querySelector('.preview-modal-body');
-        if (modalBody) {
-            const isScrollable = modalBody.scrollHeight > modalBody.clientHeight;
-            
-            if (!isScrollable) {
-                e.preventDefault();
-                return;
-            }
-            
-            const atTop = modalBody.scrollTop === 0;
-            const atBottom = modalBody.scrollTop >= (modalBody.scrollHeight - modalBody.clientHeight);
-            
-            if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
-                e.preventDefault();
-            }
-        } else {
-            e.preventDefault();
-        }
-    }
-
-    // Enhanced body scroll prevention
-    preventBodyScroll() {
-        // Save current scroll position
-        this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // Apply modal-active classes
-        document.body.classList.add('modal-active');
-        document.documentElement.classList.add('modal-active');
-        
-        // Set body position to prevent scroll
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${this.scrollPosition}px`;
-        document.body.style.width = '100%';
-        document.body.style.overflow = 'hidden';
-        
-        // Additional mobile-specific fixes
-        document.body.style.touchAction = 'none';
-        document.body.style.overscrollBehavior = 'none';
-        document.body.style.webkitOverflowScrolling = 'auto';
-        
-        this.isModalActive = true;
-    }
-
-    // Restore body scroll
-    restoreBodyScroll() {
-        // Remove modal-active classes
-        document.body.classList.remove('modal-active');
-        document.documentElement.classList.remove('modal-active');
-        
-        // Reset body styles
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
-        document.body.style.overscrollBehavior = '';
-        document.body.style.webkitOverflowScrolling = '';
-        
-        // Restore scroll position
-        window.scrollTo(0, this.scrollPosition);
-        
-        this.isModalActive = false;
-    }
-
-    openModal() {
+    }    openModal() {
         if (window.devotlyCreator && typeof window.devotlyCreator.updatePreview === 'function') {
             window.devotlyCreator.updatePreview(); // Ensure preview is up-to-date
         }
@@ -2407,37 +2307,137 @@ class PreviewModal {
             // Garantir que não haja scroll vertical livre no modal
             this.previewContentContainer.style.overflow = 'hidden';
             this.previewContentContainer.style.height = '100%';
+            // Aplicar touch-action para prevenir gestos nativos
+            this.previewContentContainer.style.touchAction = 'none';
         }
 
-        // Enhanced scroll prevention
-        this.preventBodyScroll();
+        // Prevenir scroll do body de forma mais robusta
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.height = '100%';
+        document.documentElement.style.overflow = 'hidden';
+        
+        // Salvar posição atual do scroll
+        this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+        document.body.style.top = `-${this.scrollPosition}px`;
         
         this.modal.classList.add('active');
 
-        // Inicializar navegador vertical se ainda não existir
+        // Adicionar event listeners para prevenir scroll touch
+        this.addScrollPrevention();        // Inicializar navegador vertical se ainda não existir
         setTimeout(() => {
             if (!window.previewNavigator) {
                 window.previewNavigator = new VerticalPreviewNavigator();
             }
+            
+            // Garantir que a primeira seção esteja ativa
+            const sections = document.querySelectorAll('.preview-section');
+            if (sections.length > 0) {
+                // Remover active de todas as seções
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                // Ativar apenas a primeira seção
+                sections[0].classList.add('active');
+                
+                // Log para debug
+                console.log('Modal opened - First section activated:', sections[0].id);
+            }
         }, 100);
-    }
-
-    closeModal() {
+    }    closeModal() {
         this.modal.classList.remove('active');
         
-        // Enhanced scroll restoration
-        this.restoreBodyScroll();
+        // Restaurar scroll do body de forma completa
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.top = '';
+        document.documentElement.style.overflow = '';
+        
+        // Restaurar posição do scroll
+        if (this.scrollPosition) {
+            window.scrollTo(0, this.scrollPosition);
+        }
 
-        // Move preview content back to its original place if it was moved
+        // Remover event listeners de prevenção de scroll
+        this.removeScrollPrevention();        // Move preview content back to its original place if it was moved
         if (this.previewContentContainer && this.originalParent && !this.originalParent.contains(this.previewContentContainer)) {
             this.originalParent.appendChild(this.previewContentContainer);
             this.previewContentContainer.style.height = ''; // Reset height or to original
             this.previewContentContainer.style.overflow = ''; // Reset overflow
+            this.previewContentContainer.style.touchAction = ''; // Reset touch-action
             // this.previewContentContainer.style.display = 'block'; // Or original display style
         }
         // If the preview was inside .card-preview-container and that was hidden:
         // const oldPreviewContainer = document.querySelector('.card-preview-container');
         // if (oldPreviewContainer) oldPreviewContainer.style.display = 'none'; // Hide if it's the old sticky preview
+        
+        this.isModalActive = false;
+    }
+
+    // Método para adicionar prevenção de scroll nativo
+    addScrollPrevention() {
+        this.isModalActive = true;
+        
+        // Prevenir scroll em eventos de touch
+        this.preventTouchMove = (e) => {
+            if (this.isModalActive) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
+        // Prevenir scroll em eventos de wheel
+        this.preventWheel = (e) => {
+            if (this.isModalActive) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
+        // Prevenir scroll com teclas
+        this.preventKeyScroll = (e) => {
+            if (this.isModalActive) {
+                const keys = [32, 33, 34, 35, 36, 37, 38, 39, 40]; // space, page up/down, end, home, arrows
+                if (keys.includes(e.keyCode)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        };
+
+        // Adicionar event listeners
+        document.addEventListener('touchmove', this.preventTouchMove, { passive: false });
+        document.addEventListener('wheel', this.preventWheel, { passive: false });
+        document.addEventListener('keydown', this.preventKeyScroll, { passive: false });
+        
+        // Prevenir gestos iOS específicos
+        document.addEventListener('gesturestart', this.preventTouchMove, { passive: false });
+        document.addEventListener('gesturechange', this.preventTouchMove, { passive: false });
+        document.addEventListener('gestureend', this.preventTouchMove, { passive: false });
+    }
+
+    // Método para remover prevenção de scroll nativo
+    removeScrollPrevention() {
+        this.isModalActive = false;
+        
+        // Remover event listeners se existirem
+        if (this.preventTouchMove) {
+            document.removeEventListener('touchmove', this.preventTouchMove);
+            document.removeEventListener('gesturestart', this.preventTouchMove);
+            document.removeEventListener('gesturechange', this.preventTouchMove);
+            document.removeEventListener('gestureend', this.preventTouchMove);
+        }
+        
+        if (this.preventWheel) {
+            document.removeEventListener('wheel', this.preventWheel);
+        }
+        
+        if (this.preventKeyScroll) {
+            document.removeEventListener('keydown', this.preventKeyScroll);
+        }
     }
 }
 
