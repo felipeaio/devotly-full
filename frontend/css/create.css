@@ -3154,8 +3154,15 @@ html.modal-active {
 .btn-close-preview:hover {
     background: var(--color-accent) !important;
     color: var(--color-dark) !important;
-    transform: translateY(-1px) !important;
+    transform: translateX(-50%) translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-close-preview:active {
+    background: var(--color-accent) !important;
+    color: var(--color-dark) !important;
+    transform: translateX(-50%) translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Responsividade para os botões de preview */

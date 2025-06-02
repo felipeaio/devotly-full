@@ -142,9 +142,7 @@ class DevotlyCreator {
             console.error('Elementos críticos não encontrados');
             return;
         }
-    }
-
-    initializeState() {
+    }    initializeState() {
         this.state = {
             currentStep: 0,
             totalSteps: 8, // Assuming 8 steps based on previous logic
@@ -153,6 +151,8 @@ class DevotlyCreator {
                 cardTitle: '',
                 cardMessage: '',
                 finalMessage: '',
+                userName: '',
+                email: '',
                 bibleVerse: {
                     book: '',
                     chapter: '',
@@ -802,10 +802,7 @@ class DevotlyCreator {
                 previewSectionsContainer?.classList.remove('fullscreen-mode');
                 if (fullscreenBtn) fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
             }
-        });
-
-
-        const userPhoneInput = document.getElementById('userPhone');
+        });        const userPhoneInput = document.getElementById('userPhone');
         if (userPhoneInput) {
             const newUserPhoneInput = userPhoneInput.cloneNode(true);
             userPhoneInput.parentNode.replaceChild(newUserPhoneInput, userPhoneInput);
@@ -823,8 +820,37 @@ class DevotlyCreator {
                 this.state.formData.userPhone = value;
             });
         }
-
-        // Centralized input handlers
+        
+        // Add event listener for userEmail to update both email and userName fields
+        const userEmailInput = document.getElementById('userEmail');
+        if (userEmailInput) {
+            const newUserEmailInput = userEmailInput.cloneNode(true);
+            userEmailInput.parentNode.replaceChild(newUserEmailInput, userEmailInput);
+            newUserEmailInput.addEventListener('input', (e) => {
+                const email = e.target.value.trim();
+                this.state.formData.email = email;
+                
+                // Auto-fill userName with email username if userName is empty
+                const userNameInput = document.getElementById('userName');
+                if (userNameInput && !userNameInput.value.trim() && email) {
+                    // Extract username from email (part before @)
+                    if (email.includes('@')) {
+                        const username = email.split('@')[0];
+                        // Format username - replace dots/underscores with spaces, capitalize words
+                        const formattedName = username
+                            .replace(/[._-]/g, ' ')
+                            .replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                        
+                        userNameInput.value = formattedName;
+                        this.state.formData.userName = formattedName;
+                    }
+                }
+                
+                // Update the preview to reflect the changes
+                this.updatePreview();
+                this.saveToLocalStorage();
+            });
+        }        // Centralized input handlers
         const inputHandlers = {
             'cardName': (e) => { 
                 this.state.formData.cardName = e.target.value;
@@ -837,6 +863,12 @@ class DevotlyCreator {
                 const previewCardTitleElem = document.getElementById('previewCardTitle');
                 if (previewCardTitleElem) previewCardTitleElem.textContent = text || "Mensagem de Fé para Você";
                 this.state.formData.cardTitle = text;
+                this.saveToLocalStorage();
+            },
+            'userName': (e) => {
+                const text = e.target.value;
+                this.state.formData.userName = text;
+                this.updatePreview(); // Update the preview to show the author name
                 this.saveToLocalStorage();
             },
             'cardMessage': (e) => {
@@ -871,18 +903,21 @@ class DevotlyCreator {
             'bibleChapter': (e) => {
                 this.state.formData.bibleVerse.chapter = e.target.value;
                 this.saveToLocalStorage();
-            },
-            'bibleVerse': (e) => {
+            },            'bibleVerse': (e) => {
                 this.state.formData.bibleVerse.verse = e.target.value;
+                this.saveToLocalStorage();
+            },
+            'userEmail': (e) => {
+                this.state.formData.email = e.target.value;
                 this.saveToLocalStorage();
             }
         };
 
         Object.keys(inputHandlers).forEach(inputId => {
-            const element = document.getElementById(inputId);
-            if (element) {
-                // Avoid re-adding listener if already handled by a more specific setup (e.g., cardName, cardFinalMessage)
-                if (inputId === 'cardName' || inputId === 'cardFinalMessage') return;
+            const element = document.getElementById(inputId);            if (element) {
+                // Avoid re-adding listener if already handled by a more specific setup
+                if (inputId === 'cardName' || inputId === 'cardFinalMessage' || 
+                    inputId === 'userEmail' || inputId === 'userName') return;
 
                 const newElement = element.cloneNode(true);
                 element.parentNode.replaceChild(newElement, element);
@@ -1671,13 +1706,38 @@ async selectPlan(plan) {
                         <span>Nenhuma mídia selecionada</span>
                     </div>`;
             }
-        }
-
-        // Update Final Message Section
+        }        // Update Final Message Section
         const finalMessagePreviewElem = document.querySelector('#finalSection .final-message'); // Target the p inside if structure is .final-message > p
         if (finalMessagePreviewElem) {
             const pElem = finalMessagePreviewElem.querySelector('p') || finalMessagePreviewElem;
             pElem.innerHTML = this.sanitizeHTML(this.state.formData.finalMessage || "Que esta mensagem toque seu coração");
+            
+            // Update card author
+            const authorElem = document.getElementById('previewCardAuthor');
+            if (authorElem) {
+                const userName = this.state.formData.userName || this.state.formData.email;
+                if (userName) {
+                    // Format the user name to show "De: Nome"
+                    let formattedName = "De: ";
+                    // Extract name before @ if it's an email
+                    if (userName.includes('@')) {
+                        formattedName += userName.split('@')[0];
+                    } else {
+                        formattedName += userName;
+                    }
+                    authorElem.textContent = formattedName;
+                    authorElem.style.display = 'block';
+                } else {
+                    authorElem.textContent = "De: Seu Nome";
+                    authorElem.style.display = 'block';
+                }
+            }
+            
+            // Add heartbeat effect to the cross icon
+            const decorationIcon = finalMessagePreviewElem.querySelector('.message-decoration i');
+            if (decorationIcon) {
+                decorationIcon.className = "fas fa-cross heartbeat";
+            }
         }
 
         // Update URL in Final Section (if it exists there)
