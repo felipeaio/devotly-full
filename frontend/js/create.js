@@ -129,7 +129,7 @@ class DevotlyCreator {
             viewCardBtn: document.getElementById('viewCardBtn'),
             copyCardLinkBtn: document.getElementById('copyCardLinkBtn'),
             previewImages: document.getElementById('previewImages'), // Refers to the old preview structure, might be unused
-            previewMedia: document.getElementById('previewMedia'), // Refers to the old preview structure, might be unused
+            cardMedia: document.getElementById('cardMedia'), // Updated to match view.html structure
             imageUpload: document.getElementById('imageUpload'),
             previewTheme: document.getElementById('previewTheme'), // Used by applyBackgroundEffect
             finalMessageInput: document.getElementById('cardFinalMessage'),
@@ -1418,15 +1418,14 @@ async fetchBibleVerse() {
                 versePreviewElement.style.display = 'block';
             }
             
-            // 2. Atualizar no preview principal
-            const previewVerseTextElem = document.querySelector('#verseSection #previewVerseText');
-            if (previewVerseTextElem) {
-                previewVerseTextElem.textContent = `"${response.text}"`;
+            // 2. Atualizar no preview principal            const verseTextElem = document.querySelector('#verseSection #verseText');
+            if (verseTextElem) {
+                verseTextElem.textContent = `"${response.text}"`;
             }
             
-            const previewVerseRefElem = document.querySelector('#verseSection #previewVerseRef');
-            if (previewVerseRefElem) {
-                previewVerseRefElem.textContent = this.state.formData.bibleVerse.reference;
+            const verseRefElem = document.querySelector('#verseSection #verseRef');
+            if (verseRefElem) {
+                verseRefElem.textContent = this.state.formData.bibleVerse.reference;
             }
             
             // 3. Destacar o preview do versículo para chamar atenção
@@ -1613,10 +1612,10 @@ async selectPlan(plan) {
         }
     }
 
-    toggleMedia() { // This was for the old previewMedia, might be unused or need adapting
-        const previewMediaContainer = this.elements.previewMedia; // Old preview element
-        if (!previewMediaContainer) return;
-        const iframe = previewMediaContainer.querySelector('iframe');
+    toggleMedia() {
+        const cardMediaContainer = this.elements.cardMedia; // Updated to match view.html structure
+        if (!cardMediaContainer) return;
+        const iframe = cardMediaContainer.querySelector('iframe');
         if (!iframe) return;
 
         // this.state.isMediaPlaying was removed. Logic needs to be independent or use a different state.
@@ -1674,25 +1673,21 @@ async selectPlan(plan) {
         if (previewMessageContainer) {
             let formattedMessage = this.state.formData.cardMessage || "Sua mensagem aparecerá aqui...";
             previewMessageContainer.innerHTML = this.sanitizeHTML(formattedMessage);
-        }
-
-        // Update Verse Section
-        const previewVerseTextElem = document.querySelector('#verseSection #previewVerseText');
-        if (previewVerseTextElem) {
-            previewVerseTextElem.textContent = this.state.formData.bibleVerse.text ?
+        }        // Update Verse Section
+        const verseTextElem = document.querySelector('#verseSection #verseText');
+        if (verseTextElem) {
+            verseTextElem.textContent = this.state.formData.bibleVerse.text ?
                 `"${this.state.formData.bibleVerse.text}"` :
                 '"Porque Deus amou o mundo de tal maneira..."';
         }
-        const previewVerseRefElem = document.querySelector('#verseSection #previewVerseRef');
-        if (previewVerseRefElem) {
-            previewVerseRefElem.textContent = this.state.formData.bibleVerse.reference || 'João 3:16';
+        const verseRefElem = document.querySelector('#verseSection #verseRef');
+        if (verseRefElem) {
+            verseRefElem.textContent = this.state.formData.bibleVerse.reference || 'João 3:16';
         }
 
         // Update Gallery Section
-        this.updateGalleryPreview(); // Dedicated method for gallery
-
-        // Update Media Section (for the new .preview-section #mediaSection)
-        const mediaSectionContainer = document.querySelector('#mediaSection .media-container');
+        this.updateGalleryPreview(); // Dedicated method for gallery        // Update Media Section (for the new .preview-section #mediaSection)
+        const mediaSectionContainer = document.querySelector('#mediaSection #cardMedia');
         if (mediaSectionContainer) {
             const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
             if (embedUrl) {

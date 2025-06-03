@@ -1,11 +1,11 @@
 /* Estilos específicos para telas maiores/desktops - Botão normal e centralizado */
-@media (min-width: 1025px) {
+@media (min-width: 1024px) and (max-width: 1200px) {
     .btn-preview {
-        /* Desktop: Botão normal sem fixação */
+        /* Mid-range desktop: Botão normal centralizado */
         position: relative !important;
         display: block !important;
         width: auto !important;
-        margin: 2rem auto !important; /* Centralizar horizontalmente */
+        margin: 2rem auto !important;
         padding: 1.2rem 2.5rem !important;
         font-size: 1.1rem !important;
         border-radius: 8px !important;
@@ -16,14 +16,100 @@
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
         text-align: center !important;
-        max-width: 300px !important; /* Largura máxima para não ficar muito largo */
+        max-width: 300px !important;
     }
     
-    /* Centralizar o container do botão */
+    /* Centralização específica para formulário */
+    .form-container {
+        width: 100% !important;
+        max-width: 700px !important;
+        margin: 0 auto !important;
+        padding: 0 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    /* Melhor centralização para os elementos do formulário */
+    .creation-form {
+        width: 100% !important;
+        max-width: 680px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Ajustar etapas individuais */
+    .form-step {
+        width: 100% !important;
+        max-width: 680px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Ajustes para cabeçalhos de etapas */
+    .step-header {
+        max-width: 650px !important;
+        margin: 0 auto !important;
+        text-align: center !important;
+    }
+    
+    /* Ajustes para conteúdo das etapas */
+    .step-content {
+        max-width: 650px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Ajustar tamanho dos inputs para manter proporção */
+    .input-group {
+        width: 100% !important;
+        max-width: 650px !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Centralizar os botões de ação do formulário */
+    .step-actions {
+        width: 100% !important;
+        max-width: 650px !important;
+        display: flex !important;
+        justify-content: center !important;
+        margin: 1.5rem auto !important;
+    }
+}
+
+@media (min-width: 1201px) {
+    .btn-preview {
+        /* Large desktop: Botão normal sem fixação */
+        position: relative !important;
+        display: block !important;
+        width: auto !important;
+        margin: 2rem auto !important;
+        padding: 1.2rem 2.5rem !important;
+        font-size: 1.1rem !important;
+        border-radius: 8px !important;
+        border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            0 2px 6px rgba(212, 175, 55, 0.3) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        text-align: center !important;
+        max-width: 300px !important;
+    }
+}
+
+/* Common styles for all desktop sizes (1025px+) */
+@media (min-width: 1025px) {
+    /* Centralizar o container do botão para todas as telas grandes */
     .form-container {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
+    }
+    
+    /* Centralizar os botões de ação */
+    .step-actions {
+        display: flex !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        max-width: 650px !important;
     }
     
     .btn-preview:hover {
@@ -43,7 +129,7 @@
     
     .btn-close-preview {
         /* Manter posicionamento fixo mas ajustar para desktop */
-        max-width: 500px !important; /* Máximo maior para desktop */
+        max-width: 500px !important;
         padding: 1rem 2rem !important;
         font-size: 1.1rem !important;
         bottom: 25px !important; /* Mais espaço da borda em desktop */

@@ -59,13 +59,9 @@
                         <div class="step-content">
                             <div class="input-group">
                                 <label for="cardName">Nome do Cartão <span class="required-mark">*</span></label>
-                                <input type="text" 
-                                       id="cardName" 
-                                       name="cardName" 
-                                       placeholder="ex: mensagem de fé" 
-                                       maxlength="20"
-                                       required 
-                                       title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
+                                <input type="text" id="cardName" name="cardName" placeholder="ex: mensagem de fé"
+                                    maxlength="20" required
+                                    title="Letras, números, espaços e hífens são permitidos. Espaços serão convertidos em hífens automaticamente.">
                                 <div class="input-hint">
                                     <i class="fas fa-link"></i>
                                     <span>Seu cartão estará em: <strong>devotly.com/<span
@@ -254,12 +250,8 @@
                         <div class="step-content">
                             <div class="media-section">
                                 <h3><i class="fas fa-images"></i> Imagens</h3>
-                                <input type="file" 
-                                       id="imageUpload" 
-                                       accept="image/jpeg,image/png,image/webp" 
-                                       multiple 
-                                       style="display: none;"
-                                       data-handled="false">
+                                <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp" multiple
+                                    style="display: none;" data-handled="false">
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <span>Arraste imagens aqui ou clique para selecionar</span>
@@ -293,8 +285,7 @@
                                     <label for="musicLink">Link do YouTube ou Spotify <span
                                             class="required-mark">*</span></label>
                                     <input type="url" id="musicLink" name="musicLink" value=""
-                                        placeholder="Cole aqui o link do YouTube ou Spotify"
-                                        required>
+                                        placeholder="Cole aqui o link do YouTube ou Spotify" required>
                                     <div class="input-hint">
                                         <i class="fas fa-info-circle"></i>
                                         <span>Adicione um link direto para uma música ou vídeo inspirador</span>
@@ -462,8 +453,8 @@
                                     <div class="verse-container">
                                         <div class="verse-content">
                                             <i class="fas fa-quote-left quote-icon"></i>
-                                            <p id="previewVerseText">Porque Deus amou o mundo de tal maneira...</p>
-                                            <span id="previewVerseRef">João 3:16</span>
+                                            <p id="verseText">Porque Deus amou o mundo de tal maneira...</p>
+                                            <span id="verseRef">João 3:16</span>
                                         </div>
                                         <div class="verse-decoration bottom">
                                             <span class="decoration-line"></span>
@@ -489,24 +480,20 @@
                                                 <i class="fas fa-chevron-right"></i>
                                             </button>
                                         </div>
-                                        <!-- Indicadores e contador aqui, se necessário -->
-                                    </div>
-                                </div>
-                            </section>
+                                        <!-- Indicadores e contador aqui, se necessário -->                              </div>
+                                  </div>
+                              </section>
 
-                            <!-- Seção 5: Mídia -->
-                            <section class="preview-section" id="mediaSection">
-                                <div class="section-content">
-                                    <div class="media-container" id="previewMedia">
-                                        <div class="no-media">
-                                            <i class="fas fa-music"></i>
-                                            <span>Nenhuma mídia selecionada</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <!-- Seção 6: Mensagem Final - Versão igual à página view -->
+            <!-- Seção 5: Mídia -->
+            <section class="preview-section" id="mediaSection">
+              <div class="section-content">
+                <div class="media-container" id="cardMedia">
+                  <!-- Mídia será inserida via JavaScript -->
+                </div>
+              </div>
+            </section> 
+            
+            <!-- Seção 6: Mensagem Final - Versão igual à página view -->
                             <section class="preview-section" id="finalSection">
                                 <div class="section-content final-section-content">
                                     <!-- Mensagem Final -->
@@ -575,7 +562,7 @@
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
-   
+
     <script>
         // Solução robusta para o problema do 'undefined'
         document.addEventListener('DOMContentLoaded', function () {
@@ -633,7 +620,7 @@
             <div class="plan-loading-subtext">Aguarde um momento...</div>
         </div>
     </div>
-    
+
 
 </body>
 

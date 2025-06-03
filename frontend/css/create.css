@@ -1556,7 +1556,7 @@ html.modal-active {
     transform: rotate(-10deg);
 }
 
-#previewVerseText {
+#verseText {
     font-family: 'Crimson Pro', serif;
     font-size: clamp(1.6rem, 4vw, 2rem);
     line-height: 1.8;
@@ -1569,7 +1569,7 @@ html.modal-active {
     z-index: 1;
 }
 
-#previewVerseRef {
+#verseRef {
     display: inline-block;
     color: #f4c440;
     font-size: clamp(1rem, 3vw, 1.2rem);
@@ -1583,7 +1583,7 @@ html.modal-active {
     position: relative;
 }
 
-#previewVerseRef::after {
+#verseRef::after {
     content: '';
     position: absolute;
     bottom: -0.5rem;
@@ -1676,7 +1676,7 @@ html.modal-active {
     }
     
     .suggestion-item {
-        padding: clamp(0.7rem, 3vw, 1rem) clamp(0.8rem, 3vw, 1.2rem);
+        padding: clamp(0.7rem, 3vw, 1rem);
         font-size: clamp(0.95rem, 2.8vw, 1.05rem);
         border-radius: clamp(8px, 2vw, 12px);
         gap: clamp(0.4rem, 2vw, 0.6rem);
@@ -1896,7 +1896,7 @@ html.modal-active {
         top: -1.2rem;
     }
     
-    #previewVerseText {
+    #verseText {
         font-size: 1.4rem;
         line-height: 1.6;
         margin-bottom: 1rem;
@@ -2177,7 +2177,7 @@ html.modal-active {
 
 /* Estilos para o título do cartão de preview */
 .title-container {
-    width: 100%;
+       width: 100%;
     max-width: 90%;
     display: flex;
     justify-content: center;
@@ -3433,7 +3433,7 @@ html.modal-active {
     }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
+@media (max-height: 500px) {
     .preview-modal-content {
         padding-bottom: 55px !important; /* Menos espaço em landscape */
         padding-top: 1rem;
@@ -3444,5 +3444,178 @@ html.modal-active {
     .preview-modal-content {
         padding-bottom: 45px !important; /* Espaço mínimo para telas muito baixas */
         padding-top: 0.5rem;
+    }
+}
+
+/* Layout adjustments for 1024px-1200px resolution range */
+@media (min-width: 1024px) and (max-width: 1200px) {
+    /* Enhanced container structure */
+    .container {
+        max-width: 95%;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+    
+    /* Centralização específica para o form-container */
+    .form-container {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    /* Ajustes específicos para o layout principal */
+    .creation-layout {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1rem;
+    }
+    
+    /* Better header spacing */
+    .main-header .header-content {
+        max-width: 95%;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+    }
+    
+    /* Improved button preview positioning */
+    .btn-preview {
+        max-width: 300px;
+        margin: 2rem auto;
+        padding: 1.2rem 2.5rem;
+        font-size: 1.1rem;
+        display: block;
+        position: relative;
+    }
+    
+    /* Enhanced form field layouts */
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+        max-width: 100%;
+        font-size: 1rem;
+        padding: 1rem 1.25rem;
+    }
+    
+    /* Better spacing for character counters */
+    .char-counter {
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+    
+    /* Image upload area improvements */
+    .upload-area {
+        transition: all 0.3s ease;
+        border: 2px dashed rgba(244, 196, 64, 0.3);
+    }
+    
+    .upload-area:hover {
+        border-color: rgba(244, 196, 64, 0.6);
+        background: rgba(244, 196, 64, 0.05);
+    }
+    
+    /* Enhanced preview sections if they exist */
+    .card-preview-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    /* Better spacing for suggestion items */
+    .suggestion-item {
+        padding: 1.5rem;
+        margin: 0.75rem 0;
+    }
+    
+    /* Improved verse preview layout */
+    .verse-container {
+        max-width: 550px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    /* Better modal sizing */
+    .modal-overlay .modal-content {
+        max-width: 600px;
+        margin: 5vh auto;
+        padding: 2.5rem;
+    }
+    
+    /* Enhanced progress bar container */
+    .progress-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    /* Better alignment for form elements */
+    .form-step.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: auto;
+        padding: 1rem 0;
+    }
+    
+    /* Centered text elements */
+    .step-header,
+    .input-hint,
+    .verse-suggestions h4 {
+        text-align: center;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Better spacing for media queries in this range */
+    .media-section h3,
+    .bible-selector h3 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Ensure proper gap between sections */
+    .form-step > * + * {
+        margin-top: 1.5rem;
+    }
+    
+    /* Enhanced visual hierarchy */
+    .plan-cards .plan-card.featured {
+        transform: scale(1.05);
+        box-shadow: 0 12px 40px rgba(244, 196, 64, 0.2);
+    }
+    
+    /* Better image preview layout */
+    .image-preview {
+        max-width: 200px;
+        margin: 0.5rem;
+    }
+    
+    /* Improved carousel controls sizing */
+    .carousel-prev,
+    .carousel-next {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    /* Better typography for this resolution */
+    body {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    /* Enhanced focus states */
+    .input-group input:focus,
+    .input-group textarea:focus,
+    .input-group select:focus {
+        box-shadow: 0 0 0 3px rgba(244, 196, 64, 0.3);
+        border-color: var(--color-accent);
     }
 }
