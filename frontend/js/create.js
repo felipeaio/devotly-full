@@ -859,9 +859,8 @@ class DevotlyCreator {
             'cardTitle': (e) => {
                 const text = e.target.value;
                 const titleCounterElem = document.getElementById('titleCounter');
-                if (titleCounterElem) titleCounterElem.textContent = text.length;
-                const previewCardTitleElem = document.getElementById('previewCardTitle');
-                if (previewCardTitleElem) previewCardTitleElem.textContent = text || "Mensagem de Fé para Você";
+                if (titleCounterElem) titleCounterElem.textContent = text.length;                const cardTitleElem = document.getElementById('cardTitle');
+                if (cardTitleElem) cardTitleElem.textContent = text || "Mensagem de Fé para Você";
                 this.state.formData.cardTitle = text;
                 this.saveToLocalStorage();
             },
@@ -874,9 +873,8 @@ class DevotlyCreator {
             'cardMessage': (e) => {
                 const text = e.target.value;
                 const messageCounterElem = document.getElementById('messageCounter');
-                if (messageCounterElem) messageCounterElem.textContent = text.length;
-                const previewCardMessageElem = document.getElementById('previewCardMessage');
-                if (previewCardMessageElem) previewCardMessageElem.textContent = text || "Sua mensagem aparecerá aqui...";
+                if (messageCounterElem) messageCounterElem.textContent = text.length;                const cardMessageElem = document.getElementById('cardMessage');
+                if (cardMessageElem) cardMessageElem.textContent = text || "Sua mensagem aparecerá aqui...";
                 this.state.formData.cardMessage = text;
                 this.saveToLocalStorage();
             },
