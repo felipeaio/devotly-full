@@ -4,9 +4,7 @@
  */
 
 // API Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'
-    : 'https://devotly-full-production.up.railway.app';
+import { API_BASE_URL, API_CONFIG } from './core/api-config.js';
 
 class DevotlyViewer {    constructor() {
         // Estado inicial
@@ -134,7 +132,7 @@ class DevotlyViewer {    constructor() {
         this.showState('loadingState');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/cards/${this.state.cardId}`);
+            const response = await fetch(API_CONFIG.cards.get(this.state.cardId));
 
             if (!response.ok) {
                 if (response.status === 404) {

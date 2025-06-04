@@ -1684,15 +1684,19 @@ async selectPlan(plan) {
         const cardCreationResponse = await this.submitFormData();
         if (!cardCreationResponse.success) {
             throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
-        }
-
-        const checkoutData = {
+        }        const checkoutData = {
             plano: planoPtBr,
             email: document.getElementById('userEmail')?.value,
             cardId: cardCreationResponse.data.id
         };
 
-        const checkoutResponse = await fetch('http://localhost:3000/api/checkout/create-preference', {
+        // Ensure API config is loaded
+        if (!this.apiConfig) {
+            const { API_CONFIG } = await import('./core/api-config.js');
+            this.apiConfig = API_CONFIG;
+        }
+
+        const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(checkoutData)
