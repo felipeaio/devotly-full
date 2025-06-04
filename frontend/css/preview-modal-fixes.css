@@ -1,0 +1,128 @@
+/* 
+ * Correções para centralização de seções no preview modal em dispositivos móveis nativos
+ * Este arquivo contém ajustes específicos para garantir que o conteúdo das seções
+ * esteja adequadamente centralizado verticalmente em dispositivos móveis.
+ */
+
+/* Contêiner principal do modal */
+.preview-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+    touch-action: none !important;
+}
+
+.preview-modal.active {
+    display: flex !important;
+    align-items: center !important; /* Centralização vertical */
+    justify-content: center !important; /* Centralização horizontal */
+    opacity: 1 !important;
+}
+
+.preview-modal-content {
+    height: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+}
+
+.preview-modal-body {
+    height: calc(100% - 70px) !important; /* Ajuste para considerar o botão */
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important; /* Centralização vertical */
+    justify-content: center !important; /* Centralização horizontal */
+    overflow: hidden !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+}
+
+/* Seções de preview */
+.preview-modal .preview-sections {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important; /* Centralização vertical */
+    justify-content: center !important; /* Centralização horizontal */
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    -webkit-overscroll-behavior: none !important;
+}
+
+/* Cada seção individual */
+.preview-modal .preview-section {
+    position: absolute !important;
+    width: 100% !important;
+    height: auto !important;
+    top: 47% !important; /* Pequeno ajuste visual para parecer mais centralizado */
+    left: 0 !important;
+    transform: translateY(-50%) !important; /* Centraliza exatamente */
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+/* Conteúdo dentro das seções */
+.preview-modal .section-content {
+    width: 90% !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    padding: 1.5rem 0 !important;
+}
+
+/* Garantir que o botão de voltar não interfira */
+.btn-close-preview {
+    position: fixed !important;
+    bottom: 15px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 400px !important;
+    z-index: 1002 !important;
+    margin: 0 !important;
+    padding: 0.8rem 1rem !important;
+}
+
+/* Correção para provedores de altura real do viewport (iOS) */
+@supports (-webkit-touch-callout: none) {
+    /* iOS-specific code */
+    .preview-modal .preview-section {
+        top: 45% !important; /* Centralização ótima para iOS */
+    }
+}
+
+/* Ajustes para proporções de tela específicas */
+@media (max-width: 768px) and (min-aspect-ratio: 2/3) {
+    /* Para dispositivos com tela mais alta que larga (proporção comum) */
+    .preview-modal .preview-section {
+        top: 48% !important; /* Ajuste fino para a maioria dos dispositivos */
+    }
+}
+
+@media (max-width: 768px) and (max-aspect-ratio: 2/3) {
+    /* Para dispositivos com telas mais largas (proporcionalmente) */
+    .preview-modal .preview-section {
+        top: 46% !important;
+    }
+}
+
+/* Para dispositivos muito pequenos, ajustar ainda mais */
+@media (max-width: 360px) {
+    .preview-modal .section-content {
+        padding: 1rem 0 !important;
+    }
+    
+    .btn-close-preview {
+        bottom: 10px !important;
+        padding: 0.7rem !important;
+    }
+}

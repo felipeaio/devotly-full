@@ -1161,343 +1161,12 @@ html.modal-active {
     font-size: clamp(1.2rem, 3vw, 1.4rem);
 }
 
-/* Sugestões de Versículos - Layout Aprimorado e Ultra Responsivo */
-.verse-suggestions {
-    margin-top: clamp(1.5rem, 4vw, 2.5rem);
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    background: linear-gradient(135deg, 
-        rgba(0, 0, 0, 0.25), 
-        rgba(18, 18, 20, 0.15), 
-        rgba(24, 24, 28, 0.1)
-    );
-    border-radius: clamp(12px, 3vw, 20px);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        0 2px 8px rgba(212, 175, 55, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
+/* Sugestões de Versículos - Design super simplificado */
+/* Todos os estilos estão agora importados de verse-suggestions-simple.css */
 
-.verse-suggestions:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.4),
-        0 4px 16px rgba(212, 175, 55, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    border-color: rgba(212, 175, 55, 0.3);
-}
+/* Estilos para itens e ícones movidos para verse-suggestions-simple.css */
 
-.verse-suggestions::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
-        radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 60%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.verse-suggestions:hover::before {
-    opacity: 1;
-}
-
-.verse-suggestions h4 {
-    color: var(--color-accent);
-    font-size: clamp(1.2rem, 4vw, 1.6rem);
-    font-weight: 700;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin: 0 0 clamp(1rem, 3vw, 1.8rem) 0;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(0.8rem, 2.5vw, 1.2rem);
-    position: relative;
-    z-index: 1;
-    letter-spacing: 0.4px;
-    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
-    background: linear-gradient(135deg, var(--color-accent), #f4e7c0);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.verse-suggestions h4::before,
-.verse-suggestions h4::after {
-    content: '';
-    width: clamp(30px, 8vw, 60px);
-    height: clamp(1.5px, 0.3vw, 3px);
-    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
-    opacity: 0.9;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(212, 175, 55, 0.3);
-    transition: all 0.3s ease;
-}
-
-.verse-suggestions:hover h4::before,
-.verse-suggestions:hover h4::after {
-    width: clamp(40px, 10vw, 80px);
-    opacity: 1;
-    box-shadow: 0 2px 6px rgba(212, 175, 55, 0.5);
-}
-
-.verse-suggestions h4::before {
-    background: linear-gradient(90deg, transparent, var(--color-accent));
-    animation: lineExpand 2s ease-in-out infinite alternate;
-}
-
-.verse-suggestions h4::after {
-    background: linear-gradient(90deg, var(--color-accent), transparent);
-    animation: lineExpand 2s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes lineExpand {
-    0% { 
-        transform: scaleX(0.8);
-        opacity: 0.7;
-    }
-    100% { 
-        transform: scaleX(1.1);
-        opacity: 1;
-    }
-}
-
-.suggestion-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-    gap: clamp(0.8rem, 2vw, 1.2rem);
-    position: relative;
-    z-index: 1;
-    width: 100%;
-}
-
-/* Responsividade específica para diferentes tamanhos */
-@media (min-width: 768px) {
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 767px) {
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-        gap: clamp(0.5rem, 2vw, 0.8rem);
-    }
-}
-
-@media (max-width: 480px) {
-    .suggestion-list {
-        grid-template-columns: 1fr;
-        gap: clamp(0.6rem, 2vw, 0.8rem);
-    }
-}
-
-.suggestion-item {
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.12), 
-        rgba(255, 255, 255, 0.04),
-        rgba(212, 175, 55, 0.08)
-    );
-    border: 1.5px solid rgba(212, 175, 55, 0.3);
-    border-radius: clamp(8px, 2vw, 14px);
-    padding: clamp(0.8rem, 3vw, 1.4rem) clamp(1rem, 3.5vw, 1.6rem);
-    color: var(--color-light);
-    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    font-weight: 600;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: clamp(0.5rem, 2vw, 0.9rem);
-    text-align: left;
-    backdrop-filter: blur(8px);
-    box-shadow: 
-        0 3px 12px rgba(0, 0, 0, 0.15),
-        0 1px 4px rgba(212, 175, 55, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    line-height: 1.4;
-    min-height: clamp(44px, 12vw, 56px);
-    text-decoration: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.suggestion-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(212, 175, 55, 0.2), 
-        rgba(255, 255, 255, 0.08),
-        rgba(212, 175, 55, 0.2),
-        transparent
-    );
-    transition: left 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 0;
-}
-
-.suggestion-item::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        var(--color-accent), 
-        rgba(244, 231, 192, 0.8),
-        var(--color-accent),
-        transparent
-    );
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    border-radius: 0 0 4px 4px;
-}
-
-.suggestion-item:hover::before {
-    left: 100%;
-}
-
-.suggestion-item:hover::after {
-    opacity: 1;
-}
-
-.suggestion-item:hover {
-    background: linear-gradient(135deg, 
-        rgba(212, 175, 55, 0.18), 
-        rgba(255, 255, 255, 0.08),
-        rgba(212, 175, 55, 0.12)
-    );
-    border-color: rgba(212, 175, 55, 0.5);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 
-        0 8px 25px rgba(212, 175, 55, 0.25), 
-        0 4px 12px rgba(0, 0, 0, 0.2),
-        0 2px 8px rgba(212, 175, 55, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.suggestion-item:active {
-    transform: translateY(-1px) scale(1.01);
-    transition: transform 0.1s ease;
-    box-shadow: 
-        0 4px 15px rgba(212, 175, 55, 0.3), 
-        0 2px 6px rgba(0, 0, 0, 0.25);
-}
-
-.suggestion-item:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 
-        0 0 0 3px rgba(212, 175, 55, 0.3),
-        0 6px 20px rgba(212, 175, 55, 0.2),
-        0 3px 8px rgba(0, 0, 0, 0.15);
-}
-
-.suggestion-item i {
-    color: var(--color-accent);
-    font-size: clamp(1.1rem, 3vw, 1.4rem);
-    z-index: 1;
-    position: relative;
-    min-width: clamp(16px, 4vw, 20px);
-    flex-shrink: 0;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.verse-item {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    letter-spacing: 0.3px;
-    line-height: 1.4;
-    word-break: break-word;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 1;
-    position: relative;
-}
-
-.verse-item:hover i {
-    animation: bookGlow 0.8s ease-in-out;
-    transform: scale(1.15);
-}
-
-@keyframes bookGlow {
-    0%, 100% { 
-        color: var(--color-accent); 
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        transform: scale(1);
-    }
-    25% { 
-        color: #f4e7c0; 
-        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
-        transform: scale(1.1);
-    }
-    50% { 
-        color: #fff; 
-        filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.8));
-        transform: scale(1.15);
-    }
-    75% { 
-        color: #f4e7c0; 
-        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
-        transform: scale(1.1);
-    }
-}
-
-.verse-item {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    letter-spacing: 0.2px;
-    line-height: 1.4;
-}
-
-.verse-item:hover i {
-    animation: bookGlow 0.8s ease-in-out;
-    transform: scale(1.1);
-}
-
-@keyframes bookGlow {
-    0%, 100% { 
-        color: var(--color-accent); 
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    }
-    25% { 
-        color: #f4e7c0; 
-        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
-        transform: scale(1.15);
-    }
-    50% { 
-        color: #fff; 
-        filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.8));
-        transform: scale(1.2);
-    }
-    75% { 
-        color: #f4e7c0; 
-        filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
-        transform: scale(1.15);
-    }
-}
+/* Removidas animações complexas */
 
 .verse-preview {
     /* Este é o preview do versículo dentro do formulário */
@@ -1637,243 +1306,20 @@ html.modal-active {
     }
 }
     
-/* Responsividade Aprimorada - Versículos Sugeridos */
-@media (max-width: 1024px) {
-    .verse-suggestions {
-        padding: clamp(1.5rem, 3.5vw, 2rem);
-        margin-top: clamp(1.5rem, 3vw, 2rem);
-    }
-    
-    .verse-suggestions h4 {
-        font-size: clamp(1.3rem, 3.5vw, 1.5rem);
-        margin-bottom: clamp(1.2rem, 3vw, 1.5rem);
-    }
-}
+/* Responsividade para versículos movida para verse-suggestions-simple.css */
 
-@media (max-width: 768px) {
-    .verse-suggestions {
-        padding: clamp(1.2rem, 4vw, 1.8rem);
-        margin-top: clamp(1.2rem, 3vw, 1.8rem);
-        border-radius: clamp(12px, 2.5vw, 16px);
-        box-shadow: 
-            0 6px 24px rgba(0, 0, 0, 0.25),
-            0 2px 8px rgba(212, 175, 55, 0.1);
-    }
-    
-    .verse-suggestions h4 {
-        font-size: clamp(1.2rem, 4vw, 1.4rem);
-        margin-bottom: clamp(1rem, 3vw, 1.3rem);
-        gap: clamp(0.6rem, 2vw, 0.8rem);
-    }
-    
-    .verse-suggestions h4::before,
-    .verse-suggestions h4::after {
-        width: clamp(30px, 6vw, 45px);
-    }
-    
-    .suggestion-list {
-        gap: clamp(0.6rem, 2vw, 0.9rem);
-    }
-    
-    .suggestion-item {
-        padding: clamp(0.7rem, 3vw, 1rem);
-        font-size: clamp(0.95rem, 2.8vw, 1.05rem);
-        border-radius: clamp(8px, 2vw, 12px);
-        gap: clamp(0.4rem, 2vw, 0.6rem);
-        min-height: clamp(48px, 10vw, 54px);
-    }
-    
-    .suggestion-item i {
-        font-size: clamp(1.1rem, 3vw, 1.3rem);
-        min-width: clamp(16px, 3.5vw, 18px);
-    }
-    
-    .suggestion-item:hover {
-        transform: translateY(-2px) scale(1.01);
-    }
-}
+/* Media queries relacionadas a versículos movidas para verse-suggestions-simple.css */
 
-@media (max-width: 640px) {
-    .verse-suggestions {
-        padding: clamp(1rem, 4vw, 1.5rem);
-        margin-top: clamp(1rem, 3vw, 1.5rem);
-    }
-    
-    .suggestion-list {
-        gap: clamp(0.5rem, 2vw, 0.7rem);
-    }
-    
-    .suggestion-item {
-        white-space: normal;
-        line-height: 1.3;
-        text-align: center;
-        justify-content: center;
-    }
-}
+/* Media queries para telas menores movidas para verse-suggestions-simple.css */
 
-@media (max-width: 480px) {
-    .verse-suggestions {
-        padding: clamp(1rem, 5vw, 1.4rem);
-        margin-top: clamp(1rem, 3vw, 1.4rem);
-        border-radius: clamp(10px, 2vw, 14px);
-    }
-    
-    .verse-suggestions h4 {
-        font-size: clamp(1.1rem, 4.5vw, 1.3rem);
-        margin-bottom: clamp(0.8rem, 3vw, 1.1rem);
-        gap: clamp(0.4rem, 2vw, 0.6rem);
-        letter-spacing: 0.2px;
-    }
-    
-    .verse-suggestions h4::before,
-    .verse-suggestions h4::after {
-        width: clamp(20px, 5vw, 35px);
-        height: clamp(1px, 0.3vw, 2px);
-    }
-    
-    .suggestion-item {
-        padding: clamp(0.6rem, 3.5vw, 0.9rem) clamp(0.7rem, 3.5vw, 1rem);
-        font-size: clamp(0.85rem, 3vw, 1rem);
-        gap: clamp(0.3rem, 1.5vw, 0.5rem);
-        border-radius: clamp(6px, 1.5vw, 10px);
-        min-height: clamp(42px, 9vw, 50px);
-    }
-    
-    .suggestion-item i {
-        font-size: clamp(1rem, 3.5vw, 1.2rem);
-        min-width: clamp(14px, 3vw, 16px);
-    }
-    
-    .suggestion-item:hover {
-        transform: translateY(-1px) scale(1.01);
-        box-shadow: 
-            0 4px 15px rgba(212, 175, 55, 0.2), 
-            0 2px 6px rgba(0, 0, 0, 0.15);
-    }
-}
-
+/* Para telas muito pequenas - Consulte verse-suggestions-simple.css */
 @media (max-width: 360px) {
-    .verse-suggestions {
-        padding: 0.875rem;
-        margin-top: clamp(0.8rem, 3vw, 1.2rem);
-    }
-    
-    .verse-suggestions h4 {
-        font-size: clamp(0.95rem, 5.5vw, 1.1rem);
-        margin-bottom: clamp(0.7rem, 3vw, 1rem);
-        flex-direction: column;
-        gap: clamp(0.3rem, 2vw, 0.5rem);
-    }
-    
-    .verse-suggestions h4::before,
-    .verse-suggestions h4::after {
-        width: clamp(15px, 4vw, 25px);
-    }
-    
-    .suggestion-item {
-        padding: 0.4rem 0.3rem;
-        font-size: 0.8rem;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        border-width: 1px;
-    }
+    /* Estilos para verse-suggestions movidos para verse-suggestions-simple.css */
 }
 
+/* Para telas ultra pequenas - Consulte verse-suggestions-simple.css */
 @media (max-width: 320px) {
-    .verse-suggestions {
-        padding: 0.875rem;
-        border-radius: clamp(8px, 2vw, 12px);
-    }
-    
-    .verse-suggestions h4 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        gap: 0.25rem;
-    }
-    
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        gap: 0.75rem;
-    }
-    
-    .suggestion-item {
-        padding: 0.7rem 0.5rem;
-        font-size: 0.9rem;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        gap: 0.3rem;
-        border-radius: 8px;
-        line-height: 1.3;
-    }
-    
-    .suggestion-item i {
-        font-size: 1.1rem;
-        min-width: 14px;
-    }
-    
-    .suggestion-item:hover {
-        transform: translateY(-1px) scale(1.005);
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.2), 0 3px 8px rgba(0, 0, 0, 0.15);
-    }
-}
-
-/* Para telas muito pequenas */
-@media (max-width: 360px) {
-    .verse-suggestions {
-        padding: 0.875rem;
-    }
-    
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        gap: 0.375rem;
-    }
-    
-    .suggestion-item {
-        padding: 0.35rem 0.25rem;
-        font-size: 0.75rem;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        gap: 0.2rem;
-        border-radius: 6px;
-        line-height: 1.2;
-    }
-    
-    .suggestion-item i {
-        font-size: 0.9rem;
-        min-width: 12px;
-    }
-}
-
-/* Para telas ultra pequenas */
-@media (max-width: 320px) {
-    .verse-suggestions {
-        padding: 0.75rem;
-    }
-    
-    .verse-suggestions h4 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        gap: 0.25rem;
-    }
-    
-    .suggestion-list {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        gap: 0.25rem;
-    }
-    
-    .suggestion-item {
-        padding: 0.35rem 0.25rem;
-        font-size: 0.75rem;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        gap: 0.2rem;
-        border-radius: 6px;
-        line-height: 1.2;
-    }
-    
-    .suggestion-item i {
-        font-size: 0.9rem;
-        min-width: 12px;
-    }
+    /* Estilos para verse-suggestions movidos para verse-suggestions-simple.css */
 }
 
 @media (max-width: 480px) {
@@ -2510,19 +1956,10 @@ html.modal-active {
         box-sizing: border-box;
     }
     
-    /* Ajustar sugestões de versículo */
-    .verse-suggestions {
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 1.5rem;
-    }
+    /* Ajustes para verse-suggestions movidos para verse-suggestions-simple.css */
     
-    /* Ajustar lista de sugestões */
-    .suggestion-list {
-        grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-        gap: 1rem;
-        max-width: 100%;
-    }
+    /* Ajustar lista de sugestões - Desativado e movido para verse-suggestions-simple.css */
+    /* Lista de sugestões configurada no arquivo verse-suggestions-simple.css */
     
     /* Ajustar área de upload */
     .upload-area {
@@ -3081,55 +2518,128 @@ html.modal-active {
 
 /* Fixes específicos para iOS e mobile */
 @media (max-width: 768px) {
-    .preview-modal {
-        /* iOS specific fixes - remover seleção e highlights */
-        -webkit-user-select: none;
-        user-select: none;
-        -webkit-touch-callout: none;
-        -webkit-tap-highlight-color: transparent;
-        /* Garantir touch-action consistente */
-        touch-action: none !important;
-    }
-    
+    /* Contêiner principal do modal */
     .preview-modal-content {
-        padding: 1rem !important;
-        /* Reduzir padding em mobile para mais espaço */
-        /* Garantir centralização em mobile */
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: 100vw !important;
-        max-height: 100vh !important;
-        margin: 0 !important;
-    }
-    
-    .preview-modal-body {
-        /* Prevenir qualquer tipo de scroll */
-        overflow: hidden !important;
-        /* Prevenir bounce effect no iOS */
-        overscroll-behavior: none !important;
-        -webkit-overscroll-behavior: none !important;
-        /* Garantir touch-action consistente */
-        touch-action: none !important;
-        height: calc(100vh - 80px) !important;
-        max-height: calc(100vh - 80px) !important;
-    }
-    
-    /* Aplicar fixes nas seções também */
-    .preview-modal .preview-sections {
         height: 100% !important;
-        max-height: 100% !important;
-        touch-action: none !important;
+        width: 100% !important;
+        padding: 0 !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+    
+    /* Corpo do modal - onde as seções são mostradas */
+    .preview-modal-body {
+        height: calc(100% - 70px) !important; /* Ajuste para considerar o botão */
+        padding-bottom: 70px !important; /* Espaço para o botão voltar */
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important; /* Centralização vertical */
+        justify-content: center !important; /* Centralização horizontal */
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        right: 0 !important;
-        bottom: 80px !important; /* Espaço para o botão */
+        width: 100% !important;
     }
     
+    /* Seções de preview */
+    .preview-modal .preview-sections {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: auto !important;
+        width: 100% !important;
+        overflow: visible !important;
+        position: relative !important;
+    }
+    
+    /* Cada seção individual */
     .preview-modal .preview-section {
-        height: 100vh !important;
-        max-height: 100vh !important;
-        touch-action: none !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 0 !important;
+        transform: translateY(-50%) !important;
+        height: auto !important;
+        min-height: auto !important;
+        padding: 2rem 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Quando a seção está ativa */
+    .preview-modal .preview-section.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Conteúdo dentro das seções */
+    .preview-modal .section-content {
+        width: 90% !important;
+        max-width: 400px !important;
+        margin: 0 auto !important;
+        position: relative !important;
+        transform: translateY(0) !important; /* Correção crítica */
+    }
+    
+    /* Garantir que o botão de voltar não interfira */
+    .btn-close-preview {
+        position: fixed !important;
+        bottom: 15px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 400px !important;
+        z-index: 1002 !important;
+        margin: 0 !important;
+        padding: 0.8rem 1rem !important;
+    }
+}
+
+/* Correções específicas para iOS */
+@supports (-webkit-touch-callout: none) {
+    /* iOS-specific code */
+    .preview-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .preview-modal-body {
+        /* Prevenir comportamento de scroll */
+        overscroll-behavior: contain !important;
+        -webkit-overscroll-behavior: contain !important;
+    }
+    
+    /* Força o reposicionamento vertical em iOS */
+    .preview-modal .preview-section {
+        top: 45% !important; /* Ajuste específico para iOS */
+    }
+}
+
+/* Correções específicas para telas muito pequenas */
+@media (max-width: 360px) and (max-height: 640px) {
+    .preview-modal .preview-section {
+        padding: 1rem 0 !important;
+    }
+    
+    .btn-close-preview {
+        bottom: 10px !important;
+        padding: 0.6rem 1rem !important;
+    }
+    
+    /* Para telas realmente pequenas, ajustar mais */
+    .preview-modal .section-content {
+        width: 95% !important;
+        transform: scale(0.95) translateY(0) !important;
     }
 }
 

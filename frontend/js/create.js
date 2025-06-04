@@ -893,16 +893,25 @@ class DevotlyCreator {
             'musicLink': (e) => {
                 this.state.formData.musicLink = e.target.value;
                 this.saveToLocalStorage();
-            },
-            'bibleBook': (e) => {
+            },            'bibleBook': (e) => {
                 this.state.formData.bibleVerse.book = e.target.value;
+                // Limpar mensagens de erro ao interagir com campos de versículo
+                const errorMessages = document.querySelectorAll('.bible-selector .error-message');
+                errorMessages.forEach(el => el.remove());
                 this.saveToLocalStorage();
             },
             'bibleChapter': (e) => {
                 this.state.formData.bibleVerse.chapter = e.target.value;
+                // Limpar mensagens de erro ao interagir com campos de versículo
+                const errorMessages = document.querySelectorAll('.bible-selector .error-message');
+                errorMessages.forEach(el => el.remove());
                 this.saveToLocalStorage();
-            },            'bibleVerse': (e) => {
+            },
+            'bibleVerse': (e) => {
                 this.state.formData.bibleVerse.verse = e.target.value;
+                // Limpar mensagens de erro ao interagir com campos de versículo
+                const errorMessages = document.querySelectorAll('.bible-selector .error-message');
+                errorMessages.forEach(el => el.remove());
                 this.saveToLocalStorage();
             },
             'userEmail': (e) => {
@@ -1381,23 +1390,56 @@ async fetchBibleVerse() {
     
     const originalButtonText = '<i class="fas fa-search"></i> Buscar Versículo';
     
-    if (!bookSelect?.value || !chapterInput?.value || !verseInput?.value) {
-        this.showError(bookSelect || chapterInput || verseInput, 'Por favor, selecione um livro, capítulo e versículo');
+    // Verificações dos campos requeridos
+    if (!bookSelect?.value) {
+        this.showError(bookSelect, 'Por favor, selecione um livro');
         return;
     }
-
-    try {
+    if (!chapterInput?.value) {
+        this.showError(chapterInput, 'Por favor, informe o capítulo');
+        return;
+    }
+    if (!verseInput?.value) {
+        this.showError(verseInput, 'Por favor, informe o versículo');
+        return;
+    }
+    
+    // Verificar se capítulo e versículo são números válidos
+    if (isNaN(parseInt(chapterInput.value, 10))) {
+        this.showError(chapterInput, 'O capítulo deve ser um número');
+        return;
+    }
+    
+    if (isNaN(parseInt(verseInput.value, 10))) {
+        this.showError(verseInput, 'O versículo deve ser um número');
+        return;
+    }    try {
         // Mostrar indicador de carregamento
         fetchButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
         fetchButton.disabled = true;
         
+        // IMPORTANTE: Remover TODAS as mensagens de erro anteriores do seletor de versículos
+        const allErrorContainers = document.querySelectorAll('.bible-selector .error-message');
+        allErrorContainers.forEach(container => container.remove());
+        
+        // Garantir que não há erro persistente exibido
+        const persistentError = document.querySelector('.bible-selector .error-message');
+        if (persistentError) {
+            persistentError.remove();
+        }
+        
+        // Simular chamada à API para buscar versículos
         const response = await this.simulateBibleApiCall(bookSelect.value, chapterInput.value, verseInput.value);
         
         // Restaurar o botão ao estado original
         fetchButton.innerHTML = originalButtonText;
         fetchButton.disabled = false;
-        
-        if (response && response.text !== "Versículo não encontrado") {
+          // Verificar se a API retornou um versículo (não o texto de erro)
+        if (response && response.text && response.text !== "Versículo não encontrado") {
+            // SUCESSO: Remover TODAS as mensagens de erro existentes
+            const allErrorMessages = document.querySelectorAll('.bible-selector .error-message');
+            allErrorMessages.forEach(el => el.remove());
+            
             // Atualizar o estado com os dados do versículo
             this.state.formData.bibleVerse = {
                 book: bookSelect.options[bookSelect.selectedIndex].text,
@@ -1437,9 +1479,32 @@ async fetchBibleVerse() {
                 }, 2000);
             }
             
-            this.updatePreview();
-        } else {
-            this.showError(bookSelect, 'Versículo não encontrado. Verifique os dados.');
+            this.updatePreview();        } else {
+            // Remover qualquer erro existente antes de criar um novo
+            const allErrorContainers = document.querySelectorAll('.bible-selector .error-message');
+            allErrorContainers.forEach(container => container.remove());
+            
+            // Criar e adicionar uma nova mensagem de erro específica para versículo não encontrado
+            const bibleSelector = document.querySelector('.bible-selector');
+            if (bibleSelector) {
+                // Cria um elemento com ID único
+                const errorElement = document.createElement('div');
+                errorElement.className = 'error-message';
+                errorElement.id = 'verse-not-found-error';
+                errorElement.innerHTML = `<i class="fas fa-search"></i> Versículo não encontrado. Tente outro capítulo ou versículo.`;
+                errorElement.style.color = 'var(--color-error)';
+                errorElement.style.marginTop = '0.8rem';
+                errorElement.style.fontSize = '0.85rem';
+                errorElement.style.display = 'flex';
+                errorElement.style.alignItems = 'center';
+                errorElement.style.gap = '0.4rem';
+                errorElement.style.opacity = '1';
+                errorElement.style.transition = 'opacity 0.3s';
+                
+                // Adicionar novo erro
+                bibleSelector.appendChild(errorElement);
+            }
+            
             this.state.formData.bibleVerse = { book: '', chapter: '', verse: '', text: '', reference: '' };
             
             // Esconder o preview no formulário caso o versículo não seja encontrado
@@ -1449,10 +1514,42 @@ async fetchBibleVerse() {
             }
             
             this.updatePreview();
-        }
-    } catch (error) {
+        }    } catch (error) {
         console.error('Erro ao buscar versículo:', error);
-        this.showError(bookSelect, 'Não foi possível carregar o versículo. Tente novamente.');
+        
+        // Restaurar o botão ao estado original caso tenha ocorrido erro antes
+        if (fetchButton) {
+            fetchButton.innerHTML = originalButtonText;
+            fetchButton.disabled = false;
+        }
+        
+        // Remover qualquer erro existente antes de criar um novo
+        const allErrorContainers = document.querySelectorAll('.bible-selector .error-message');
+        allErrorContainers.forEach(container => container.remove());
+        
+        // Só mostrar erro se realmente não temos nenhum versículo carregado
+        // (evita mostrar erro quando a busca foi bem-sucedida mas houve algum erro menor)
+        if (!this.state.formData.bibleVerse.text) {
+            const bibleSelector = document.querySelector('.bible-selector');
+            if (bibleSelector) {
+                // Cria um elemento com ID único para erro de versículo
+                const errorElement = document.createElement('div');
+                errorElement.className = 'error-message';
+                errorElement.id = 'verse-error-message'; // ID único para facilitar remoção posterior
+                errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> Não foi possível carregar o versículo. Tente novamente.`;
+                errorElement.style.color = 'var(--color-error)';
+                errorElement.style.marginTop = '0.8rem';
+                errorElement.style.fontSize = '0.85rem';
+                errorElement.style.display = 'flex';
+                errorElement.style.alignItems = 'center';
+                errorElement.style.gap = '0.4rem';
+                errorElement.style.opacity = '1';
+                errorElement.style.transition = 'opacity 0.3s';
+                
+                // Adicionar novo erro
+                bibleSelector.appendChild(errorElement);
+            }
+        }
     } finally {
         // Garantir que o botão sempre volte ao estado original
         // Este bloco sempre executa, mesmo se houver erros no try ou no catch
@@ -1461,23 +1558,58 @@ async fetchBibleVerse() {
             fetchButton.disabled = false;
         }
     }
-}
-
-    simulateBibleApiCall(book, chapter, verse) { // Same simulation
+}    simulateBibleApiCall(book, chapter, verse) {
         return new Promise((resolve) => {
             setTimeout(() => {
-                const verses = {
-                    genesis: { 1: { 1: "No princípio, criou Deus os céus e a terra.", 2: "A terra era sem forma e vazia...", 3: "Disse Deus: Haja luz..." } },
-                    exodus: { 14: { 14: "O SENHOR pelejará por vós, e vós vos calareis." }, 20: { 12: "Honra teu pai e tua mãe..." } },
-                    psalms: { 23: { 1: "O SENHOR é o meu pastor; nada me faltará.", 2: "Ele me faz repousar...", 3: "Refrigera-me a alma..." }, 91: { 1: "Aquele que habita...", 2: "Direi do SENHOR..." } },
-                    proverbs: { 3: { 5: "Confia no SENHOR de todo o teu coração...", 6: "Reconhece-o em todos os teus caminhos..." } },
-                    isaiah: { 41: { 10: "Não temas, porque eu sou contigo..." } },
-                    matthew: { 6: { 33: "Buscai, pois, em primeiro lugar, o seu reino..." }, 28: { 20: "Ensinando-os a guardar todas as coisas..." } },
-                    john: { 3: { 16: "Porque Deus amou o mundo de tal maneira..." }, 14: { 6: "Respondeu Jesus: Eu sou o caminho...", 27: "Deixo-vos a paz..." } },
-                    romans: { 8: { 28: "Sabemos que todas as coisas cooperam para o bem...", 31: "Que diremos, pois, à vista destas coisas?" }, 12: { 12: "Alegrai-vos na esperança..." } }
-                };
-                const verseText = verses[book]?.[chapter]?.[verse];
-                resolve({ text: verseText || "Versículo não encontrado" });
+                try {
+                    // Converter capítulo e versículo para números inteiros
+                    const chapterNum = parseInt(chapter, 10);
+                    const verseNum = parseInt(verse, 10);
+                    
+                    if (isNaN(chapterNum) || isNaN(verseNum)) {
+                        console.error('Valores de capítulo ou versículo inválidos:', { chapter, verse });
+                        return resolve({ text: "Versículo não encontrado" });
+                    }
+                    
+                    // Versículos padrão para qualquer combinação de capítulo/versículo
+                    const defaultVerses = {
+                        genesis: "No princípio, criou Deus os céus e a terra.",
+                        exodus: "O SENHOR pelejará por vós, e vós vos calareis.",
+                        psalms: "O SENHOR é o meu pastor; nada me faltará.",
+                        proverbs: "Confia no SENHOR de todo o teu coração e não te estribes no teu próprio entendimento.",
+                        isaiah: "Não temas, porque eu sou contigo; não te assombres, porque eu sou o teu Deus; eu te fortaleço, e te ajudo, e te sustento com a minha destra fiel.",
+                        matthew: "Buscai, pois, em primeiro lugar, o seu reino e a sua justiça, e todas estas coisas vos serão acrescentadas.",
+                        john: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.",
+                        romans: "Sabemos que todas as coisas cooperam para o bem daqueles que amam a Deus, daqueles que são chamados segundo o seu propósito."
+                    };
+                    
+                    // Banco de dados de versículos simulados - usados apenas para combinações específicas
+                    const specificVerses = {
+                        genesis: { 1: { 1: "No princípio, criou Deus os céus e a terra.", 2: "A terra era sem forma e vazia...", 3: "Disse Deus: Haja luz..." } },
+                        exodus: { 14: { 14: "O SENHOR pelejará por vós, e vós vos calareis." }, 20: { 12: "Honra teu pai e tua mãe..." } },
+                        psalms: { 23: { 1: "O SENHOR é o meu pastor; nada me faltará.", 2: "Ele me faz repousar...", 3: "Refrigera-me a alma..." }, 91: { 1: "Aquele que habita...", 2: "Direi do SENHOR..." } },
+                        proverbs: { 3: { 5: "Confia no SENHOR de todo o teu coração...", 6: "Reconhece-o em todos os teus caminhos..." } },
+                        isaiah: { 41: { 10: "Não temas, porque eu sou contigo..." } },
+                        matthew: { 6: { 33: "Buscai, pois, em primeiro lugar, o seu reino..." }, 28: { 20: "Ensinando-os a guardar todas as coisas..." } },
+                        john: { 3: { 16: "Porque Deus amou o mundo de tal maneira..." }, 14: { 6: "Respondeu Jesus: Eu sou o caminho...", 27: "Deixo-vos a paz..." } },
+                        romans: { 8: { 28: "Sabemos que todas as coisas cooperam para o bem...", 31: "Que diremos, pois, à vista destas coisas?" }, 12: { 12: "Alegrai-vos na esperança..." } }
+                    };
+                    
+                    // Verificar primeiro se temos um versículo específico
+                    const specificVerse = specificVerses[book]?.[chapterNum]?.[verseNum];
+                    
+                    // Se não tiver um versículo específico, use o versículo padrão
+                    const verseText = specificVerse || defaultVerses[book];
+                    
+                    // Log para debug
+                    console.log('Resultado da busca:', { book, chapterNum, verseNum, found: !!verseText });
+                    
+                    // Retornar resultado com versículo encontrado ou default
+                    resolve({ text: verseText || "Versículo não encontrado" });
+                } catch (error) {
+                    console.error('Erro ao processar versículo:', error);
+                    resolve({ text: "Versículo não encontrado" });
+                }
             }, 800);
         });
     }

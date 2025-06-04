@@ -1,0 +1,181 @@
+/* Media queries aprimoradas para melhorar a responsividade */
+
+/* Layout base com grid - mantendo 3 linhas e 2 colunas */
+.suggestion-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 0.6rem;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 100%;
+    transition: all 0.3s ease;
+}
+
+/* Botões de sugestão com tamanhos responsivos */
+.suggestion-item {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 10px;    padding: clamp(0.6rem, 2vw, 0.9rem) clamp(0.5rem, 2vw, 0.8rem);
+    color: var(--color-light);
+    font-size: clamp(1rem, 3vw, 1.15rem);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.3rem, 1.5vw, 0.6rem);
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    min-height: 3.2rem;
+    height: 100%;
+}
+
+/* Ícone com tamanho responsivo */
+.suggestion-item i {
+    color: rgba(212, 175, 55, 0.85);
+    font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+/* Telas grandes (>= 992px) */
+@media (min-width: 992px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.8rem;
+        max-width: 90%;
+    }
+    
+    .verse-suggestions {
+        padding: 1.5rem;
+        border-radius: 15px;
+        max-width: 85%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .suggestion-item {
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: visible;
+    }
+    
+    .suggestion-item:hover {
+        transform: translateY(-3px);
+    }
+    
+    .suggestion-item:hover i {
+        transform: scale(1.2) rotate(5deg);
+    }
+}
+
+/* Tablets (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.7rem;
+        max-width: 95%;
+    }
+    
+    .verse-suggestions {
+        padding: 1.2rem;
+        max-width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .suggestion-item {
+        border-radius: 10px;
+    }
+}
+
+/* Celulares médios (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.6rem;
+    }
+    
+    .suggestion-item {
+        text-align: center;
+        justify-content: center;
+        border-radius: 8px;
+        min-height: 2.8rem;
+    }
+    
+    .verse-suggestions h4 {
+        font-size: 1.05rem;
+        margin-bottom: 1.1rem;
+    }
+}
+
+/* Celulares pequenos (361px - 480px) */
+@media (min-width: 361px) and (max-width: 480px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.5rem;
+    }
+    
+    .verse-suggestions {
+        padding: 1rem 0.9rem;
+        margin-top: 1.2rem;
+        border-radius: 12px;
+    }
+      .suggestion-item {
+        font-weight: 500;
+        white-space: normal;
+        word-break: keep-all;
+        min-height: 2.5rem;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .suggestion-item i {
+        font-size: 0.9rem;
+    }
+}
+
+/* Celulares muito pequenos (≤ 360px) */
+@media (max-width: 360px) {
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.45rem;
+        max-width: 100%;
+    }
+    
+    .verse-suggestions {
+        padding: 1rem 0.9rem;
+        border-radius: 12px;
+        border-width: 1px;
+    }
+    
+    .suggestion-item {
+        border-radius: 8px;
+        min-height: 3rem;        
+        padding: 0.5rem 0.4rem;
+        font-size: 0.95rem;
+        letter-spacing: 0;
+    }
+    
+    .suggestion-item i {
+        font-size: 0.9rem;
+    }
+    
+    /* Ajuste do título para telas muito pequenas */
+    .verse-suggestions h4 {
+        font-size: 0.95rem;
+        padding: 0.35rem 0.9rem;
+    }
+    
+    .verse-suggestions h4::before {
+        font-size: 0.85rem;
+    }
+}
