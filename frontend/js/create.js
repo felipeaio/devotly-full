@@ -1776,11 +1776,27 @@ async selectPlan(plan) {
 
     getEmbedUrl(url) {
         if (!url) return null;
+        
+        // Process YouTube URLs
         const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-        if (youtubeMatch) return `https://www.youtube.com/embed/${youtubeMatch[1]}?enablejsapi=1`; // Use https and standard embed
+        if (youtubeMatch) {
+            return {
+                url: `https://www.youtube.com/embed/${youtubeMatch[1]}?enablejsapi=1&rel=0`,
+                type: 'youtube'
+            };
+        }
 
-        const spotifyMatch = url.match(/spotify\.com\/(?:track|album|playlist)\/([\w]+)/);
-        if (spotifyMatch) return `https://open.spotify.com/embed/${spotifyMatch[0].substring(spotifyMatch[0].indexOf('/') + 1)}?utm_source=generator`; // Use standard Spotify embed
+        // Process Spotify URLs with improved type detection
+        const spotifyMatch = url.match(/spotify\.com\/(track|album|playlist)\/([\w]+)/);
+        if (spotifyMatch) {
+            const embedPath = spotifyMatch[0].substring(spotifyMatch[0].indexOf('/') + 1);
+            const mediaType = spotifyMatch[1] === 'playlist' ? 'spotify-playlist' : 'spotify';
+            
+            return {
+                url: `https://open.spotify.com/embed/${embedPath}?utm_source=generator`,
+                type: mediaType
+            };
+        }
 
         return null;
     }
@@ -1818,18 +1834,44 @@ async selectPlan(plan) {
         }
 
         // Update Gallery Section
-        this.updateGalleryPreview(); // Dedicated method for gallery        // Update Media Section (for the new .preview-section #mediaSection)
+        this.updateGalleryPreview(); // Dedicated method for gallery        // Update Media Section using the enhanced MediaHandler
         const mediaSectionContainer = document.querySelector('#mediaSection #cardMedia');
         if (mediaSectionContainer) {
-            const embedUrl = this.getEmbedUrl(this.state.formData.musicLink);
-            if (embedUrl) {
-                mediaSectionContainer.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            // Import MediaHandler dynamically if not available
+            if (typeof MediaHandler === 'undefined') {
+                import('../core/MediaHandler.js').then(module => {
+                    const MediaHandlerClass = module.default || window.MediaHandler;
+                    MediaHandlerClass.renderMedia(mediaSectionContainer, this.state.formData.musicLink, {
+                        useThumbnailPreview: true,
+                        autoplay: false
+                    });
+                }).catch(() => {
+                    // Fallback to original implementation if import fails
+                    const embedResult = this.getEmbedUrl(this.state.formData.musicLink);
+                    if (embedResult) {
+                        mediaSectionContainer.setAttribute('data-media-type', embedResult.type);
+                        mediaSectionContainer.innerHTML = `<iframe 
+                            src="${embedResult.url}" 
+                            frameborder="0" 
+                            allow="autoplay; encrypted-media" 
+                            allowfullscreen
+                            loading="lazy"
+                            onload="this.parentElement.classList.add('loaded')"></iframe>`;
+                    } else {
+                        mediaSectionContainer.removeAttribute('data-media-type');
+                        mediaSectionContainer.innerHTML = `
+                            <div class="no-media">
+                                <i class="fas fa-music"></i>
+                                <span>Nenhuma mídia selecionada</span>
+                            </div>`;
+                    }
+                });
             } else {
-                mediaSectionContainer.innerHTML = `
-                    <div class="no-media" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color: var(--color-text-secondary); opacity: 0.7;">
-                        <i class="fas fa-music" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                        <span>Nenhuma mídia selecionada</span>
-                    </div>`;
+                // If MediaHandler is already available, use it directly
+                MediaHandler.renderMedia(mediaSectionContainer, this.state.formData.musicLink, {
+                    useThumbnailPreview: true,
+                    autoplay: false
+                });
             }
         }        // Update Final Message Section
         const finalMessagePreviewElem = document.querySelector('#finalSection .final-message'); // Target the p inside if structure is .final-message > p

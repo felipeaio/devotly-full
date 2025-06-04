@@ -632,6 +632,9 @@ body {
   flex-direction: column;
   justify-content: center;
   margin: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .message-container::before {
@@ -666,13 +669,15 @@ body {
   font-weight: 400;
   letter-spacing: 0.01em;
   word-spacing: 0.05em;
-  white-space: pre-line;
+  white-space: pre-wrap;
   overflow-wrap: break-word;
   word-wrap: break-word;
   hyphens: auto;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   max-width: 100%;
   position: relative;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
 }
 
 #cardMessage::first-letter {

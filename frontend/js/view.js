@@ -333,9 +333,20 @@ class DevotlyViewer {    constructor() {
     }    renderMedia(mediaLink) {
         const container = this.elements.cardMedia;
         if (!container) return;
-
-        // Limpar conteúdo existente
+        
+        // Use MediaHandler if available, otherwise fall back to the old implementation
+        if (typeof MediaHandler !== 'undefined') {
+            MediaHandler.renderMedia(container, mediaLink, {
+                useThumbnailPreview: true,
+                autoplay: false,
+                onLoad: () => this.setupMediaVisibilityObserver()
+            });
+            return;
+        }
+        
+        // Legacy implementation as fallback
         container.innerHTML = '';
+        container.removeAttribute('data-media-type');
 
         // Se não houver link de mídia
         if (!mediaLink) {
@@ -361,6 +372,9 @@ class DevotlyViewer {    constructor() {
         if (mediaLink.includes('youtube.com') || mediaLink.includes('youtu.be')) {
             const videoId = this.getYouTubeId(mediaLink);
             if (videoId) {
+                // Definir tipo para estilização específica
+                container.setAttribute('data-media-type', 'youtube');
+                
                 // Usar poster antes de carregar o iframe para melhorar o desempenho
                 const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                 
@@ -387,10 +401,10 @@ class DevotlyViewer {    constructor() {
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen
                             title="YouTube video player"
-                            loading="lazy">
+                            loading="lazy"
+                            onload="this.parentElement.classList.add('loaded')">
                         </iframe>
                     `;
-                    container.classList.add('loaded');
                     
                     // Configurar observador para animações quando a seção estiver visível
                     this.setupMediaVisibilityObserver();
@@ -399,23 +413,20 @@ class DevotlyViewer {    constructor() {
         } else if (mediaLink.includes('spotify.com')) {
             const spotifyData = this.getSpotifyId(mediaLink);
             if (spotifyData) {
+                // Definir tipo para estilização específica
+                const mediaType = spotifyData.type === 'playlist' ? 'spotify-playlist' : 'spotify';
+                container.setAttribute('data-media-type', mediaType);
+                
                 container.innerHTML = `
                     <iframe 
-                        src="https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}" 
+                        src="https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}?utm_source=generator" 
                         frameborder="0" 
                         allowtransparency="true"
                         allow="encrypted-media"
-                        loading="lazy">
+                        loading="lazy"
+                        onload="this.parentElement.classList.add('loaded')">
                     </iframe>
                 `;
-                
-                // Adicionar listener para marcar quando carregado
-                const iframe = container.querySelector('iframe');
-                if (iframe) {
-                    iframe.addEventListener('load', () => {
-                        container.classList.add('loaded');
-                    });
-                }
             }
         } else {
             container.innerHTML = `
