@@ -317,7 +317,7 @@
                         </div>
                         <div class="step-content">
                             <div class="input-group">
-                                <label for="userEmail">Email</label>
+                                <label for="userEmail">Email <span class="required-mark">*</span></label>
                                 <input type="email" id="userEmail" name="userEmail" placeholder="seuemail@exemplo.com"
                                     required>
                                 <div class="input-hint">
@@ -327,8 +327,8 @@
                             </div>
 
                             <div class="input-group">
-                                <label for="userName">Seu nome (opcional)</label>
-                                <input type="text" id="userName" name="userName" placeholder="Como podemos te chamar?">
+                                <label for="userName">Seu nome <span class="required-mark">*</span></label>
+                                <input type="text" id="userName" name="userName" placeholder="Como podemos te chamar?" required>
                             </div>
 
                             <div class="input-group">
@@ -341,7 +341,13 @@
                                 </div>
                             </div>
 
-                            <!-- O elemento form-check do newsletter foi removido daqui -->
+                            <div class="form-check">
+                                <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                                <label for="acceptTerms">
+                                    Li e aceito os <a href="https://devotly.shop/termos" target="_blank" rel="noopener noreferrer">Termos de Uso</a> 
+                                    e <a href="https://devotly.shop/privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+                                </label>
+                            </div>
                         </div>
                         <div class="step-actions">
                             <button type="button" class="btn btn-secondary btn-prev" data-prev="6">

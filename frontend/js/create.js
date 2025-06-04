@@ -1119,10 +1119,11 @@ scrollToSection(sectionId) {
                     this.showError(musicLinkInput, 'Por favor, insira um link válido do YouTube ou Spotify');
                     isValid = false;
                 }
-                break;
-            case 6: // Step 7: Contact Info
+                break;            case 6: // Step 7: Contact Info
                 const emailInput = currentStepElement.querySelector('#userEmail');
+                const userNameInput = currentStepElement.querySelector('#userName');
                 const phoneInput = currentStepElement.querySelector('#userPhone');
+                
                 if (!emailInput?.value.trim()) {
                     this.showError(emailInput, 'Por favor, insira seu email');
                     isValid = false;
@@ -1130,11 +1131,27 @@ scrollToSection(sectionId) {
                     this.showError(emailInput, 'Por favor, insira um email válido');
                     isValid = false;
                 }
+                
+                if (!userNameInput?.value.trim()) {
+                    this.showError(userNameInput, 'Por favor, insira seu nome');
+                    isValid = false;
+                } else if (userNameInput.value.trim().length < 2) {
+                    this.showError(userNameInput, 'O nome deve ter pelo menos 2 caracteres');
+                    isValid = false;
+                }
+                
                 if (!phoneInput?.value.trim()) {
                     this.showError(phoneInput, 'Por favor, insira seu telefone');
                     isValid = false;
                 } else if (phoneInput.value.replace(/\D/g, '').length < 10) {
                     this.showError(phoneInput, 'Por favor, insira um telefone válido');
+                    isValid = false;
+                }
+                
+                // Validação da checkbox de termos
+                const acceptTermsInput = currentStepElement.querySelector('#acceptTerms');
+                if (!acceptTermsInput?.checked) {
+                    this.showError(acceptTermsInput, 'Você deve aceitar os Termos de Uso e Política de Privacidade');
                     isValid = false;
                 }
                 break;
@@ -1152,11 +1169,19 @@ scrollToSection(sectionId) {
         const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]{11}(\S*)?$/;
         const spotifyRegex = /^(https?:\/\/)?(open\.)?spotify\.com\/(track|album|playlist)\/[a-zA-Z0-9]{22}(\S*)?$/;
         return youtubeRegex.test(url) || spotifyRegex.test(url);
-    }
-
-    showError(inputElement, message) {
+    }    showError(inputElement, message) {
         if (!inputElement) return;
-        const parent = inputElement.parentNode;
+        
+        // Tratamento especial para checkbox de termos
+        let parent = inputElement.parentNode;
+        let targetContainer = parent;
+        
+        if (inputElement.type === 'checkbox' && inputElement.id === 'acceptTerms') {
+            // Para a checkbox de termos, colocar a mensagem abaixo da .form-check
+            targetContainer = parent.closest('.form-check') || parent;
+            parent = targetContainer.parentNode;
+        }
+        
         const existingError = parent.querySelector('.error-message');
         if (existingError) existingError.remove();
 
@@ -1172,7 +1197,13 @@ scrollToSection(sectionId) {
         errorElement.style.opacity = '0';
         errorElement.style.transition = 'opacity 0.3s ease';
 
-        parent.appendChild(errorElement);
+        // Para checkbox de termos, inserir após o container .form-check
+        if (inputElement.type === 'checkbox' && inputElement.id === 'acceptTerms') {
+            targetContainer.insertAdjacentElement('afterend', errorElement);
+        } else {
+            parent.appendChild(errorElement);
+        }
+        
         inputElement.focus();
 
         setTimeout(() => { errorElement.style.opacity = '1'; }, 10);
