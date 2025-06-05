@@ -99,99 +99,138 @@ router.post('/mercadopago', async (req, res) => {
 
         console.log('\n6. Status do pagamento:', paymentInfo.status);
 
-        if (paymentInfo.status === 'approved') {
-            const externalReference = paymentInfo.external_reference;
-            if (!externalReference) {
-                throw new Error('external_reference não encontrado no pagamento');
-            }
+        // Só processar se o pagamento foi realmente aprovado
+        if (paymentInfo.status !== 'approved') {
+            console.log(`Status do pagamento não aprovado: ${paymentInfo.status}. Finalizando processamento.`);
+            return res.status(200).send('OK');
+        }
 
-            const [cardId, email, plano] = externalReference.split('|');
-            if (!cardId) {
-                throw new Error('cardId inválido em external_reference');
-            }
-            console.log('\n7. Dados extraídos:', { cardId, email, plano });
+        const externalReference = paymentInfo.external_reference;
+        if (!externalReference) {
+            throw new Error('external_reference não encontrado no pagamento');
+        }
 
-            // Verificar se o cartão existe
-            console.log('\n8. Verificando cartão no Supabase...');
-            const { data: card, error: fetchError } = await supabase
-                .from('cards')
-                .select('*')
-                .eq('id', cardId)
-                .single();
+        const [cardId, email, plano] = externalReference.split('|');
+        if (!cardId) {
+            throw new Error('cardId inválido em external_reference');
+        }
+        console.log('\n7. Dados extraídos:', { cardId, email, plano });
 
-            if (fetchError || !card) {
-                console.error('Erro ao buscar cartão:', JSON.stringify(fetchError, null, 2));
-                throw new Error(`Cartão com ID ${cardId} não encontrado`);
-            }
-            console.log('Cartão encontrado:', JSON.stringify(card, null, 2));
+        // Verificar se o cartão existe
+        console.log('\n8. Verificando cartão no Supabase...');
+        const { data: card, error: fetchError } = await supabase
+            .from('cards')
+            .select('*')
+            .eq('id', cardId)
+            .single();
 
-            // Atualizar status no Supabase
-            console.log('\n9. Atualizando cartão no Supabase:', {
-                cardId,
-                paymentId,
-                status: 'aprovado'
-            });
-            const { data, error } = await supabase
-                .from('cards')
-                .update({
-                    status_pagamento: 'aprovado',
-                    payment_id: paymentId,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', cardId)
-                .select();
+        if (fetchError || !card) {
+            console.error('Erro ao buscar cartão:', JSON.stringify(fetchError, null, 2));
+            throw new Error(`Cartão com ID ${cardId} não encontrado`);
+        }
+        console.log('Cartão encontrado:', JSON.stringify(card, null, 2));
 
-            if (error) {
-                console.error('❌ Erro ao atualizar no Supabase:', JSON.stringify(error, null, 2));
-                throw new Error(`Erro ao atualizar Supabase: ${error.message}`);
-            }
+        // Verificar se este payment_id já foi processado para evitar processamento duplicado
+        console.log('\n8.3. Verificando se payment_id já foi processado...');
+        if (card.payment_id === paymentId) {
+            console.log('✅ Este payment_id já foi processado. Evitando processamento duplicado.');
+            return res.status(200).send('OK');
+        }
 
-            if (!data || data.length === 0) {
-                console.error('❌ Nenhum registro atualizado no Supabase');
-                console.log('Dados da query:', { table: 'cards', cardId, condition: `id = ${cardId}` });
-                throw new Error(`Nenhum registro atualizado para cardId: ${cardId}`);
-            }
+        // Verificar se o cartão já tem status aprovado e email enviado
+        console.log('\n8.4. Verificando status atual do cartão...');
+        if (card.status_pagamento === 'aprovado' && card.email_sent) {
+            console.log('✅ Cartão já aprovado e email já enviado. Evitando reprocessamento.');
+            return res.status(200).send('OK');
+        }
 
-            console.log('\n✅ Status atualizado com sucesso:', JSON.stringify(data, null, 2));
+        // Verificar se o email já foi enviado para evitar duplicatas
+        console.log('\n8.5. Verificando se email já foi enviado...');
+        if (card.email_sent) {
+            console.log('✅ Email já foi enviado anteriormente para este cartão. Pulando reenvio.');
+            return res.status(200).send('OK');
+        }
+
+        // TRANSAÇÃO ATÔMICA: Atualizar status e marcar como processando em uma única operação
+        console.log('\n9. Tentando reservar processamento do cartão...');
+        const { data: reservationData, error: reservationError } = await supabase
+            .from('cards')
+            .update({
+                status_pagamento: 'aprovado',
+                payment_id: paymentId,
+                email_sent: true, // Marcar como enviado ANTES de enviar para evitar duplicação
+                email_sent_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', cardId)
+            .eq('email_sent', false) // Só atualiza se email ainda não foi enviado
+            .is('payment_id', null) // Só atualiza se payment_id ainda não foi definido
+            .select();
+
+        if (reservationError) {
+            console.error('❌ Erro ao reservar processamento:', JSON.stringify(reservationError, null, 2));
+            throw new Error(`Erro ao reservar processamento: ${reservationError.message}`);
+        }
+
+        if (!reservationData || reservationData.length === 0) {
+            console.log('✅ Cartão já está sendo processado por outra instância. Finalizando.');
+            return res.status(200).send('OK');
+        }
+
+        console.log('\n✅ Processamento reservado com sucesso:', JSON.stringify(reservationData, null, 2));
+        
+        // Agora que temos a reserva exclusiva, enviar o email
+        try {
+            console.log('\n10. Preparando envio de email de confirmação...');
             
-            // Enviar email de confirmação com QR code
-            try {
-                console.log('\n10. Preparando envio de email de confirmação...');
-                
-                // URL base do frontend
-                const frontendUrl = process.env.FRONTEND_URL;
-                
-                if (!frontendUrl) {
-                    console.warn('⚠️ Variável de ambiente FRONTEND_URL não configurada. Usando URL padrão.');
-                }
-                
-                // URL completa do cartão
-                const cardUrl = `${frontendUrl || 'https://devotly.shop'}/view/?id=${cardId}`;
-                
-                // Extrair nome e título do cartão dos dados
-                const cardData = data[0];
-                const name = email.split('@')[0]; // Usa a primeira parte do email como nome se não houver outro
-                const title = cardData.title || 'Seu Cartão Cristão';
-                
-                console.log(`Enviando email para ${email} com link: ${cardUrl}`);
-                
-                // Enviar o email
-                const emailResult = await sendPaymentConfirmationEmail({
-                    email,
-                    cardId,
-                    name,
-                    title,
-                    cardUrl
-                });
-                
-                console.log('\n✅ Email enviado com sucesso:', emailResult);
-            } catch (emailError) {
-                // Não falha o processo se o email falhar, apenas loga o erro
-                console.error('\n⚠️ Erro ao enviar email de confirmação:', emailError);
-                console.error('Detalhes:', emailError.message);
+            // URL base do frontend
+            const frontendUrl = process.env.FRONTEND_URL;
+            
+            if (!frontendUrl) {
+                console.warn('⚠️ Variável de ambiente FRONTEND_URL não configurada. Usando URL padrão.');
             }
-        } else {
-            console.log(`Status do pagamento não aprovado: ${paymentInfo.status}`);
+            
+            // URL completa do cartão
+            const cardUrl = `${frontendUrl || 'https://devotly.shop'}/view?id=${cardId}`;
+            
+            // Extrair nome e título do cartão dos dados
+            const cardData = reservationData[0];
+            const name = email.split('@')[0]; // Usa a primeira parte do email como nome se não houver outro
+            const title = cardData.conteudo?.cardTitle || 'Seu Cartão Cristão';
+            
+            console.log(`Enviando email para ${email} com link: ${cardUrl}`);
+            
+            // Enviar o email
+            const emailResult = await sendPaymentConfirmationEmail({
+                email,
+                cardId,
+                name,
+                title,
+                cardUrl
+            });
+            
+            console.log('\n✅ Email enviado com sucesso:', emailResult);
+        } catch (emailError) {
+            // Se falhar no envio do email, reverter o status para permitir nova tentativa
+            console.error('\n⚠️ Erro ao enviar email de confirmação:', emailError);
+            console.error('Detalhes:', emailError.message);
+            
+            try {
+                console.log('Revertendo status email_sent para permitir nova tentativa...');
+                await supabase
+                    .from('cards')
+                    .update({
+                        email_sent: false,
+                        email_sent_at: null
+                    })
+                    .eq('id', cardId);
+                console.log('Status revertido com sucesso.');
+            } catch (revertError) {
+                console.error('Erro ao reverter status:', revertError);
+            }
+            
+            // Não falha o webhook, mas loga o erro
+            console.error('Email não pôde ser enviado, mas pagamento foi processado.');
         }
 
         console.log('\n=== FIM DO PROCESSAMENTO DO WEBHOOK ===');

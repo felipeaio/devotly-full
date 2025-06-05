@@ -132,11 +132,15 @@ app.get('/success', (req, res) => {
 });
 
 app.get('/failure', (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/failure.html`);
+    // Redirecionar para failure.html mantendo os parâmetros da URL
+    const params = new URLSearchParams(req.query).toString();
+    res.redirect(`${process.env.FRONTEND_URL}/failure.html?${params}`);
 });
 
 app.get('/pending', (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/pending.html`);
+    // Redirecionar para pending.html mantendo os parâmetros da URL
+    const params = new URLSearchParams(req.query).toString();
+    res.redirect(`${process.env.FRONTEND_URL}/pending.html?${params}`);
 });
 
 // Tratamento de erros

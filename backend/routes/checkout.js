@@ -46,12 +46,17 @@ router.post('/create-preference', async (req, res) => {
         console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
 
         // Obter base URL para callbacks
-        let baseUrl = process.env.BACKEND_URL;
-        if (!baseUrl || !baseUrl.startsWith('http')) {
+        let backendUrl = process.env.BACKEND_URL;
+        if (!backendUrl || !backendUrl.startsWith('http')) {
             console.warn('BACKEND_URL não configurado ou inválido. Usando URL da requisição como fallback.');
-            baseUrl = `${req.protocol}://${req.get('host')}`;
+            backendUrl = `${req.protocol}://${req.get('host')}`;
         }
-        console.log('Base URL para callbacks:', baseUrl);
+        
+        // Frontend URL para redirecionamentos
+        const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+        
+        console.log('Backend URL para webhooks:', backendUrl);
+        console.log('Frontend URL para redirecionamentos:', frontendUrl);
 
         // Inicializar Mercado Pago
         const client = new MercadoPagoConfig({
@@ -84,12 +89,12 @@ router.post('/create-preference', async (req, res) => {
                 email: email
             },
             back_urls: {
-                success: `${baseUrl}/success`,
-                failure: `${baseUrl}/failure`,
-                pending: `${baseUrl}/pending`
+                success: `${frontendUrl}/success.html`,
+                failure: `${frontendUrl}/failure.html`,
+                pending: `${frontendUrl}/pending.html`
             },
             external_reference: `${cardId}|${email}|${plano}`,
-            notification_url: `${baseUrl}/webhook/mercadopago`,
+            notification_url: `${backendUrl}/webhook/mercadopago`,
             auto_return: 'approved'
         };
 

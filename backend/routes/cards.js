@@ -46,7 +46,9 @@ router.post('/', async (req, res) => {
     const validatedData = cardSchema.parse(req.body);
     const { email, plano, conteudo } = validatedData;
     const cardId = uuidv4();
-    const cardUrl = `devotly.com/${cardId}-${conteudo.cardName}`;
+    const cardUrl = `https://devotly.shop/view?id=${cardId}`;
+    
+    console.log(`[${new Date().toISOString()}] Gerando cartão com URL:`, cardUrl);
 
     // Antes de criar o cartão, verifique se as imagens são URLs válidas
     const { images } = conteudo;

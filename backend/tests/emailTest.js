@@ -29,7 +29,7 @@ async function testEmailSending() {
       cardId: 'test-card-123',
       name: 'Cliente de Teste',
       title: 'Cartão de Teste',
-      cardUrl: 'https://devotly.shop/view/?id=test-card-123'
+      cardUrl: 'https://devotly.shop/view?id=test-card-123'
     };
     
     console.log(`Enviando email de teste para: ${testData.email}`);
