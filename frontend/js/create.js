@@ -1488,10 +1488,10 @@ async fetchBibleVerse() {
             if (versePreviewElement && verseTextElement && verseRefElement) {
                 verseTextElement.textContent = `"${response.text}"`;
                 verseRefElement.textContent = this.state.formData.bibleVerse.reference;
-                versePreviewElement.style.display = 'block';
-            }
+                versePreviewElement.style.display = 'block';            }
             
-            // 2. Atualizar no preview principal            const verseTextElem = document.querySelector('#verseSection #verseText');
+            // 2. Atualizar no preview principal
+            const verseTextElem = document.querySelector('#verseSection #verseText');
             if (verseTextElem) {
                 verseTextElem.textContent = `"${response.text}"`;
             }
@@ -2114,17 +2114,9 @@ async selectPlan(plan) {
                     if (!this.apiConfig) {
                         const { API_CONFIG } = await import('./core/api-config.js');
                         this.apiConfig = API_CONFIG;
-                    }
-
-                    console.log('Attempting upload to:', this.apiConfig.upload);
+                    }                    console.log('Attempting upload to:', this.apiConfig.upload);
                     
-                    // Ensure the URL uses the same hostname as the current page
-                    const uploadUrl = new URL(this.apiConfig.upload);
-                    uploadUrl.hostname = window.location.hostname;
-                    
-                    console.log('Adjusted upload URL:', uploadUrl.toString());
-                    
-                    const uploadResponse = await fetch(uploadUrl.toString(), {
+                    const uploadResponse = await fetch(this.apiConfig.upload, {
                         method: 'POST',
                         body: imageFormData,
                         redirect: 'follow', // Explicitly follow redirects
@@ -2195,9 +2187,7 @@ async selectPlan(plan) {
                     userName: document.getElementById('userName')?.value || '',
                     userPhone: document.getElementById('userPhone')?.value || ''
                 }
-            };
-
-            // Ensure API config is loaded
+            };            // Ensure API config is loaded
             if (!this.apiConfig) {
                 const { API_CONFIG } = await import('./core/api-config.js');
                 this.apiConfig = API_CONFIG;
@@ -2208,19 +2198,43 @@ async selectPlan(plan) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSubmit)
             });
-            const responseData = await response.json();
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            let responseData;
+            try {
+                const responseText = await response.text();
+                console.log('Raw response text:', responseText.substring(0, 200));
+                
+                if (!responseText.trim()) {
+                    throw new Error('Resposta vazia do servidor');
+                }
+                
+                responseData = JSON.parse(responseText);
+                console.log('Parsed response data:', responseData);
+            } catch (jsonError) {
+                console.error('Erro ao processar resposta JSON:', jsonError);
+                throw new Error('Resposta do servidor não é um JSON válido');
+            }
 
             if (!response.ok) {
                 throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
             }
             
-            // Clear localStorage after successful submission
+            // Tratar tanto o formato antigo (success: true) quanto o novo (status: 'success')
+            const isSuccess = responseData.success === true || responseData.status === 'success';
+            if (!isSuccess) {
+                throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
+            }
+              // Clear localStorage after successful submission
             this.clearLocalStorage();
             
             // Stop auto-save since form is successfully submitted
             this.stopAutoSave();
             
-            return { success: true, data: responseData.data }; // Assuming server returns { success: true, data: { id: '...' } }
+            // Retornar os dados no formato esperado
+            return { success: true, data: responseData.data || responseData };
 
         } catch (error) {
             console.error('Erro ao enviar dados do formulário:', error);
