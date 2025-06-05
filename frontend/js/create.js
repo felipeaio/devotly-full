@@ -614,12 +614,29 @@ class DevotlyCreator {
                 });
                 
                 // Adicionar estado de loading apenas ao botão clicado
-                newButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-                
-                // Exibir overlay de loading
+                newButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';                // Exibir overlay de loading com animação aprimorada
                 const loadingOverlay = document.getElementById('planLoadingOverlay');
                 if (loadingOverlay) {
+                    // Mostrar o overlay
                     loadingOverlay.style.display = 'flex';
+                    
+                    // Trigger reflow para garantir que a animação seja executada
+                    void loadingOverlay.offsetWidth;
+                    loadingOverlay.classList.add('active');
+                    
+                    // Iniciar animação da barra de progresso
+                    const progressText = loadingOverlay.querySelector('.plan-loading-progress-text');
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += Math.random() * 15;
+                        if (progress > 95) progress = 95;
+                        if (progressText) {
+                            progressText.textContent = Math.round(progress) + '%';
+                        }
+                    }, 200);
+                    
+                    // Armazenar o interval para poder limpar depois
+                    loadingOverlay.progressInterval = progressInterval;
                 }
                 
                 try {
@@ -658,19 +675,61 @@ class DevotlyCreator {
                         throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
                     }
                     const mpData = await checkoutResponse.json();
-                    
-                    if (!mpData.success || !mpData.init_point) {
+                      if (!mpData.success || !mpData.init_point) {
                         throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
                     }
                     console.log('Checkout criado, redirecionando:', mpData.init_point);
-                    window.location.href = mpData.init_point;
-                    
-                } catch (error) {
+                      // Mostrar animação de sucesso antes de redirecionar
+                    if (loadingOverlay) {
+                        // Limpar interval da barra de progresso
+                        if (loadingOverlay.progressInterval) {
+                            clearInterval(loadingOverlay.progressInterval);
+                        }
+                        
+                        // Alterar elementos para indicar sucesso
+                        const loadingText = loadingOverlay.querySelector('.plan-loading-text');
+                        const loadingSubtext = loadingOverlay.querySelector('.plan-loading-subtext');
+                        const loadingSpinner = loadingOverlay.querySelector('.plan-loading-spinner');
+                        const loadingContainer = loadingOverlay.querySelector('.plan-loading-container');
+                        const loadingIcon = loadingOverlay.querySelector('.plan-loading-icon');
+                        const progressText = loadingOverlay.querySelector('.plan-loading-progress-text');
+                        
+                        // Atualizar textos
+                        if (loadingText) loadingText.textContent = 'Pagamento Inicializado';
+                        if (loadingSubtext) loadingSubtext.textContent = 'Redirecionando para checkout...';
+                        if (progressText) progressText.textContent = '100%';
+                        
+                        // Adicionar classes de sucesso
+                        if (loadingSpinner) loadingSpinner.classList.add('success');
+                        if (loadingContainer) loadingContainer.classList.add('success');
+                        if (loadingIcon) {
+                            loadingIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        }
+                        
+                        // Redirecionar após delay para mostrar o sucesso
+                        setTimeout(() => {
+                            window.location.href = mpData.init_point;
+                        }, 1500);
+                    } else {
+                        window.location.href = mpData.init_point;
+                    }} catch (error) {
                     console.error('Erro no processo de seleção de plano:', error);
                     
-                    // Ocultar overlay de loading
+                    // Limpar interval da barra de progresso
+                    if (loadingOverlay && loadingOverlay.progressInterval) {
+                        clearInterval(loadingOverlay.progressInterval);
+                    }
+                    
+                    // Ocultar overlay de loading com animação
                     if (loadingOverlay) {
-                        loadingOverlay.style.display = 'none';
+                        loadingOverlay.classList.remove('active');
+                        // Aguardar a animação terminar antes de ocultar completamente
+                        setTimeout(() => {
+                            loadingOverlay.style.display = 'none';
+                            // Reset do conteúdo para próxima vez
+                            const progressText = loadingOverlay.querySelector('.plan-loading-progress-text');
+                            if (progressText) progressText.textContent = '0%';
+                        }, 400); // Tempo ajustado para a nova animação
                     }
                     
                     // Restaurar estado do botão

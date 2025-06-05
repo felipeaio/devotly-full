@@ -72,9 +72,7 @@ router.post('/create-preference', async (req, res) => {
         const descricoes = {
             para_sempre: 'Plano Para Sempre - Devotly',
             anual: 'Plano Anual - Devotly'
-        };
-
-        // Atualizar o objeto preferenceData:
+        };        // Atualizar o objeto preferenceData
         const preferenceData = {
             items: [
                 {
@@ -89,13 +87,14 @@ router.post('/create-preference', async (req, res) => {
                 email: email
             },
             back_urls: {
-                success: `${frontendUrl}/success.html`,
-                failure: `${frontendUrl}/failure.html`,
-                pending: `${frontendUrl}/pending.html`
+                success: `${backendUrl}/success`,
+                failure: `${backendUrl}/failure`,
+                pending: `${backendUrl}/pending`
             },
             external_reference: `${cardId}|${email}|${plano}`,
             notification_url: `${backendUrl}/webhook/mercadopago`,
-            auto_return: 'approved'
+            auto_return: 'approved',
+            binary_mode: false // Configurado como false para garantir que o webhook seja chamado
         };
 
         console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));

@@ -19,10 +19,10 @@
     <link rel="stylesheet" href="../css/create.css">
     <link rel="stylesheet" href="../css/button-fixes.css">
     <link rel="stylesheet" href="../css/final-message-styles.css">
-    <link rel="stylesheet" href="../css/preview-modal-fixes.css">
-    <link rel="stylesheet" href="../css/verse-suggestions-simple.css">
+    <link rel="stylesheet" href="../css/preview-modal-fixes.css">    <link rel="stylesheet" href="../css/verse-suggestions-simple.css">
     <link rel="stylesheet" href="../css/verse-suggestions-responsive.css">
     <link rel="stylesheet" href="../css/media-responsive-fixes.css">
+    <link rel="stylesheet" href="../css/plan-loading-overlay.css">
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
@@ -622,14 +622,33 @@
             const config = { attributes: true, childList: true, subtree: true };
             observer.observe(document.body, config);
         });
-    </script>
-
-    <!-- Adicione este HTML antes da tag no -->
+    </script>    <!-- Loading overlay para processamento de pagamento -->
     <div id="planLoadingOverlay" class="plan-loading-wrapper" style="display: none;">
+        <div class="plan-loading-backdrop"></div>
         <div class="plan-loading-container">
-            <div class="plan-loading-spinner"></div>
-            <div class="plan-loading-text">Processando pagamento</div>
-            <div class="plan-loading-subtext">Aguarde um momento...</div>
+            <div class="plan-loading-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <div class="plan-loading-spinner-wrapper">
+                <div class="plan-loading-spinner"></div>
+                <div class="plan-loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="plan-loading-content">
+                <div class="plan-loading-text">Processando pagamento</div>
+                <div class="plan-loading-subtext">Aguarde um momento...</div>
+            </div>
+            <div class="plan-loading-progress">
+                <div class="plan-loading-progress-bar"></div>
+                <div class="plan-loading-progress-text">0%</div>
+            </div>
+            <div class="plan-loading-security">
+                <i class="fas fa-shield-alt"></i>
+                <span>Processamento seguro</span>
+            </div>
         </div>
     </div>
 

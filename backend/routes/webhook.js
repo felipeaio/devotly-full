@@ -149,22 +149,38 @@ router.post('/mercadopago', async (req, res) => {
         if (card.email_sent) {
             console.log('✅ Email já foi enviado anteriormente para este cartão. Pulando reenvio.');
             return res.status(200).send('OK');
-        }
-
-        // TRANSAÇÃO ATÔMICA: Atualizar status e marcar como processando em uma única operação
-        console.log('\n9. Tentando reservar processamento do cartão...');
-        const { data: reservationData, error: reservationError } = await supabase
+        }        // DUAS ETAPAS: (1) Atualizar status de pagamento, (2) Enviar email
+        console.log('\n9. Atualizando status do pagamento para APROVADO...');
+        
+        // PRIMEIRA ETAPA: Atualizar status do pagamento independente do email
+        const { data: paymentUpdateData, error: paymentUpdateError } = await supabase
             .from('cards')
             .update({
                 status_pagamento: 'aprovado',
                 payment_id: paymentId,
-                email_sent: true, // Marcar como enviado ANTES de enviar para evitar duplicação
-                email_sent_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             })
             .eq('id', cardId)
+            .select();
+            
+        if (paymentUpdateError) {
+            console.error('❌ Erro ao atualizar status do pagamento:', paymentUpdateError);
+            throw new Error(`Erro ao atualizar status: ${paymentUpdateError.message}`);
+        }
+            
+        console.log('✅ Status do pagamento atualizado com sucesso para APROVADO');
+        
+        // SEGUNDA ETAPA: Tentar reservar o envio de email
+        console.log('\n9.1. Tentando reservar envio de email...');
+        const { data: reservationData, error: reservationError } = await supabase
+            .from('cards')
+            .update({
+                email_sending: true,
+                email_sent: true, // Marcar como enviado ANTES de enviar para evitar duplicação
+                email_sent_at: new Date().toISOString()
+            })
+            .eq('id', cardId)
             .eq('email_sent', false) // Só atualiza se email ainda não foi enviado
-            .is('payment_id', null) // Só atualiza se payment_id ainda não foi definido
             .select();
 
         if (reservationError) {

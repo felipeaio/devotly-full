@@ -241,16 +241,39 @@
             const urlParams = new URLSearchParams(window.location.search);
             const externalReference = urlParams.get('external_reference');
             const userEmailElement = document.getElementById('userEmail');
+            const paymentId = urlParams.get('payment_id');
+            
+            // Log para debug
+            console.log('Success page params:', Object.fromEntries(urlParams.entries()));
+            
+            // Checa se já foi redirecionado para evitar loops
+            const hasBeenRedirected = sessionStorage.getItem('paymentRedirected');
+            if (hasBeenRedirected === paymentId) {
+                console.log('Já foi redirecionado para este payment_id:', paymentId);
+            } else if (paymentId) {
+                // Marca como redirecionado para este paymentId
+                sessionStorage.setItem('paymentRedirected', paymentId);
+            }
             
             if (externalReference) {
-                const [cardId, email] = externalReference.split('|');
+                const [cardId, email, plano] = externalReference.split('|');
                 if (email) {
                     userEmailElement.textContent = email;
                     userEmailElement.setAttribute('title', email);
+                    
+                    // Salvar email no localStorage para uso futuro
+                    localStorage.setItem('devotly_user_email', email);
                 }
             } else {
-                userEmailElement.textContent = 'Email não encontrado';
-                userEmailElement.style.color = 'var(--color-error)';
+                // Tenta recuperar o email do localStorage
+                const savedEmail = localStorage.getItem('devotly_user_email');
+                if (savedEmail) {
+                    userEmailElement.textContent = savedEmail;
+                    userEmailElement.setAttribute('title', savedEmail);
+                } else {
+                    userEmailElement.textContent = 'Email não encontrado';
+                    userEmailElement.style.color = 'var(--color-error)';
+                }
             }
 
             // Add loading animation

@@ -96,6 +96,27 @@ app.use((req, res, next) => {
     next();
 });
 
+// Middleware para prevenir loops de redirecionamento
+app.use((req, res, next) => {
+    // Verificar se a requisição vem do próprio Mercado Pago
+    const userAgent = req.headers['user-agent'] || '';
+    const isMercadoPagoRedirect = userAgent.includes('MercadoPago') || req.headers['x-forwarded-for'];
+    
+    if (isMercadoPagoRedirect) {
+        console.log(`[${new Date().toISOString()}] Requisição identificada como redirecionamento do Mercado Pago`);
+        
+        // Verificar se esta é uma requisição para rotas de redirecionamento
+        const isRedirectRoute = ['/success', '/failure', '/pending'].includes(req.path);
+        
+        if (isRedirectRoute) {
+            // Log detalhado para depuração
+            console.log(`[${new Date().toISOString()}] Parâmetros de redirecionamento do MP:`, req.query);
+        }
+    }
+    
+    next();
+});
+
 // Rotas
 app.use('/cards', supabaseMiddleware);
 app.use('/cards', cardsRouter);
@@ -126,21 +147,36 @@ app.get('/', (req, res) => {
 
 // Rotas para páginas de retorno do Mercado Pago
 app.get('/success', (req, res) => {
+    // Log dos parâmetros recebidos
+    console.log(`[${new Date().toISOString()}] Redirecionamento /success recebido:`, req.query);
+    
+    // Verificar se já foi processado com base no payment_id
+    const { payment_id, external_reference } = req.query;
+    
     // Redirecionar para success.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    res.redirect(`${process.env.FRONTEND_URL}/success.html?${params}`);
+    // Usar status 302 para evitar caching do redirect
+    return res.status(302).redirect(`${process.env.FRONTEND_URL}/success.html?${params}`);
 });
 
 app.get('/failure', (req, res) => {
+    // Log dos parâmetros recebidos
+    console.log(`[${new Date().toISOString()}] Redirecionamento /failure recebido:`, req.query);
+    
     // Redirecionar para failure.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    res.redirect(`${process.env.FRONTEND_URL}/failure.html?${params}`);
+    // Usar status 302 para evitar caching do redirect
+    return res.status(302).redirect(`${process.env.FRONTEND_URL}/failure.html?${params}`);
 });
 
 app.get('/pending', (req, res) => {
+    // Log dos parâmetros recebidos
+    console.log(`[${new Date().toISOString()}] Redirecionamento /pending recebido:`, req.query);
+    
     // Redirecionar para pending.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    res.redirect(`${process.env.FRONTEND_URL}/pending.html?${params}`);
+    // Usar status 302 para evitar caching do redirect
+    return res.status(302).redirect(`${process.env.FRONTEND_URL}/pending.html?${params}`);
 });
 
 // Tratamento de erros
