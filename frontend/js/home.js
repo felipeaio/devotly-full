@@ -25,34 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Texto dinâmico no hero
-    const words = ['de Fé', 'Inspiradores', 'Cristãos', 'Eternos'];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    const typedText = document.querySelector('.typed-text');
-
-    function type() {
-        const currentWord = words[wordIndex];
-        if (isDeleting) {
-            typedText.textContent = currentWord.substring(0, charIndex--);
-            if (charIndex < 0) {
-                isDeleting = false;
-                wordIndex = (wordIndex + 1) % words.length;
-            }
-        } else {
-            typedText.textContent = currentWord.substring(0, charIndex++);
-            if (charIndex > currentWord.length) {
-                isDeleting = true;
-                setTimeout(type, 1500);
-                return;
-            }
-        }
-        setTimeout(type, isDeleting ? 50 : 100);
-    }
-
-    type();
-
     // Slider de preview
     const slides = document.querySelectorAll('.slide');
     let currentSlide = 0;

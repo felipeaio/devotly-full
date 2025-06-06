@@ -63,9 +63,415 @@ h1 { font-size: clamp(2rem, 5vw, 3rem); }
 h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); }
 h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 
+/* Enhanced Hero Title Styles */
+.hero__title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.title-main {
+    display: block;
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-light), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.title-main::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.hero__title:hover .title-main::after {
+    opacity: 1;
+}
+
+/* Enhanced Responsive Design for Hero Title */
 @media (max-width: 768px) {
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.75rem; }
+    .hero__title {
+        gap: 0.05rem;
+    }
+    
+    .title-main {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
+    
+    .typed-text {
+        font-size: clamp(1.5rem, 7vw, 2.2rem);
+    }
+    
+    .cursor {
+        width: 3px;
+        height: 1em;
+        margin-left: 2px;
+    }
+    
+    .typing-container {
+        min-width: 150px;
+        padding: 0.1em 0.3em;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero__title {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.05rem;
+    }
+    
+    .title-main {
+        font-size: clamp(1.6rem, 9vw, 2.2rem);
+        line-height: 1.1;
+    }
+    
+    .typed-text {
+        font-size: clamp(1.3rem, 8vw, 1.9rem);
+    }
+    
+    .typing-container {
+        min-width: 120px;
+        min-height: 1.2em;
+    }
+    
+    .cursor {
+        width: 2px;
+        height: 0.9em;
+    }
+    
+    /* Simplify animations on small screens */
+    .typing-glow {
+        display: none;
+    }
+    
+    .typed-text::before {
+        display: none;
+    }
+}
+
+@media (max-width: 320px) {
+    .title-main {
+        font-size: 1.4rem;
+    }
+    
+    .typed-text {
+        font-size: 1.2rem;
+    }
+    
+    .typing-container {
+        min-width: 100px;
+    }
+}
+
+/* Large screen enhancements */
+@media (min-width: 1200px) {
+    .hero__title {
+        gap: 0.15rem;
+    }
+    
+    .title-main {
+        font-size: 4rem;
+    }
+    
+    .typed-text {
+        font-size: 3.2rem;
+    }
+    
+    .cursor {
+        width: 5px;
+        height: 1.4em;
+    }
+    
+    .typing-container {
+        min-width: 250px;
+        padding: 0.3em 0.7em;
+    }
+}
+
+/* Ultra-wide screen support */
+@media (min-width: 1600px) {
+    .title-main {
+        font-size: 4.5rem;
+    }
+    
+    .typed-text {
+        font-size: 3.8rem;
+    }
+}
+
+/* Liquid Text Animation - Design Completamente Novo */
+.liquid-text-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.2em;
+    min-width: 280px;
+    padding: 1em 2em;
+    border-radius: 60px;
+    background: 
+        linear-gradient(135deg, rgba(15, 15, 20, 0.95), rgba(25, 25, 35, 0.9)),
+        linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.05), transparent);
+    backdrop-filter: blur(20px) brightness(1.1);
+    border: 1px solid;
+    border-image: linear-gradient(135deg, 
+        rgba(212, 175, 55, 0.3), 
+        rgba(255, 215, 0, 0.2), 
+        rgba(212, 175, 55, 0.3)) 1;
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 0 0 1px rgba(212, 175, 55, 0.1);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.liquid-stage {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    width: 100%;
+    justify-content: center;
+}
+
+.liquid-text {
+    font-family: var(--font-decorative);
+    font-weight: 700;
+    font-size: clamp(2rem, 5.5vw, 3.2rem);
+    letter-spacing: -0.02em;
+    background: linear-gradient(45deg,
+        #e8d5a3 0%,
+        #d4af37 20%,
+        #ffd700 40%,
+        #fff8dc 60%,
+        #d4af37 80%,
+        #e8d5a3 100%);
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: liquidFlow 6s ease-in-out infinite;
+    position: relative;
+    transform-origin: center;
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.2));
+}
+
+.liquid-cursor {
+    width: 3px;
+    height: 85%;
+    background: linear-gradient(180deg,
+        rgba(212, 175, 55, 0.2) 0%,
+        rgba(255, 215, 0, 0.9) 25%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 215, 0, 0.9) 75%,
+        rgba(212, 175, 55, 0.2) 100%);
+    border-radius: 2px;
+    position: relative;
+    animation: liquidCursorFlow 2.5s ease-in-out infinite;
+    box-shadow: 
+        0 0 15px rgba(255, 215, 0, 0.5),
+        0 0 30px rgba(212, 175, 55, 0.3);
+    transform-origin: center;
+}
+
+.liquid-bg-effects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.ripple-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        transparent 30%,
+        rgba(212, 175, 55, 0.05) 40%,
+        rgba(255, 215, 0, 0.03) 50%,
+        transparent 60%);
+    animation: liquidRipple 8s ease-in-out infinite;
+}
+
+.glow-ambient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg,
+        rgba(212, 175, 55, 0.03) 0%,
+        transparent 30%,
+        rgba(255, 215, 0, 0.02) 50%,
+        transparent 70%,
+        rgba(212, 175, 55, 0.03) 100%);
+    animation: ambientGlow 10s ease-in-out infinite;
+}
+
+/* Animações principais */
+@keyframes liquidFlow {
+    0%, 100% {
+        background-position: 0% 50%;
+        transform: scale(1);
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.2));
+    }
+    25% {
+        background-position: 50% 50%;
+        transform: scale(1.01);
+        filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.3));
+    }
+    50% {
+        background-position: 100% 50%;
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
+    }
+    75% {
+        background-position: 150% 50%;
+        transform: scale(1.01);
+        filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.3));
+    }
+}
+
+@keyframes liquidCursorFlow {
+    0%, 100% {
+        opacity: 0.9;
+        transform: scaleY(1) scaleX(1);
+        box-shadow: 
+            0 0 15px rgba(255, 215, 0, 0.5),
+            0 0 30px rgba(212, 175, 55, 0.3);
+    }
+    20% {
+        opacity: 0.6;
+        transform: scaleY(0.8) scaleX(1.5);
+        box-shadow: 
+            0 0 20px rgba(255, 215, 0, 0.7),
+            0 0 40px rgba(212, 175, 55, 0.4);
+    }
+    50% {
+        opacity: 1;
+        transform: scaleY(1.1) scaleX(0.8);
+        box-shadow: 
+            0 0 25px rgba(255, 215, 0, 0.8),
+            0 0 50px rgba(212, 175, 55, 0.5);
+    }
+    80% {
+        opacity: 0.7;
+        transform: scaleY(0.9) scaleX(1.2);
+        box-shadow: 
+            0 0 18px rgba(255, 215, 0, 0.6),
+            0 0 35px rgba(212, 175, 55, 0.35);
+    }
+}
+
+@keyframes liquidRipple {
+    0%, 100% {
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+    }
+    50% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+    }
+}
+
+@keyframes ambientGlow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.05) rotate(180deg);
+    }
+}
+
+/* Estados de transição */
+.liquid-text.transitioning-out {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px) rotateX(15deg);
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.1)) blur(1px);
+    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-text.transitioning-in {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateX(0deg);
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+    transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+}
+
+/* Hover effects */
+.liquid-text-container:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 12px 50px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 0 1px rgba(212, 175, 55, 0.2);
+    border-image: linear-gradient(135deg, 
+        rgba(212, 175, 55, 0.5), 
+        rgba(255, 215, 0, 0.3), 
+        rgba(212, 175, 55, 0.5)) 1;
+}
+
+.liquid-text-container:hover .liquid-text {
+    animation-duration: 4s;
+    filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.4));
+}
+
+.liquid-text-container:hover .liquid-cursor {
+    animation-duration: 1.8s;
+    box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.7),
+        0 0 40px rgba(212, 175, 55, 0.5);
+}
+
+.liquid-text-container:hover .ripple-effect {
+    animation-duration: 6s;
+}
+
+/* Estado ativo durante transições */
+.liquid-text-container.transitioning {
+    border-image: linear-gradient(135deg, 
+        rgba(212, 175, 55, 0.6), 
+        rgba(255, 215, 0, 0.4), 
+        rgba(212, 175, 55, 0.6)) 1;
+    box-shadow: 
+        0 10px 45px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 0 2px rgba(212, 175, 55, 0.15);
+}
+
+.liquid-text-container.transitioning .ripple-effect {
+    animation-duration: 4s !important;
+    opacity: 0.6 !important;
 }
 
 /* Links e Botões */
@@ -274,6 +680,8 @@ a:hover { color: var(--color-accent-hover); }
     gap: 1rem;
 }
 
+/* Basic custom-stats styles commented out - using enhanced styles from custom-stats.css instead */
+/*
 .custom-stats {
     display: flex;
     align-items: center;
@@ -314,6 +722,7 @@ a:hover { color: var(--color-accent-hover); }
 .counter {
     font-size: 0.9rem;
 }
+*/
 
 .hero__preview {
     max-width: min(300px, 90%);
@@ -375,7 +784,7 @@ a:hover { color: var(--color-accent-hover); }
 /* Como Funciona */
 .how-section {
     padding: 4rem 0;
-    background: var(--color-primary);
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
 }
 
 .section-header {
@@ -578,171 +987,562 @@ a:hover { color: var(--color-accent-hover); }
 
 /* Animações */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.6s ease-out forwards;
 }
 
-/* Smooth scroll indicators */
-.scroll-indicator {
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 100;
+/* Enhanced typing animation effects */
+@keyframes letterSpacing {
+    0% { letter-spacing: -0.1em; }
+    100% { letter-spacing: 0; }
 }
 
-.scroll-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-text);
-    transition: var(--transition);
+@keyframes wordFadeIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(10px) scale(0.9);
+        filter: blur(2px);
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
 
-.scroll-dot.active {
-    background: var(--color-accent);
-    transform: scale(1.5);
+.typed-text.typing {
+    animation: textGlow 0.5s ease-in-out, wordFadeIn 0.3s ease-out;
 }
 
-/* Responsividade */
-@media (min-width: 768px) {
-    .nav {
-        display: block;
-        position: static;
+/* Improved cursor animations */
+.cursor.smart-blink {
+    animation: smartCursorBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes smartCursorBlink {
+    0%, 44% { opacity: 1; }
+    45%, 55% { opacity: 0; }
+    56%, 100% { opacity: 1; }
+}
+
+/* Responsive enhancements for typing animation */
+@media (max-width: 768px) {
+    .typing-container {
+        min-width: 180px;
+        padding: 0.25em 0.5em;
+    }
+    
+    .typed-text {
+        font-size: clamp(1.5rem, 6vw, 2.2rem);
+        min-width: 150px;
+    }
+    
+    .cursor {
+        width: 2.5px;
+        height: 1em;
+        margin-left: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .typing-container {
+        min-width: 150px;
+        padding: 0.2em 0.4em;
+        transform: none !important; /* Disable transform on small screens */
+    }
+    
+    .typed-text {
+        font-size: clamp(1.3rem, 7vw, 1.8rem);
+        min-width: 120px;
+    }
+    
+    .typing-glow {
+        display: none; /* Disable glow on very small screens for performance */
+    }
+}
+
+/* Accessibility and reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .typing-container,
+    .typed-text,
+    .cursor,
+    .typing-backdrop,
+    .typing-glow {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    .cursor {
+        opacity: 0.7 !important;
+        animation: none !important;
+    }
+    
+    .typing-glow {
+        display: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .typed-text {
+        -webkit-text-fill-color: var(--color-accent);
         background: none;
-        padding: 0;
+        color: var(--color-accent);
+        text-shadow: none;
     }
-
-    .nav__list {
-        flex-direction: row;
+    
+    .cursor {
+        background: var(--color-accent);
+        box-shadow: none;
     }
-
-    .nav-toggle {
+    
+    .typing-backdrop {
+        border: 2px solid var(--color-accent);
+        background: transparent;
+    }
+    
+    .typing-glow {
         display: none;
     }
 }
 
-@media (max-width: 1023px) {
-    .hero__grid {
-        flex-direction: column;
-    }
+/* Focus states for accessibility */
+.typing-container:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 12px;
+}
 
-    .hero__content {
-        order: 1;
-    }
+/* Performance optimizations */
+.typing-container {
+    contain: layout style;
+    will-change: transform;
+}
 
-    .hero__preview {
-        order: 2;
-        margin-top: 1rem;
-    }
+.typed-text {
+    will-change: contents, filter;
+}
 
-    .hero__actions {
-        flex-direction: column;
-        align-items: center;
-    }
+.cursor {
+    will-change: opacity, transform;
+}
 
-    .hero__cta {
-        flex-direction: column;
-        width: 100%;
-    }
+.typing-glow {
+    will-change: transform, opacity;
+}
 
-    .hero__cta .btn {
-        width: 100%;
-        justify-content: center;
-    }
+/* Responsive Design para Liquid Text - Versão Aprimorada */
 
-    .steps-grid, .pricing-grid {
-        grid-template-columns: 1fr;
+/* Ultra-wide screens (2560px+) */
+@media (min-width: 2560px) {
+    .liquid-text-container {
+        min-width: 400px;
+        padding: 1.4em 3em;
+        border-radius: 80px;
+        max-width: 600px;
+    }
+    
+    .liquid-text {
+        font-size: clamp(3rem, 3.5vw, 4.2rem);
+        letter-spacing: -0.03em;
+    }
+    
+    .liquid-cursor {
+        width: 5px;
+        height: 95%;
+    }
+    
+    .ripple-effect {
+        animation-duration: 10s;
     }
 }
 
-/* Add these responsive improvements */
+/* Large desktop (1600px - 2559px) */
+@media (min-width: 1600px) and (max-width: 2559px) {
+    .liquid-text-container {
+        min-width: 350px;
+        padding: 1.2em 2.5em;
+        border-radius: 70px;
+        max-width: 550px;
+    }
+    
+    .liquid-text {
+        font-size: clamp(2.5rem, 4vw, 3.8rem);
+        letter-spacing: -0.025em;
+    }
+    
+    .liquid-cursor {
+        width: 4px;
+        height: 90%;
+    }
+}
 
-/* Better mobile navigation */
-@media (max-width: 768px) {
-    .nav[data-state="open"] {
-        animation: slideIn 0.3s ease-out;
+/* Standard desktop (1200px - 1599px) */
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .liquid-text-container {
+        min-width: 320px;
+        padding: 1em 2.2em;
+        border-radius: 65px;
+        max-width: 500px;
+    }
+    
+    .liquid-text {
+        font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    }
+    
+    .liquid-cursor {
+        width: 3.5px;
+        height: 88%;
+    }
+}
+
+/* Small desktop/large tablet landscape (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .liquid-text-container {
+        min-width: 300px;
+        padding: 0.9em 2em;
+        border-radius: 55px;
+        max-width: 450px;
+    }
+    
+    .liquid-text {
+        font-size: clamp(2rem, 5vw, 3.2rem);
+    }
+    
+    .liquid-cursor {
+        width: 3px;
+        height: 85%;
+    }
+    
+    /* Otimizações para telas intermediárias */
+    .ripple-effect {
+        opacity: 0.8;
+        animation-duration: 7s;
+    }
+}
+
+/* Tablet landscape (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .liquid-text-container {
+        min-width: 280px;
+        padding: 0.8em 1.8em;
+        border-radius: 50px;
+        max-width: 400px;
+        backdrop-filter: blur(15px) brightness(1.05);
+    }
+    
+    .liquid-text {
+        font-size: clamp(1.8rem, 5.5vw, 2.8rem);
+        letter-spacing: -0.015em;
+    }
+    
+    .liquid-cursor {
+        width: 3px;
+        height: 82%;
+    }
+    
+    /* Ajustes para tablets */
+    .ripple-effect {
+        opacity: 0.7;
+        animation-duration: 6s;
+    }
+    
+    .glow-ambient {
+        opacity: 0.8;
+    }
+}
+
+/* Tablet portrait (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .liquid-text-container {
+        min-width: 250px;
+        padding: 0.7em 1.5em;
+        border-radius: 45px;
+        max-width: 350px;
+        backdrop-filter: blur(12px) brightness(1.02);
+    }
+    
+    .liquid-text {
+        font-size: clamp(1.6rem, 6vw, 2.5rem);
+        letter-spacing: -0.01em;
+    }
+    
+    .liquid-cursor {
+        width: 2.5px;
+        height: 80%;
+    }
+    
+    /* Performance para tablets portrait */
+    .ripple-effect {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    
+    .glow-ambient {
+        opacity: 0.6;
+        animation-duration: 12s;
+    }
+    
+    .liquid-text {
+        filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.15));
+    }
+}
+
+/* Mobile landscape (361px - 480px) */
+@media (min-width: 361px) and (max-width: 480px) {
+    .liquid-text-container {
+        min-width: 220px;
+        padding: 0.6em 1.2em;
+        border-radius: 35px;
+        max-width: 300px;
         backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        border-width: 0.5px;
     }
-
-    .hero__content {
-        padding: clamp(1rem, 5vw, 2rem);
+    
+    .liquid-text {
+        font-size: clamp(1.4rem, 7vw, 2.2rem);
+        letter-spacing: -0.005em;
     }
-
-    .pricing-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        padding: 1rem 0;
+    
+    .liquid-cursor {
+        width: 2px;
+        height: 75%;
+        box-shadow: 
+            0 0 10px rgba(255, 215, 0, 0.4),
+            0 0 20px rgba(212, 175, 55, 0.2);
     }
-
-    .pricing-card {
-        flex: 0 0 85%;
-        scroll-snap-align: center;
-        margin-right: 1rem;
+    
+    /* Simplificações para móveis */
+    .liquid-bg-effects {
+        opacity: 0.4;
     }
-
-    /* Add touch slider indicators */
-    .slider-dots {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 1rem;
+    
+    .ripple-effect {
+        opacity: 0.3;
+        animation-duration: 5s;
     }
-
-    .slider-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--color-text);
-        transition: var(--transition);
+    
+    .glow-ambient {
+        display: none;
     }
-
-    .slider-dot.active {
-        background: var(--color-accent);
-        transform: scale(1.5);
+    
+    .liquid-text {
+        animation-duration: 4s;
+        filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.1));
     }
 }
 
-/* Improved tablet layout */
-@media (min-width: 769px) and (max-width: 1023px) {
-    .hero__grid {
-        grid-template-columns: 1fr;
-        gap: 3rem;
+/* Small mobile (320px - 360px) */
+@media (min-width: 320px) and (max-width: 360px) {
+    .liquid-text-container {
+        min-width: 200px;
+        padding: 0.5em 1em;
+        border-radius: 30px;
+        max-width: 280px;
+        backdrop-filter: blur(8px);
+        box-shadow: 
+            0 4px 20px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.02);
     }
-
-    .steps-grid {
-        grid-template-columns: repeat(2, 1fr);
+    
+    .liquid-text {
+        font-size: clamp(1.2rem, 8vw, 1.8rem);
+        letter-spacing: 0;
+        animation-duration: 3s;
+        background-size: 300% 100%;
+        filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.08));
+    }
+    
+    .liquid-cursor {
+        width: 1.5px;
+        height: 70%;
+        animation-duration: 2s;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Performance máxima para dispositivos pequenos */
+    .liquid-bg-effects {
+        opacity: 0.2;
+    }
+    
+    .ripple-effect {
+        display: none;
+    }
+    
+    .glow-ambient {
+        display: none;
     }
 }
 
-@media (min-width: 1024px) {
-    .hero__grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
+/* Extra small devices (menos de 320px) */
+@media (max-width: 319px) {
+    .liquid-text-container {
+        min-width: 180px;
+        padding: 0.4em 0.8em;
+        border-radius: 25px;
+        max-width: 250px;
+        backdrop-filter: blur(6px);
+        border: none;
+        background: rgba(15, 15, 20, 0.9);
     }
+    
+    .liquid-text {
+        font-size: clamp(1rem, 9vw, 1.5rem);
+        letter-spacing: 0.01em;
+        animation: none;
+        background: #d4af37;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: none;
+    }
+    
+    .liquid-cursor {
+        width: 1px;
+        height: 65%;
+        background: #d4af37;
+        animation: liquidCursorSimple 1.5s ease-in-out infinite;
+        box-shadow: none;
+    }
+    
+    /* Versão ultra-simplificada */
+    .liquid-bg-effects {
+        display: none;
+    }
+}
 
-    .hero__content {
-        text-align: left;
-        order: 1;
-    }
+/* Animação simplificada para cursor em telas muito pequenas */
+@keyframes liquidCursorSimple {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.3; }
+}
 
-    .hero__preview {
-        order: 2;
-        margin-top: 0;
+/* Touch devices específico */
+@media (hover: none) and (pointer: coarse) {
+    .liquid-text-container {
+        /* Melhor área de toque */
+        min-height: 44px;
+        cursor: default;
     }
+    
+    .liquid-text-container:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    /* Reduzir animações para economizar bateria */
+    .liquid-text {
+        animation-duration: 8s;
+    }
+    
+    .liquid-cursor {
+        animation-duration: 3s;
+    }
+    
+    .ripple-effect {
+        animation-duration: 10s;
+    }
+}
 
-    .hero__title, .hero__actions, .custom-stats {
-        justify-content: flex-start;
+/* Dispositivos com orientação landscape específica */
+@media (orientation: landscape) and (max-height: 500px) {
+    .liquid-text-container {
+        padding: 0.5em 1.5em;
+        min-height: 1.8em;
     }
+    
+    .liquid-text {
+        font-size: clamp(1.2rem, 4vh, 2rem);
+    }
+    
+    .liquid-cursor {
+        height: 70%;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .liquid-text-container {
+        border-width: 0.5px;
+    }
+    
+    .liquid-cursor {
+        border-radius: 1px;
+    }
+    
+    .liquid-text {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+    .liquid-text-container,
+    .liquid-text,
+    .liquid-cursor,
+    .ripple-effect,
+    .glow-ambient {
+        animation: none !important;
+        transition: opacity 0.3s ease !important;
+    }
+    
+    .liquid-cursor {
+        opacity: 0.8 !important;
+    }
+    
+    .liquid-bg-effects {
+        display: none !important;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .liquid-text-container {
+        border: 2px solid var(--color-accent);
+        background: var(--color-primary) !important;
+        backdrop-filter: none;
+        box-shadow: none;
+    }
+    
+    .liquid-text {
+        color: var(--color-accent) !important;
+        background: none !important;
+        -webkit-text-fill-color: var(--color-accent) !important;
+        animation: none !important;
+        filter: none !important;
+    }
+    
+    .liquid-cursor {
+        background: var(--color-accent) !important;
+        box-shadow: none !important;
+        animation: none !important;
+    }
+    
+    .liquid-bg-effects {
+        display: none !important;
+    }
+}
+
+/* Focus para acessibilidade */
+.liquid-text-container:focus-within {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 4px;
+}
+
+/* Performance */
+.liquid-text-container {
+    contain: layout style;
+    will-change: transform, box-shadow;
+}
+
+.liquid-text {
+    will-change: transform, filter, background-position;
+}
+
+.liquid-cursor {
+    will-change: transform, opacity;
 }

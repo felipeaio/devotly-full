@@ -13,11 +13,8 @@
     <meta name="theme-color" content="#d4af37">
     <title>Devotly - Cartões Cristãos Inspiradores</title>
     <link rel="stylesheet" href="css/home.css">
-    <link rel="stylesheet" href="css/hero-modern.css">
-    <link rel="stylesheet" href="css/typed-animation.css">
-    <link rel="stylesheet" href="css/pricing-redesign.css">
-    <link rel="stylesheet" href="css/pricing-animations.css">
-    <link rel="stylesheet" href="css/pricing-dark.css">
+    <link rel="stylesheet" href="css/enhanced-buttons.css">
+    <link rel="stylesheet" href="css/custom-stats.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500&display=swap"
         rel="stylesheet">
@@ -58,45 +55,53 @@
             <div class="hero__wrapper">
                 <div class="hero__content">
                     <span class="badge">NOVO</span>
-                    <h1 class="hero__title">Cartões Cristãos <span id="text-animation-container" class="typing-container"><span class="typed-text">Inspiradores</span><span class="cursor"></span></span></h1>
+                    <h1 class="hero__title">
+                        <span class="title-main">Cartões Cristãos</span>
+                        <div id="liquid-text-element" class="liquid-text-container">
+                            <div class="liquid-stage">
+                                <span class="liquid-text">Inspiradores</span>
+                                <div class="liquid-cursor"></div>
+                            </div>
+                            <div class="liquid-bg-effects">
+                                <div class="ripple-effect"></div>
+                                <div class="glow-ambient"></div>
+                            </div>
+                        </div>
+                    </h1>
                     <p class="hero__text verse">"Que a vossa luz brilhe diante dos homens." – Mateus 5:16</p>
                     <p class="hero__text">Crie cartões digitais cristãos com versículos e mensagens que tocam o coração
                         e inspiram vidas.
                     </p>
 
                     <div class="hero__actions">
-                        <a href="/busca" class="btn">
-                            <i class="fas fa-search" aria-hidden="true"></i>
-                            Buscar Cartão
-                        </a>
                         <div class="hero__cta">
-                            <a href="/create" class="btn btn--primary">
-                                <i class="fas fa-pen-fancy"></i>
-                                Criar Agora
+                            <a href="/create" class="btn btn--create" aria-label="Criar novo cartão cristão">
+                                <span class="btn-icon"><i class="fas fa-pen-fancy"></i></span>
+                                <span class="btn-text">Criar Agora</span>
                             </a>
-                            <a href="/demo" class="btn">
-                                <i class="fas fa-play-circle"></i>
-                                Ver Demonstração
+                            <a href="/demo" class="btn btn--demo" aria-label="Ver demonstração do serviço">
+                                <span class="btn-icon"><i class="fas fa-play-circle"></i></span>
+                                <span class="btn-text">Ver Demonstração</span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="custom-stats">
-                        <div class="avatars">
-                            <div class="avatar-frame">
-                                <img src="https://i.pravatar.cc/40?img=1" alt="Membro satisfeito" width="40" height="40">
+                    <div class="custom-stats" aria-label="Estatísticas de usuários">
+                        <div class="avatars" aria-label="Avatares de usuários">
+                            <div class="avatar-frame" role="img" aria-label="Avatar de usuário satisfeito">
+                                <img src="https://i.pravatar.cc/150?img=1" alt="Membro satisfeito" width="45" height="45" loading="lazy">
                             </div>
-                            <div class="avatar-frame">
-                                <img src="https://i.pravatar.cc/40?img=2" alt="Membro feliz" width="40" height="40">
+                            <div class="avatar-frame" role="img" aria-label="Avatar de usuário feliz">
+                                <img src="https://i.pravatar.cc/150?img=2" alt="Membro feliz" width="45" height="45" loading="lazy">
                             </div>
-                            <div class="avatar-frame">
-                                <img src="https://i.pravatar.cc/40?img=3" alt="Membro inspirado" width="40" height="40">
+                            <div class="avatar-frame" role="img" aria-label="Avatar de usuário inspirado">
+                                <img src="https://i.pravatar.cc/150?img=3" alt="Membro inspirado" width="45" height="45" loading="lazy">
                             </div>
                         </div>
                         <div class="stats-display">
                             <div class="stars" aria-label="Avaliação de 5 estrelas">★★★★★</div>
-                            <div class="counter">
-                                <span class="number">3241</span> cartões criados
+                            <div class="counter" aria-live="polite">
+                                <span class="number" role="text" aria-label="112 cartões criados">112</span> cartões criados
                             </div>
                         </div>
                     </div>
@@ -171,9 +176,6 @@
                     </div>
                 </article>
             </div>
-            <div class="section-footer">
-                <a href="/create" class="btn btn--primary">Criar Meu Cartão Agora</a>
-            </div>
         </div>
     </section>
 
@@ -220,7 +222,7 @@
                     <ul class="plan-features">
                         <li><i class="fas fa-check-circle text-success" aria-hidden="true"></i> Versículo personalizado</li>
                         <li><i class="fas fa-qrcode text-accent" aria-hidden="true"></i> QR Code estilizado</li>
-                        <li><i class="fas fa-images text-accent" aria-hidden="true"></i> Até 7 imagens</li>
+                        <li><i class="fas fa-images text-accent" aria-hidden="true"></i> Até 5 imagens</li>
                         <li><i class="fas fa-music text-accent" aria-hidden="true"></i> Música de fundo</li>
                         <li><i class="fas fa-link text-accent" aria-hidden="true"></i> URL personalizada</li>
                         <li><i class="fas fa-headset text-accent" aria-hidden="true"></i> Suporte 24h</li>
@@ -248,7 +250,7 @@
                     <a href="/privacidade" class="footer__link">Privacidade</a>
                     <div class="social-links">
                         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
@@ -259,7 +261,9 @@
     </footer>
 
     <script src="js/home.js" defer></script>
-    <script src="js/typed-animation.js" defer></script>
+    <script src="js/liquid-text-animation.js" defer></script>
+    <script src="js/button-effects.js" defer></script>
+    <script src="js/custom-stats.js" defer></script>
     <script defer>
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
