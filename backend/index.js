@@ -149,14 +149,20 @@ app.get('/', (req, res) => {
 app.get('/success', (req, res) => {
     // Log dos parâmetros recebidos
     console.log(`[${new Date().toISOString()}] Redirecionamento /success recebido:`, req.query);
+    console.log('Headers da requisição:', req.headers);
+    console.log('User-Agent:', req.get('User-Agent'));
     
     // Verificar se já foi processado com base no payment_id
     const { payment_id, external_reference } = req.query;
     
     // Redirecionar para success.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
+    const redirectUrl = `${process.env.FRONTEND_URL}/success.html?${params}`;
+    
+    console.log(`[${new Date().toISOString()}] Redirecionando para: ${redirectUrl}`);
+    
     // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(`${process.env.FRONTEND_URL}/success.html?${params}`);
+    return res.status(302).redirect(redirectUrl);
 });
 
 app.get('/failure', (req, res) => {

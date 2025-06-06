@@ -85,32 +85,44 @@ router.post('/create-preference', async (req, res) => {
             ],
             payer: {
                 email: email
-            },
-            back_urls: {
-                success: `${frontendUrl}/success.html`,
-                failure: `${frontendUrl}/failure.html`,
-                pending: `${frontendUrl}/pending.html`
+            },            back_urls: {
+                success: `${backendUrl}/success`,
+                failure: `${backendUrl}/failure`,
+                pending: `${backendUrl}/pending`
             },
             external_reference: `${cardId}|${email}|${plano}`,
-            notification_url: `${backendUrl}/webhook/mercadopago`,
-            auto_return: 'approved',
-            binary_mode: false // Configurado como false para garantir que o webhook seja chamado
+            notification_url: `${backendUrl}/webhook/mercadopago`,            auto_return: 'approved',
+            binary_mode: false, // Configurado como false para garantir que o webhook seja chamado
+            payment_methods: {
+                excluded_payment_types: [],
+                excluded_payment_methods: [],
+                installments: 12
+            }
         };
 
         console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));
+        console.log('Configurando back_urls:', {
+            success: `${backendUrl}/success`,
+            failure: `${backendUrl}/failure`,
+            pending: `${backendUrl}/pending`
+        });
 
         // Criar a preferência
         const preference = new Preference(client);
         const response = await preference.create({ body: preferenceData });
 
-        console.log('Resposta do Mercado Pago:', JSON.stringify(response, null, 2));
-
-        // Retornar resposta
-        return res.json({
+        console.log('Resposta do Mercado Pago:', JSON.stringify(response, null, 2));        // Retornar resposta
+        const responseData = {
             success: true,
             init_point: response.init_point,
-            sandbox_init_point: response.sandbox_init_point || response.init_point
-        });
+            sandbox_init_point: response.sandbox_init_point || response.init_point,
+            preference_id: response.id,
+            back_urls: preferenceData.back_urls
+        };
+        
+        console.log('Retornando resposta:', JSON.stringify(responseData, null, 2));
+        
+        return res.json(responseData);
 
     } catch (error) {
         console.error('Erro ao processar requisição:', {
