@@ -142,14 +142,18 @@ router.post('/mercadopago', async (req, res) => {
         if (card.status_pagamento === 'aprovado' && card.email_sent) {
             console.log('✅ Cartão já aprovado e email já enviado. Evitando reprocessamento.');
             return res.status(200).send('OK');
-        }
-
-        // Verificar se o email já foi enviado para evitar duplicatas
+        }        // Verificar se o email já foi enviado para evitar duplicatas
         console.log('\n8.5. Verificando se email já foi enviado...');
         if (card.email_sent) {
             console.log('✅ Email já foi enviado anteriormente para este cartão. Pulando reenvio.');
             return res.status(200).send('OK');
-        }        // DUAS ETAPAS: (1) Atualizar status de pagamento, (2) Enviar email
+        }
+
+        // Verificar se o email está sendo processado por outra instância
+        if (card.email_sending) {
+            console.log('✅ Email já está sendo processado por outra instância. Pulando reenvio.');
+            return res.status(200).send('OK');
+        }// DUAS ETAPAS: (1) Atualizar status de pagamento, (2) Enviar email
         console.log('\n9. Atualizando status do pagamento para APROVADO...');
         
         // PRIMEIRA ETAPA: Atualizar status do pagamento independente do email
@@ -169,18 +173,16 @@ router.post('/mercadopago', async (req, res) => {
         }
             
         console.log('✅ Status do pagamento atualizado com sucesso para APROVADO');
-        
-        // SEGUNDA ETAPA: Tentar reservar o envio de email
-        console.log('\n9.1. Tentando reservar envio de email...');
-        const { data: reservationData, error: reservationError } = await supabase
+          // SEGUNDA ETAPA: Tentar reservar o envio de email
+        console.log('\n9.1. Tentando reservar envio de email...');        const { data: reservationData, error: reservationError } = await supabase
             .from('cards')
             .update({
-                email_sending: true,
-                email_sent: true, // Marcar como enviado ANTES de enviar para evitar duplicação
-                email_sent_at: new Date().toISOString()
+                email_sending: true
+                // NÃO marcar email_sent como true ainda - só após envio bem-sucedido
             })
             .eq('id', cardId)
             .eq('email_sent', false) // Só atualiza se email ainda não foi enviado
+            .eq('email_sending', false) // E se não está sendo processado
             .select();
 
         if (reservationError) {
@@ -222,22 +224,34 @@ router.post('/mercadopago', async (req, res) => {
                 cardId,
                 name,
                 title,
-                cardUrl
-            });
+                cardUrl            });
             
             console.log('\n✅ Email enviado com sucesso:', emailResult);
+            
+            // Marcar email como enviado somente após sucesso
+            await supabase
+                .from('cards')
+                .update({
+                    email_sent: true,
+                    email_sent_at: new Date().toISOString(),
+                    email_sending: false
+                })
+                .eq('id', cardId);
+            
+            console.log('✅ Status de email atualizado para enviado');
+            
         } catch (emailError) {
             // Se falhar no envio do email, reverter o status para permitir nova tentativa
             console.error('\n⚠️ Erro ao enviar email de confirmação:', emailError);
             console.error('Detalhes:', emailError.message);
-            
-            try {
-                console.log('Revertendo status email_sent para permitir nova tentativa...');
+              try {
+                console.log('Revertendo status email_sending para permitir nova tentativa...');
                 await supabase
                     .from('cards')
                     .update({
                         email_sent: false,
-                        email_sent_at: null
+                        email_sent_at: null,
+                        email_sending: false
                     })
                     .eq('id', cardId);
                 console.log('Status revertido com sucesso.');

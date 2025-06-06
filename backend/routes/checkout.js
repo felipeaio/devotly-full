@@ -87,9 +87,9 @@ router.post('/create-preference', async (req, res) => {
                 email: email
             },
             back_urls: {
-                success: `${backendUrl}/success`,
-                failure: `${backendUrl}/failure`,
-                pending: `${backendUrl}/pending`
+                success: `${frontendUrl}/success.html`,
+                failure: `${frontendUrl}/failure.html`,
+                pending: `${frontendUrl}/pending.html`
             },
             external_reference: `${cardId}|${email}|${plano}`,
             notification_url: `${backendUrl}/webhook/mercadopago`,
