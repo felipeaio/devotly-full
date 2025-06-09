@@ -52,9 +52,14 @@ router.post('/create-preference', async (req, res) => {
             backendUrl = `${protocol}://${host}`;
         }
         
+        // Add protocol if missing
+        if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+            backendUrl = 'https://' + backendUrl;
+            console.log('Protocol adicionado ao BACKEND_URL:', backendUrl);
+        }
+        
         // Garantir que não há duplicação de barras
-        backendUrl = backendUrl.replace(/\/+$/, ''); // Remove barras finais
-          // Frontend URL para redirecionamentos - with multiple fallbacks
+        backendUrl = backendUrl.replace(/\/+$/, ''); // Remove barras finais// Frontend URL para redirecionamentos - with multiple fallbacks
         let frontendUrl = process.env.FRONTEND_URL;
         if (!frontendUrl) {
             // Try common frontend URLs as fallbacks
@@ -65,6 +70,13 @@ router.post('/create-preference', async (req, res) => {
             frontendUrl = possibleFrontendUrls[0]; // Use the first one as primary fallback
             console.warn('FRONTEND_URL não definido, usando fallback:', frontendUrl);
         }
+        
+        // Add protocol if missing
+        if (frontendUrl && !frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://')) {
+            frontendUrl = 'https://' + frontendUrl;
+            console.log('Protocol adicionado ao FRONTEND_URL:', frontendUrl);
+        }
+        
         frontendUrl = frontendUrl.replace(/\/+$/, ''); // Remove barras finais// Validação adicional das URLs - mais permissiva e com melhor debug
         console.log('=== DEBUG: Validando URLs ===');
         console.log('backendUrl:', backendUrl, 'tipo:', typeof backendUrl);
