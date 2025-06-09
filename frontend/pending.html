@@ -177,12 +177,107 @@
                 </a>
             </div>
         </div>
-    </div>
-
-    <script>
-        // Opcional: capturar parâmetros da URL para logging
+    </div>    <script>
+        // Capturar parâmetros da URL para logging e verificação de status
         const urlParams = new URLSearchParams(window.location.search);
-        console.log('Parâmetros do pagamento pendente:', Object.fromEntries(urlParams.entries()));
+        const paymentParams = Object.fromEntries(urlParams.entries());
+        console.log('Parâmetros do pagamento pendente:', paymentParams);
+
+        // Extrair informações importantes
+        const paymentId = paymentParams.payment_id;
+        const externalReference = paymentParams.external_reference;
+        const paymentType = paymentParams.payment_type;
+
+        // Função para verificar status do pagamento
+        async function checkPaymentStatus() {
+            if (!paymentId) {
+                console.log('Payment ID não encontrado nos parâmetros');
+                return;
+            }
+
+            try {
+                console.log('Verificando status do pagamento:', paymentId);
+                
+                // Se há external_reference, extrair o cardId
+                let cardId = null;
+                if (externalReference) {
+                    const decodedRef = decodeURIComponent(externalReference);
+                    cardId = decodedRef.split('|')[0];
+                }
+
+                if (!cardId) {
+                    console.log('Card ID não encontrado na referência externa');
+                    return;
+                }
+
+                // Verificar se o cartão foi aprovado
+                const response = await fetch(`/api/cards/${cardId}/status`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Status do cartão:', data);
+                    
+                    if (data.status_pagamento === 'aprovado') {
+                        console.log('Pagamento aprovado! Redirecionando para success...');
+                        // Redirecionar para a página de sucesso
+                        window.location.href = `/success.html?${window.location.search.substring(1)}`;
+                    }
+                } else {
+                    console.log('Erro ao verificar status:', response.status);
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status do pagamento:', error);
+            }
+        }
+
+        // Verificar status imediatamente e depois a cada 10 segundos
+        checkPaymentStatus();
+        
+        // Para pagamentos PIX, verificar com mais frequência inicialmente
+        if (paymentType === 'bank_transfer') {
+            console.log('Pagamento PIX detectado - verificando status automaticamente');
+            
+            // Verificar a cada 5 segundos nos primeiros 2 minutos
+            const frequentCheck = setInterval(() => {
+                checkPaymentStatus();
+            }, 5000);
+            
+            // Após 2 minutos, reduzir para verificar a cada 30 segundos
+            setTimeout(() => {
+                clearInterval(frequentCheck);
+                const normalCheck = setInterval(() => {
+                    checkPaymentStatus();
+                }, 30000);
+                
+                // Parar verificações após 10 minutos
+                setTimeout(() => {
+                    clearInterval(normalCheck);
+                }, 600000); // 10 minutos
+            }, 120000); // 2 minutos
+        } else {
+            // Para outros tipos de pagamento, verificar a cada 30 segundos
+            const normalCheck = setInterval(() => {
+                checkPaymentStatus();
+            }, 30000);
+            
+            // Parar verificações após 5 minutos
+            setTimeout(() => {
+                clearInterval(normalCheck);
+            }, 300000); // 5 minutos
+        }
+
+        // Adicionar contador visual para PIX
+        if (paymentType === 'bank_transfer') {
+            const messageElement = document.querySelector('.pending-message');
+            if (messageElement) {
+                messageElement.innerHTML = `
+                    <strong>PIX detectado!</strong><br>
+                    Seu pagamento está sendo processado automaticamente. 
+                    Esta página será atualizada assim que o pagamento for confirmado.
+                    <br><br>
+                    <small><i class="fas fa-sync fa-spin"></i> Verificando status automaticamente...</small>
+                `;
+            }
+        }
     </script>
 </body>
 </html>

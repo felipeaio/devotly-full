@@ -200,6 +200,73 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// Rota para verificar o status de pagamento de um cartão específico
+router.get('/:id/status', async (req, res) => {
+  try {
+    if (!req.supabase) {
+      console.error(`[${new Date().toISOString()}] Erro: Cliente Supabase não inicializado`);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      });
+    }
+
+    const cardId = req.params.id;
+    console.log(`[${new Date().toISOString()}] Verificando status do cartão:`, cardId);
+
+    if (!cardId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'ID do cartão não fornecido'
+      });
+    }
+
+    // Buscar apenas os campos necessários para verificação de status
+    const { data, error } = await req.supabase
+      .from('cards')
+      .select('id, status_pagamento, email_sent, payment_id, created_at')
+      .eq('id', cardId)
+      .single();
+
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Erro ao buscar status do cartão:`, error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro ao verificar status do cartão'
+      });
+    }
+
+    if (!data) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Cartão não encontrado'
+      });
+    }
+
+    console.log(`[${new Date().toISOString()}] Status do cartão ${cardId}:`, {
+      status_pagamento: data.status_pagamento,
+      email_sent: data.email_sent,
+      payment_id: data.payment_id
+    });
+
+    return res.json({
+      status: 'success',
+      id: data.id,
+      status_pagamento: data.status_pagamento,
+      email_sent: data.email_sent,
+      payment_id: data.payment_id,
+      created_at: data.created_at
+    });
+
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao processar verificação de status:`, error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno no servidor'
+    });
+  }
+});
+
 // Rota para obter um cartão específico pelo ID
 router.get('/:id', async (req, res) => {
   try {
