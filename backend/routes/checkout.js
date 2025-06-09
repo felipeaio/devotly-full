@@ -54,14 +54,24 @@ router.post('/create-preference', async (req, res) => {
         
         // Garantir que não há duplicação de barras
         backendUrl = backendUrl.replace(/\/+$/, ''); // Remove barras finais
-        
-        // Frontend URL para redirecionamentos
-        let frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
-        frontendUrl = frontendUrl.replace(/\/+$/, ''); // Remove barras finais
-          // Validação adicional das URLs - mais permissiva e com melhor debug
-        console.log('Validando URLs...');
+          // Frontend URL para redirecionamentos - with multiple fallbacks
+        let frontendUrl = process.env.FRONTEND_URL;
+        if (!frontendUrl) {
+            // Try common frontend URLs as fallbacks
+            const possibleFrontendUrls = [
+                'https://www.devotly.shop',
+                'https://devotly.shop'
+            ];
+            frontendUrl = possibleFrontendUrls[0]; // Use the first one as primary fallback
+            console.warn('FRONTEND_URL não definido, usando fallback:', frontendUrl);
+        }
+        frontendUrl = frontendUrl.replace(/\/+$/, ''); // Remove barras finais// Validação adicional das URLs - mais permissiva e com melhor debug
+        console.log('=== DEBUG: Validando URLs ===');
         console.log('backendUrl:', backendUrl, 'tipo:', typeof backendUrl);
         console.log('frontendUrl:', frontendUrl, 'tipo:', typeof frontendUrl);
+        console.log('process.env.FRONTEND_URL:', process.env.FRONTEND_URL);
+        console.log('process.env.BACKEND_URL:', process.env.BACKEND_URL);
+        console.log('process.env.NGROK_URL:', process.env.NGROK_URL);
         
         if (!backendUrl || typeof backendUrl !== 'string' || (!backendUrl.startsWith('http://') && !backendUrl.startsWith('https://'))) {
             console.error('ERRO: BACKEND_URL inválida:', backendUrl);
@@ -87,17 +97,18 @@ router.post('/create-preference', async (req, res) => {
                     env_ngrok: process.env.NGROK_URL
                 }
             });
-        }
-        
-        if (!frontendUrl || typeof frontendUrl !== 'string' || (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://'))) {
+        }        if (!frontendUrl || typeof frontendUrl !== 'string' || (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://'))) {
             console.error('ERRO: FRONTEND_URL inválida:', frontendUrl);
+            console.error('Todos os env vars relacionados a URL:', Object.keys(process.env).filter(key => key.includes('URL')));
             return res.status(500).json({
                 success: false,
                 error: 'Configuração inválida do servidor - URL do frontend não pôde ser determinada',
                 debug: {
                     frontendUrl,
                     type: typeof frontendUrl,
-                    env_frontend: process.env.FRONTEND_URL
+                    env_frontend: process.env.FRONTEND_URL,
+                    railway_env: process.env.RAILWAY_ENVIRONMENT,
+                    node_env: process.env.NODE_ENV
                 }
             });
         }

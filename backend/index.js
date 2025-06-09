@@ -19,8 +19,17 @@ console.log(`[${new Date().toISOString()}] Variáveis de ambiente carregadas:`);
 console.log(`SUPABASE_URL: ${process.env.SUPABASE_URL ? 'Definida' : 'Indefinida'}`);
 console.log(`SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? 'Definida' : 'Indefinida'}`);
 console.log(`MERCADO_PAGO_ACCESS_TOKEN: ${process.env.MERCADO_PAGO_ACCESS_TOKEN ? 'Definida' : 'Indefinida'}`);
-console.log(`BACKEND_URL: ${process.env.BACKEND_URL ? 'Definida' : 'Indefinida'}`);
-console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL ? 'Definida' : 'Indefinida'}`);
+console.log(`BACKEND_URL: ${process.env.BACKEND_URL}`);
+console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`RAILWAY_ENVIRONMENT: ${process.env.RAILWAY_ENVIRONMENT}`);
+
+// Debug: Print all URL-related environment variables
+console.log('=== All URL Environment Variables ===');
+Object.keys(process.env).filter(key => key.includes('URL')).forEach(key => {
+    console.log(`${key}: ${process.env[key]}`);
+});
+console.log('=====================================');
 
 // Importar o middleware de Supabase
 import supabaseMiddleware from './middleware/supabase.js';
