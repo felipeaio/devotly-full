@@ -255,8 +255,8 @@ app.get('/success', (req, res) => {
     // Verificar se já foi processado com base no payment_id
     const { payment_id, external_reference } = req.query;
     
-    // Garantir que o FRONTEND_URL esteja configurado corretamente
-    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    // URL fixa para evitar loops de redirecionamento
+    const frontendUrl = 'https://devotly.shop';
     
     // Redirecionar para success.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
@@ -264,34 +264,40 @@ app.get('/success', (req, res) => {
     
     console.log(`[${new Date().toISOString()}] Redirecionando para: ${redirectUrl}`);
     
-    // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(redirectUrl);
+    // Usar status 301 para redirecionamento permanente e evitar loops
+    return res.status(301).redirect(redirectUrl);
 });
 
 app.get('/failure', (req, res) => {
     // Log dos parâmetros recebidos
     console.log(`[${new Date().toISOString()}] Redirecionamento /failure recebido:`, req.query);
     
-    // Garantir que o FRONTEND_URL esteja configurado corretamente
-    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    // URL fixa para evitar loops de redirecionamento
+    const frontendUrl = 'https://devotly.shop';
     
     // Redirecionar para failure.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(`${frontendUrl}/failure.html?${params}`);
+    const redirectUrl = `${frontendUrl}/failure.html?${params}`;
+    console.log(`[${new Date().toISOString()}] Redirecionando para: ${redirectUrl}`);
+    
+    // Usar status 301 para redirecionamento permanente
+    return res.status(301).redirect(redirectUrl);
 });
 
 app.get('/pending', (req, res) => {
     // Log dos parâmetros recebidos
     console.log(`[${new Date().toISOString()}] Redirecionamento /pending recebido:`, req.query);
     
-    // Garantir que o FRONTEND_URL esteja configurado corretamente
-    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    // URL fixa para evitar loops de redirecionamento
+    const frontendUrl = 'https://devotly.shop';
     
     // Redirecionar para pending.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(`${frontendUrl}/pending.html?${params}`);
+    const redirectUrl = `${frontendUrl}/pending.html?${params}`;
+    console.log(`[${new Date().toISOString()}] Redirecionando para: ${redirectUrl}`);
+    
+    // Usar status 301 para redirecionamento permanente
+    return res.status(301).redirect(redirectUrl);
 });
 
 // Rota de fallback para capturar URLs problemáticas do Mercado Pago
@@ -301,9 +307,20 @@ app.get('/devotly.shop/*', (req, res) => {
     console.error('Query params:', req.query);
     console.error('Headers:', req.headers);
     
-    // Extrair a parte correta da URL
-    const correctPath = req.path.replace('/devotly.shop', '');
-    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    // Extrair a parte correta da URL - remove TODAS as ocorrências de /devotly.shop
+    let correctPath = req.path;
+    
+    // Remove todas as repetições de /devotly.shop do início
+    while (correctPath.startsWith('/devotly.shop')) {
+        correctPath = correctPath.replace('/devotly.shop', '');
+    }
+    
+    // Se ainda não há um caminho válido, assumir que é success.html
+    if (!correctPath || correctPath === '/') {
+        correctPath = '/success.html';
+    }
+    
+    const frontendUrl = 'https://devotly.shop'; // URL fixa para evitar loops
     
     // Construir a URL correta
     const params = new URLSearchParams(req.query).toString();
@@ -311,7 +328,25 @@ app.get('/devotly.shop/*', (req, res) => {
     
     console.log(`[${new Date().toISOString()}] Redirecionando para URL correta: ${correctUrl}`);
     
-    return res.status(302).redirect(correctUrl);
+    // Usar redirect 301 (permanente) para quebrar o loop
+    return res.status(301).redirect(correctUrl);
+});
+
+// Rota adicional para capturar qualquer URL que contenha repetições do domínio
+app.get('*', (req, res, next) => {
+    // Verificar se a URL contém repetições do domínio devotly.shop
+    if (req.path.includes('/devotly.shop/') && req.path.split('/devotly.shop/').length > 2) {
+        console.error(`[${new Date().toISOString()}] LOOP DETECTADO: ${req.url}`);
+        
+        // Redirecionar diretamente para success.html com os parâmetros
+        const params = new URLSearchParams(req.query).toString();
+        const correctUrl = `https://devotly.shop/success.html${params ? '?' + params : ''}`;
+        
+        console.log(`[${new Date().toISOString()}] Redirecionamento de emergência para: ${correctUrl}`);
+        return res.status(301).redirect(correctUrl);
+    }
+    
+    next();
 });
 
 // Tratamento de erros
