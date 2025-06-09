@@ -511,18 +511,19 @@ class DevotlyCreator {
                         if (file.size > 5 * 1024 * 1024) {
                             alert('Imagem muito grande. Máximo 5MB');
                             continue;
-                        }
-
-                        try {
-                            // Criar URL temporária
+                        }                        try {
+                            // Comprimir imagem para WebP antes de armazenar
+                            const compressedFile = await this.convertToWebP(file);
+                            
+                            // Criar URL temporária para preview (usando arquivo original)
                             const tempUrl = URL.createObjectURL(file);
                             
                             // Adicionar à lista de imagens
                             const imageData = {
                                 isTemp: true,
                                 tempUrl: tempUrl,
-                                blob: file,
-                                fileName: file.name
+                                blob: compressedFile, // Usar arquivo comprimido
+                                fileName: compressedFile.name
                             };
                             
                             this.state.formData.images.push(imageData);
@@ -534,7 +535,9 @@ class DevotlyCreator {
                             this.saveToLocalStorage();
                         } catch (imageError) {
                             console.error('Erro ao processar imagem individual:', imageError);
-                            URL.revokeObjectURL(tempUrl); // Limpar URL se houver erro
+                            if (typeof tempUrl !== 'undefined') {
+                                URL.revokeObjectURL(tempUrl); // Limpar URL se houver erro
+                            }
                             continue; // Continuar para próxima imagem em caso de erro
                         }
                     }
@@ -1330,24 +1333,72 @@ scrollToSection(sectionId) {
         }, 10000);
         
         return errorElement;
-    }
-
-    async convertToWebP(file) { // Simplified as per original logic
+    }    async convertToWebP(file, quality = 0.8, maxWidth = 1920, maxHeight = 1080) {
         return new Promise((resolve, reject) => {
-            if (window.Worker && !this.isLowEndDevice) {
-                try {
-                    const blobURL = URL.createObjectURL(file);
-                    resolve(blobURL); // Using object URL directly
-                    return;
-                } catch (err) {
-                    console.warn('Web Worker or Object URL creation failed, using FileReader:', err);
-                }
+            // Se já for WebP e não precisar redimensionar, retorna o arquivo original
+            if (file.type === 'image/webp' && file.size <= 2 * 1024 * 1024) {
+                resolve(file);
+                return;
             }
-            // Fallback for low-end or if worker fails
-            const reader = new FileReader();
-            reader.onload = () => resolve(file); // Resolve with the original file (as Blob)
-            reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
-            reader.readAsDataURL(file); // This is actually not needed if we resolve with 'file'
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = () => {
+                try {
+                    // Calcular dimensões mantendo proporção
+                    let { width, height } = img;
+                    
+                    // Redimensionar se necessário
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
+                    }
+
+                    // Configurar canvas
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Desenhar imagem redimensionada
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Converter para WebP
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                // Criar novo arquivo com nome WebP
+                                const originalName = file.name.replace(/\.[^/.]+$/, '');
+                                const webpFile = new File([blob], `${originalName}.webp`, {
+                                    type: 'image/webp',
+                                    lastModified: Date.now()
+                                });
+                                
+                                console.log(`Imagem comprimida: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) → ${webpFile.name} (${(webpFile.size / 1024 / 1024).toFixed(2)}MB)`);
+                                resolve(webpFile);
+                            } else {
+                                reject(new Error('Falha na conversão para WebP'));
+                            }
+                        },
+                        'image/webp',
+                        quality
+                    );
+                } catch (error) {
+                    reject(new Error(`Erro na compressão: ${error.message}`));
+                }
+            };
+
+            img.onerror = () => {
+                reject(new Error('Falha ao carregar imagem para compressão'));
+            };
+
+            // Carregar imagem
+            if (file instanceof Blob) {
+                img.src = URL.createObjectURL(file);
+            } else {
+                reject(new Error('Arquivo inválido para compressão'));
+            }
         });
     }
 
@@ -1379,10 +1430,11 @@ scrollToSection(sectionId) {
                 if (file.size > 5 * 1024 * 1024) { // 5MB
                     this.showError(this.elements.imageUpload, 'Imagem muito grande. Máximo 5MB');
                     continue;
-                }
-
-                try {
-                    // Criar URL temporária para preview
+                }                try {
+                    // Comprimir imagem para WebP antes do upload
+                    const compressedFile = await this.convertToWebP(file);
+                    
+                    // Criar URL temporária para preview (usando arquivo original para melhor qualidade visual)
                     const tempUrl = URL.createObjectURL(file);
                     
                     // Adicionar loading indicator
@@ -1390,17 +1442,17 @@ scrollToSection(sectionId) {
                     this.state.formData.images.push({
                         isTemp: true,
                         tempUrl: tempUrl,
-                        blob: file,
-                        fileName: file.name,
+                        blob: compressedFile, // Usar arquivo comprimido para upload
+                        fileName: compressedFile.name,
                         loading: true
                     });
 
                     // Adicionar preview no formulário com estado de loading
                     this.addImagePreview(tempUrl, loadingIndex);
                     
-                    // Upload da imagem para o servidor
+                    // Upload da imagem comprimida para o servidor
                     const formData = new FormData();
-                    formData.append('image', file);
+                    formData.append('image', compressedFile);
                     
                     const uploadResponse = await fetch(this.apiConfig.upload, {
                         method: 'POST',
@@ -1432,13 +1484,12 @@ scrollToSection(sectionId) {
                         console.error('Invalid URL received:', responseData.url);
                         throw new Error('URL da imagem inválida');
                     }
-                    
-                    // Atualizar objeto de imagem com URL do servidor
+                      // Atualizar objeto de imagem com URL do servidor
                     this.state.formData.images[loadingIndex] = {
                         isTemp: false,
-                        url: uploadData.url,
+                        url: responseData.url,
                         tempUrl: tempUrl,  // Manter URL temporária para preview local
-                        fileName: file.name,
+                        fileName: compressedFile.name,
                         loading: false
                     };
                     
