@@ -44,10 +44,12 @@ router.post('/create-preference', async (req, res) => {
             });
         }
         console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);        // Obter base URL para callbacks
-        let backendUrl = process.env.BACKEND_URL;
+        let backendUrl = process.env.BACKEND_URL || process.env.NGROK_URL;
         if (!backendUrl || !backendUrl.startsWith('http')) {
             console.warn('BACKEND_URL não configurado ou inválido. Usando URL da requisição como fallback.');
-            backendUrl = `${req.protocol}://${req.get('host')}`;
+            const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+            const host = req.headers['x-forwarded-host'] || req.get('host');
+            backendUrl = `${protocol}://${host}`;
         }
         
         // Garantir que não há duplicação de barras
@@ -56,26 +58,56 @@ router.post('/create-preference', async (req, res) => {
         // Frontend URL para redirecionamentos
         let frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
         frontendUrl = frontendUrl.replace(/\/+$/, ''); // Remove barras finais
+          // Validação adicional das URLs - mais permissiva e com melhor debug
+        console.log('Validando URLs...');
+        console.log('backendUrl:', backendUrl, 'tipo:', typeof backendUrl);
+        console.log('frontendUrl:', frontendUrl, 'tipo:', typeof frontendUrl);
         
-        // Validação adicional das URLs
-        if (!backendUrl.startsWith('http')) {
+        if (!backendUrl || typeof backendUrl !== 'string' || (!backendUrl.startsWith('http://') && !backendUrl.startsWith('https://'))) {
             console.error('ERRO: BACKEND_URL inválida:', backendUrl);
+            console.error('Headers da requisição:', {
+                protocol: req.protocol,
+                host: req.get('host'),
+                'x-forwarded-proto': req.headers['x-forwarded-proto'],
+                'x-forwarded-host': req.headers['x-forwarded-host'],
+                origin: req.headers.origin,
+                referer: req.headers.referer
+            });
+            console.error('Environment vars:', {
+                BACKEND_URL: process.env.BACKEND_URL,
+                NGROK_URL: process.env.NGROK_URL
+            });
             return res.status(500).json({
                 success: false,
-                error: 'Configuração inválida do servidor'
+                error: 'Configuração inválida do servidor - URL do backend não pôde ser determinada',
+                debug: {
+                    backendUrl,
+                    type: typeof backendUrl,
+                    env_backend: process.env.BACKEND_URL,
+                    env_ngrok: process.env.NGROK_URL
+                }
             });
         }
         
-        if (!frontendUrl.startsWith('http')) {
+        if (!frontendUrl || typeof frontendUrl !== 'string' || (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://'))) {
             console.error('ERRO: FRONTEND_URL inválida:', frontendUrl);
             return res.status(500).json({
                 success: false,
-                error: 'Configuração inválida do servidor'
+                error: 'Configuração inválida do servidor - URL do frontend não pôde ser determinada',
+                debug: {
+                    frontendUrl,
+                    type: typeof frontendUrl,
+                    env_frontend: process.env.FRONTEND_URL
+                }
             });
         }
-        
-        console.log('Backend URL para webhooks:', backendUrl);
+          console.log('Backend URL para webhooks:', backendUrl);
         console.log('Frontend URL para redirecionamentos:', frontendUrl);
+        console.log('Environment variables check:', {
+            BACKEND_URL: process.env.BACKEND_URL,
+            FRONTEND_URL: process.env.FRONTEND_URL,
+            NGROK_URL: process.env.NGROK_URL
+        });
 
         // Inicializar Mercado Pago
         const client = new MercadoPagoConfig({
