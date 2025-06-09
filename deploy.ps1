@@ -1,4 +1,4 @@
-# Script PowerShell para deploy no Railway
+# Script PowerShell para deploy no Railway com verificação de URLs
 
 Write-Host "Iniciando deploy no Railway" -ForegroundColor Green
 
@@ -14,6 +14,12 @@ railway whoami
 if ($LASTEXITCODE -ne 0) {
     railway login
 }
+
+# Verificar configuração das URLs antes do deploy
+Write-Host "Verificando configuração das URLs..." -ForegroundColor Yellow
+cd backend
+node test-urls.js
+cd ..
 
 # Configuração das variáveis de ambiente
 Write-Host "Configurando variáveis de ambiente..." -ForegroundColor Yellow

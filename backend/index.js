@@ -90,9 +90,53 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Logger
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] Requisição: ${req.method} ${req.url} from ${req.ip}`);
+    
+    // Log especial para problemas de redirecionamento
+    if (req.url.includes('devotly.shop') && req.url.includes('/devotly.shop/')) {
+        console.error(`[${new Date().toISOString()}] URL PROBLEMÁTICA DETECTADA: ${req.url}`);
+        console.error('Headers:', req.headers);
+        console.error('Query:', req.query);
+    }
+    
     if (req.body && Object.keys(req.body).length > 0) {
         console.log(`[${new Date().toISOString()}] Body:`, JSON.stringify(req.body, null, 2));
     }
+    next();
+});
+
+// Middleware específico para debug de URLs do Mercado Pago
+app.use((req, res, next) => {
+    // Detectar requisições vindas do Mercado Pago
+    const userAgent = req.headers['user-agent'] || '';
+    const isMercadoPagoRequest = userAgent.includes('MercadoPago') || 
+                                req.headers.referer?.includes('mercadopago') ||
+                                req.query.payment_id || 
+                                req.query.collection_id;
+    
+    if (isMercadoPagoRequest) {
+        console.log(`[${new Date().toISOString()}] === REQUISIÇÃO DO MERCADO PAGO DETECTADA ===`);
+        console.log('URL completa:', req.url);
+        console.log('Path:', req.path);
+        console.log('Query:', req.query);
+        console.log('Headers relevantes:', {
+            'user-agent': req.headers['user-agent'],
+            'referer': req.headers.referer,
+            'host': req.headers.host,
+            'x-forwarded-host': req.headers['x-forwarded-host'],
+            'x-forwarded-proto': req.headers['x-forwarded-proto']
+        });
+        
+        // Verificar se há problema na URL
+        if (req.url.includes('/devotly.shop/')) {
+            console.error(`[${new Date().toISOString()}] PROBLEMA DE URL DETECTADO!`);
+            console.error('URL problemática:', req.url);
+            console.error('Variáveis de ambiente:', {
+                BACKEND_URL: process.env.BACKEND_URL,
+                FRONTEND_URL: process.env.FRONTEND_URL
+            });
+        }
+    }
+    
     next();
 });
 
@@ -128,6 +172,53 @@ app.use('/api/checkout', supabaseMiddleware, checkoutRouter);
 app.use('/webhook', supabaseMiddleware);
 app.use('/webhook', webhookRouter);
 
+// Endpoint de debug para verificar configuração das URLs
+app.get('/debug/urls', (req, res) => {
+    let backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl || !backendUrl.startsWith('http')) {
+        backendUrl = `${req.protocol}://${req.get('host')}`;
+    }
+    backendUrl = backendUrl.replace(/\/+$/, '');
+    
+    let frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    frontendUrl = frontendUrl.replace(/\/+$/, '');
+    
+    const debugInfo = {
+        timestamp: new Date().toISOString(),
+        environment: {
+            NODE_ENV: process.env.NODE_ENV,
+            BACKEND_URL: process.env.BACKEND_URL,
+            FRONTEND_URL: process.env.FRONTEND_URL
+        },
+        computed: {
+            backendUrl,
+            frontendUrl
+        },
+        mercadoPagoUrls: {
+            success: `${backendUrl}/success`,
+            failure: `${backendUrl}/failure`,
+            pending: `${backendUrl}/pending`,
+            webhook: `${backendUrl}/webhook/mercadopago`
+        },
+        finalRedirectUrls: {
+            success: `${frontendUrl}/success.html`,
+            failure: `${frontendUrl}/failure.html`,
+            pending: `${frontendUrl}/pending.html`
+        },
+        requestInfo: {
+            protocol: req.protocol,
+            host: req.get('host'),
+            originalUrl: req.originalUrl,
+            headers: {
+                'x-forwarded-proto': req.headers['x-forwarded-proto'],
+                'x-forwarded-host': req.headers['x-forwarded-host']
+            }
+        }
+    };
+    
+    res.json(debugInfo);
+});
+
 // Rota raiz e health check
 app.get('/', (req, res) => {
     // Verificar status dos serviços
@@ -155,9 +246,12 @@ app.get('/success', (req, res) => {
     // Verificar se já foi processado com base no payment_id
     const { payment_id, external_reference } = req.query;
     
+    // Garantir que o FRONTEND_URL esteja configurado corretamente
+    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    
     // Redirecionar para success.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
-    const redirectUrl = `${process.env.FRONTEND_URL}/success.html?${params}`;
+    const redirectUrl = `${frontendUrl}/success.html?${params}`;
     
     console.log(`[${new Date().toISOString()}] Redirecionando para: ${redirectUrl}`);
     
@@ -169,20 +263,46 @@ app.get('/failure', (req, res) => {
     // Log dos parâmetros recebidos
     console.log(`[${new Date().toISOString()}] Redirecionamento /failure recebido:`, req.query);
     
+    // Garantir que o FRONTEND_URL esteja configurado corretamente
+    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    
     // Redirecionar para failure.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
     // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(`${process.env.FRONTEND_URL}/failure.html?${params}`);
+    return res.status(302).redirect(`${frontendUrl}/failure.html?${params}`);
 });
 
 app.get('/pending', (req, res) => {
     // Log dos parâmetros recebidos
     console.log(`[${new Date().toISOString()}] Redirecionamento /pending recebido:`, req.query);
     
+    // Garantir que o FRONTEND_URL esteja configurado corretamente
+    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    
     // Redirecionar para pending.html mantendo os parâmetros da URL
     const params = new URLSearchParams(req.query).toString();
     // Usar status 302 para evitar caching do redirect
-    return res.status(302).redirect(`${process.env.FRONTEND_URL}/pending.html?${params}`);
+    return res.status(302).redirect(`${frontendUrl}/pending.html?${params}`);
+});
+
+// Rota de fallback para capturar URLs problemáticas do Mercado Pago
+app.get('/devotly.shop/*', (req, res) => {
+    console.error(`[${new Date().toISOString()}] URL PROBLEMÁTICA CAPTURADA: ${req.url}`);
+    console.error('Path original:', req.path);
+    console.error('Query params:', req.query);
+    console.error('Headers:', req.headers);
+    
+    // Extrair a parte correta da URL
+    const correctPath = req.path.replace('/devotly.shop', '');
+    const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+    
+    // Construir a URL correta
+    const params = new URLSearchParams(req.query).toString();
+    const correctUrl = `${frontendUrl}${correctPath}${params ? '?' + params : ''}`;
+    
+    console.log(`[${new Date().toISOString()}] Redirecionando para URL correta: ${correctUrl}`);
+    
+    return res.status(302).redirect(correctUrl);
 });
 
 // Tratamento de erros

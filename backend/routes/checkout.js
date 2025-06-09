@@ -43,17 +43,36 @@ router.post('/create-preference', async (req, res) => {
                 message: 'Modo de demonstração: Pagamento simulado'
             });
         }
-        console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);
-
-        // Obter base URL para callbacks
+        console.log('Access Token:', process.env.MERCADO_PAGO_ACCESS_TOKEN);        // Obter base URL para callbacks
         let backendUrl = process.env.BACKEND_URL;
         if (!backendUrl || !backendUrl.startsWith('http')) {
             console.warn('BACKEND_URL não configurado ou inválido. Usando URL da requisição como fallback.');
             backendUrl = `${req.protocol}://${req.get('host')}`;
         }
         
+        // Garantir que não há duplicação de barras
+        backendUrl = backendUrl.replace(/\/+$/, ''); // Remove barras finais
+        
         // Frontend URL para redirecionamentos
-        const frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+        let frontendUrl = process.env.FRONTEND_URL || 'https://devotly.shop';
+        frontendUrl = frontendUrl.replace(/\/+$/, ''); // Remove barras finais
+        
+        // Validação adicional das URLs
+        if (!backendUrl.startsWith('http')) {
+            console.error('ERRO: BACKEND_URL inválida:', backendUrl);
+            return res.status(500).json({
+                success: false,
+                error: 'Configuração inválida do servidor'
+            });
+        }
+        
+        if (!frontendUrl.startsWith('http')) {
+            console.error('ERRO: FRONTEND_URL inválida:', frontendUrl);
+            return res.status(500).json({
+                success: false,
+                error: 'Configuração inválida do servidor'
+            });
+        }
         
         console.log('Backend URL para webhooks:', backendUrl);
         console.log('Frontend URL para redirecionamentos:', frontendUrl);
@@ -98,13 +117,17 @@ router.post('/create-preference', async (req, res) => {
                 excluded_payment_methods: [],
                 installments: 12
             }
-        };
-
-        console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));
+        };        console.log('Criando preferência:', JSON.stringify(preferenceData, null, 2));
         console.log('Configurando back_urls:', {
             success: `${backendUrl}/success`,
             failure: `${backendUrl}/failure`,
             pending: `${backendUrl}/pending`
+        });
+        console.log('Variáveis de ambiente relevantes:', {
+            BACKEND_URL: process.env.BACKEND_URL,
+            FRONTEND_URL: process.env.FRONTEND_URL,
+            backendUrl_computed: backendUrl,
+            frontendUrl_computed: frontendUrl
         });
 
         // Criar a preferência
