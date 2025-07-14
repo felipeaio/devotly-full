@@ -662,6 +662,11 @@ class DevotlyCreator {
                 }
                 
                 try {
+                    // Chamar selectPlan sem passar pelo método que está falhando
+                    const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
+                    const planoPtBr = planMapping[planType] || planType;
+                    this.state.formData.selectedPlan = planoPtBr;
+                    
                     // Rastrear seleção de plano
                     if (typeof TikTokEvents !== 'undefined') {
                         const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
@@ -669,11 +674,6 @@ class DevotlyCreator {
                         TikTokEvents.create.completeCreation(this.state.cardId);
                         TikTokEvents.selectPlan(planoPtBr, planValue);
                     }
-                    
-                    // Chamar selectPlan sem passar pelo método que está falhando
-                    const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
-                    const planoPtBr = planMapping[planType] || planType;
-                    this.state.formData.selectedPlan = planoPtBr;
                     
                     // Rastrear evento de seleção de plano para TikTok Pixel (AddToCart e InitiateCheckout)
                     try {
