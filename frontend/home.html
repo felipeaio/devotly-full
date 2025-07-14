@@ -11,6 +11,29 @@
         content="Crie cartões digitais com a Palavra de Deus para compartilhar bênçãos e esperança.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#d4af37">
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+  ttq.page();
+  
+  // Inicializar eventos personalizados quando o pixel carregar
+  ttq.ready(function() {
+    if (typeof initTikTokEvents === 'function') {
+      initTikTokEvents();
+      console.log('TikTok Events inicializado após carregamento do pixel');
+    } else {
+      console.warn('initTikTokEvents não está disponível. Verifique se tiktok-events.js está carregado.');
+    }
+  });
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
     <title>Devotly - Cartões Cristãos Inspiradores</title>
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/enhanced-buttons.css">
@@ -42,7 +65,7 @@
                 <ul class="nav__list">
                     <li><a href="#como-funciona" class="nav__link">Como Funciona</a></li>
                     <li><a href="#precos" class="nav__link">Planos</a></li>
-                    <li><a href="/demo" class="nav__link">Demonstração</a></li>
+                    <li><a href="https://devotly.shop/view?id=0127a993-144c-47d5-a423-0d3612c3819b" class="nav__link">Demonstração</a></li>
                 </ul>
             </nav>
         </div>
@@ -78,7 +101,7 @@
                                 <span class="btn-icon"><i class="fas fa-pen-fancy"></i></span>
                                 <span class="btn-text">Criar Agora</span>
                             </a>
-                            <a href="/demo" class="btn btn--demo" aria-label="Ver demonstração do serviço">
+                            <a href="https://devotly.shop/view?id=0127a993-144c-47d5-a423-0d3612c3819b" class="btn btn--demo" aria-label="Ver demonstração do serviço">
                                 <span class="btn-icon"><i class="fas fa-play-circle"></i></span>
                                 <span class="btn-text">Ver Demonstração</span>
                             </a>
@@ -274,6 +297,7 @@
     <script src="js/liquid-text-animation.js" defer></script>
     <script src="js/button-effects.js" defer></script>
     <script src="js/custom-stats.js" defer></script>
+    <script src="js/tiktok-events.js" defer></script>
     <script defer>
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>

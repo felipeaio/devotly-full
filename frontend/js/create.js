@@ -649,6 +649,41 @@ class DevotlyCreator {
                     const planoPtBr = planMapping[planType] || planType;
                     this.state.formData.selectedPlan = planoPtBr;
                     
+                    // Rastrear evento de seleção de plano para TikTok Pixel (AddToCart e InitiateCheckout)
+                    try {
+                        const planValues = { 'para_sempre': 297, 'anual': 97 };
+                        const planValue = planValues[planoPtBr] || 0;
+                        
+                        // Salvar dados para rastreamento posterior
+                        localStorage.setItem('devotlyCardData', JSON.stringify({
+                            cardId: 'new-card-' + Date.now(),
+                            planName: planoPtBr === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual',
+                            price: planValue
+                        }));
+                        
+                        // Salvar dados do usuário para eventos de identificação
+                        const userEmail = document.getElementById('userEmail')?.value;
+                        if (userEmail) {
+                            localStorage.setItem('devotlyUserData', JSON.stringify({
+                                email: userEmail,
+                                name: document.getElementById('userName')?.value || ''
+                            }));
+                            
+                            // Identificar usuário com email hash
+                            if (typeof window.TikTokEvents !== 'undefined') {
+                                window.TikTokEvents.identifyUser(userEmail, null, null);
+                            }
+                        }
+                        
+                        // Rastrear evento de adição ao carrinho 
+                        if (typeof window.TikTokEvents !== 'undefined') {
+                            window.TikTokEvents.startCardCreation();
+                            window.TikTokEvents.selectPlan(planoPtBr, planValue);
+                        }
+                    } catch (pixelError) {
+                        console.error('Erro ao rastrear evento TikTok:', pixelError);
+                    }
+                    
                     const cardCreationResponse = await this.submitFormData();
                     if (!cardCreationResponse.success) {
                         throw new Error(cardCreationResponse.message || 'Erro ao criar cartão');
@@ -683,6 +718,27 @@ class DevotlyCreator {
                         throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
                     }
                     console.log('Checkout criado, redirecionando:', mpData.init_point);
+                    
+                    // Rastrear evento de início de checkout (AddPaymentInfo)
+                    try {
+                        if (typeof window.TikTokEvents !== 'undefined') {
+                            // Recuperar dados do plano do localStorage
+                            const cardData = JSON.parse(localStorage.getItem('devotlyCardData')) || {};
+                            const planValue = cardData.price || 0;
+                            
+                            // Rastrear evento de adição de informações de pagamento
+                            window.TikTokEvents.addPaymentInfo(planoPtBr, planValue);
+                            
+                            // Armazenar dados do pagamento para uso na página de sucesso
+                            localStorage.setItem('devotlyPaymentData', JSON.stringify({
+                                value: planValue,
+                                cardId: checkoutData.cardId,
+                                planType: planoPtBr
+                            }));
+                        }
+                    } catch (pixelError) {
+                        console.error('Erro ao rastrear evento de checkout TikTok:', pixelError);
+                    }
                       // Mostrar animação de sucesso antes de redirecionar
                     if (loadingOverlay) {
                         // Limpar interval da barra de progresso

@@ -157,6 +157,25 @@ class DevotlyViewer {    constructor() {
                 return;
             }
 
+            // Rastrear visualização de cartão para o TikTok Pixel
+            try {
+                if (typeof window.TikTokEvents !== 'undefined') {
+                    const cardTitle = this.state.cardData.titulo || 'Cartão Devocional';
+                    window.TikTokEvents.viewCard(this.state.cardId, cardTitle);
+                    
+                    // Se houver dados do criador, identificar usuário
+                    if (this.state.cardData.email_criador) {
+                        window.TikTokEvents.identifyUser(
+                            this.state.cardData.email_criador, 
+                            null, 
+                            this.state.cardData.id_criador || this.state.cardId
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao rastrear visualização de cartão TikTok:', error);
+            }
+
             this.renderCard();
             this.setupEventListeners();
             this.setupSectionIndicators(); // Adicionar esta linha
