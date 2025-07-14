@@ -120,8 +120,8 @@ router.post('/mercadopago', async (req, res) => {
         // Rastrear evento de compra através do TikTok API Events
         try {
             console.log('\n7.1. Enviando evento de compra para TikTok API Events...');
-            const planValues = { 'para_sempre': 297, 'anual': 97 };
-            const planValue = planValues[plano] || 0;
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
             
             // Enviar evento de compra
             await tiktokEvents.trackPurchase(
@@ -129,11 +129,12 @@ router.post('/mercadopago', async (req, res) => {
                 plano,
                 planValue,
                 email,
-                null // telefone não disponível aqui
+                paymentInfo.payer?.phone?.number || null,
+                req
             );
-            console.log('✅ Evento Purchase enviado para TikTok API Events');
+            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event tracked for card: ${cardId}, plan: ${plano}, value: ${planValue}`);
         } catch (tikTokError) {
-            console.error('⚠️ Erro ao enviar evento para TikTok API:', tikTokError);
+            console.error(`[${new Date().toISOString()}] ⚠️ Erro ao rastrear TikTok Purchase:`, tikTokError.message);
             // Continuamos o fluxo mesmo se o evento falhar
         }
 

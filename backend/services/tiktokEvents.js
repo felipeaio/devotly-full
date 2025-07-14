@@ -8,12 +8,16 @@ import crypto from 'crypto';
 class TikTokEventsService {
     constructor() {
         this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/pixel/track/';
-        this.accessToken = '08538eef624276105c15fff5c1dfefe76b9726f2'; // Seu Access Token
-        this.pixelCode = 'D1QFD0RC77UF6MBM48MG'; // Seu Pixel Code
-        this.maxRetries = 3; // Número máximo de tentativas
-        this.retryDelay = 1000; // Tempo entre tentativas (ms)
-        this.eventQueue = []; // Fila para eventos pendentes
-        this.processQueueInterval = null; // Intervalo para processar a fila
+        this.accessToken = process.env.TIKTOK_ACCESS_TOKEN || '08538eef624276105c15fff5c1dfefe76b9726f2';
+        this.pixelCode = process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG';
+        this.maxRetries = 3;
+        this.retryDelay = 1000;
+        this.eventQueue = [];
+        this.processQueueInterval = null;
+        this.testMode = process.env.NODE_ENV === 'development';
+
+        console.log(`[TikTok Events] Inicializado com Pixel: ${this.pixelCode}`);
+        console.log(`[TikTok Events] Modo de teste: ${this.testMode}`);
 
         // Iniciar processamento da fila
         this.startQueueProcessor();
@@ -38,6 +42,28 @@ class TikTokEventsService {
     }
 
     /**
+     * Obtém IP do usuário de forma segura
+     * @param {Object} req - Request object
+     * @returns {string} - IP do usuário
+     */
+    getUserIP(req) {
+        return req.headers['x-forwarded-for']?.split(',')[0] ||
+               req.connection.remoteAddress ||
+               req.socket.remoteAddress ||
+               (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+               '127.0.0.1';
+    }
+
+    /**
+     * Obtém User Agent de forma segura
+     * @param {Object} req - Request object
+     * @returns {string} - User Agent
+     */
+    getUserAgent(req) {
+        return req.headers['user-agent'] || 'Unknown';
+    }
+
+    /**
      * Inicia o processador de fila de eventos
      */
     startQueueProcessor() {
@@ -45,7 +71,7 @@ class TikTokEventsService {
         
         this.processQueueInterval = setInterval(() => {
             this.processQueue();
-        }, 5000); // Tenta processar a fila a cada 5 segundos
+        }, 5000);
     }
 
     /**
@@ -54,31 +80,29 @@ class TikTokEventsService {
     async processQueue() {
         if (this.eventQueue.length === 0) return;
 
-        console.log(`Processando fila de eventos TikTok: ${this.eventQueue.length} eventos pendentes`);
+        console.log(`[TikTok Events] Processando fila: ${this.eventQueue.length} eventos pendentes`);
         
-        const event = this.eventQueue[0]; // Pegar o primeiro da fila
+        const event = this.eventQueue[0];
         
         try {
             await this.sendEventWithRetry(
                 event.eventName, 
                 event.eventProperties, 
                 event.userData,
-                0, // Contagem de tentativas inicial
-                true // É uma tentativa da fila
+                event.context || {},
+                0,
+                true
             );
             
-            // Se chegou aqui, o evento foi enviado com sucesso
-            this.eventQueue.shift(); // Remove o evento da fila
-            console.log('Evento processado da fila com sucesso');
+            this.eventQueue.shift();
+            console.log('[TikTok Events] Evento processado da fila com sucesso');
         } catch (error) {
-            console.error('Falha ao processar evento da fila:', error);
+            console.error('[TikTok Events] Falha ao processar evento da fila:', error);
             
-            // Se todas as tentativas falharam, remove da fila também
             if (event.retries >= this.maxRetries) {
-                console.error('Número máximo de tentativas excedido, removendo evento da fila');
+                console.error('[TikTok Events] Número máximo de tentativas excedido, removendo evento da fila');
                 this.eventQueue.shift();
             } else {
-                // Incrementa contagem de tentativas
                 event.retries = (event.retries || 0) + 1;
             }
         }
@@ -86,21 +110,14 @@ class TikTokEventsService {
 
     /**
      * Envia um evento para a API do TikTok com lógica de retry
-     * @param {string} eventName - Nome do evento (ex: 'Purchase')
-     * @param {Object} eventProperties - Propriedades do evento
-     * @param {Object} userData - Dados do usuário (opcional)
-     * @param {number} retryCount - Contador de tentativas atual
-     * @param {boolean} fromQueue - Se é um envio da fila de processamento
-     * @returns {Promise<Object>} - Resposta da API
      */
-    async sendEventWithRetry(eventName, eventProperties, userData = {}, retryCount = 0, fromQueue = false) {
+    async sendEventWithRetry(eventName, eventProperties, userData = {}, context = {}, retryCount = 0, fromQueue = false) {
         try {
-            console.log(`Enviando evento ${eventName} para TikTok API Events (tentativa ${retryCount + 1})`);
+            console.log(`[TikTok Events] Enviando evento ${eventName} (tentativa ${retryCount + 1})`);
 
             const timestamp = Math.floor(Date.now() / 1000);
             const eventId = this.generateEventId();
 
-            // Preparar dados do usuário com hash
             const user = {};
             if (userData.email) {
                 user.email = this.hashData(userData.email);
@@ -112,93 +129,95 @@ class TikTokEventsService {
                 user.external_id = this.hashData(userData.externalId);
             }
 
-            // Construir payload
+            if (context.ip) {
+                user.ip = context.ip;
+            }
+            if (context.userAgent) {
+                user.user_agent = context.userAgent;
+            }
+
             const payload = {
                 pixel_code: this.pixelCode,
                 event: eventName,
                 event_id: eventId,
                 timestamp,
+                context: {
+                    user_agent: context.userAgent || 'Devotly-Server/1.0',
+                    ip: context.ip || '127.0.0.1',
+                    ad: {
+                        callback: context.callback || null
+                    },
+                    page: {
+                        url: context.pageUrl || 'https://devotly.shop',
+                        referrer: context.referrer || ''
+                    }
+                },
                 properties: {
                     ...eventProperties,
                     currency: eventProperties.currency || 'BRL',
+                    value: eventProperties.value || 0,
+                    contents: eventProperties.contents || []
                 },
-                context: {
-                    user: user
-                }
+                user
             };
 
-            // Timeout para a requisição
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
-
-            try {
-                // Enviar para API do TikTok
-                const response = await fetch(this.apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Token': this.accessToken,
-                    },
-                    body: JSON.stringify(payload),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-                
-                // Verificar se a resposta é 2xx
-                if (!response.ok) {
-                    throw new Error(`TikTok API respondeu com status ${response.status}: ${response.statusText}`);
-                }
-
-                const responseData = await response.json();
-                
-                // Verificar se a API retornou erro
-                if (responseData.error_code && responseData.error_code !== 0) {
-                    throw new Error(`TikTok API error: ${responseData.message || 'Unknown API error'}`);
-                }
-                
-                console.log('TikTok API response:', JSON.stringify(responseData, null, 2));
-                return responseData;
-            } catch (error) {
-                clearTimeout(timeoutId);
-                throw error; // Repassa o erro para ser tratado no retry
+            if (this.testMode) {
+                console.log(`[TikTok Events] Payload completo:`, JSON.stringify(payload, null, 2));
             }
-        } catch (error) {
-            console.error(`Erro ao enviar evento para TikTok API (tentativa ${retryCount + 1}):`, error);
 
-            // Se ainda temos tentativas disponíveis e não estamos processando da fila
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Token': this.accessToken,
+                    'User-Agent': 'Devotly-TikTok-Events/1.0'
+                },
+                body: JSON.stringify(payload),
+                timeout: 10000
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`TikTok API Error: ${response.status} - ${JSON.stringify(responseData)}`);
+            }
+
+            console.log(`[TikTok Events] Evento ${eventName} enviado com sucesso:`, responseData);
+            return responseData;
+
+        } catch (error) {
+            console.error(`[TikTok Events] Erro ao enviar evento ${eventName}:`, error.message);
+
             if (retryCount < this.maxRetries && !fromQueue) {
-                console.log(`Tentando novamente em ${this.retryDelay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                return this.sendEventWithRetry(eventName, eventProperties, userData, retryCount + 1, fromQueue);
-            } 
-            // Se acabaram as tentativas e não estamos processando da fila, adiciona à fila
-            else if (!fromQueue) {
-                console.log('Adicionando evento à fila para tentativa posterior');
+                console.log(`[TikTok Events] Tentando novamente em ${this.retryDelay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, this.retryDelay * (retryCount + 1)));
+                return this.sendEventWithRetry(eventName, eventProperties, userData, context, retryCount + 1, fromQueue);
+            }
+
+            if (!fromQueue && retryCount >= this.maxRetries) {
+                console.log(`[TikTok Events] Adicionando evento ${eventName} à fila para processamento posterior`);
                 this.eventQueue.push({
                     eventName,
                     eventProperties,
                     userData,
-                    retries: retryCount
+                    context,
+                    retries: 0,
+                    timestamp: Date.now()
                 });
             }
-            
-            throw error; // Repassa o erro
+
+            throw error;
         }
     }
 
     /**
      * Envia um evento para a API do TikTok
-     * @param {string} eventName - Nome do evento (ex: 'Purchase')
-     * @param {Object} eventProperties - Propriedades do evento
-     * @param {Object} userData - Dados do usuário (opcional)
-     * @returns {Promise<Object>} - Resposta da API
      */
-    async sendEvent(eventName, eventProperties, userData = {}) {
+    async sendEvent(eventName, eventProperties, userData = {}, context = {}) {
         try {
-            return await this.sendEventWithRetry(eventName, eventProperties, userData);
+            return await this.sendEventWithRetry(eventName, eventProperties, userData, context);
         } catch (error) {
-            console.error('Todos os envios falharam. Evento na fila para processamento posterior.');
+            console.error('[TikTok Events] Todos os envios falharam. Evento na fila para processamento posterior.');
             return { error: error.message, status: 'queued' };
         }
     }
@@ -206,8 +225,14 @@ class TikTokEventsService {
     /**
      * Evento de compra concluída
      */
-    async trackPurchase(cardId, planType, value, userEmail, userPhone) {
+    async trackPurchase(cardId, planType, value, userEmail, userPhone, req = null) {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
+        
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
         
         return this.sendEvent('Purchase', {
             contents: [{
@@ -222,14 +247,20 @@ class TikTokEventsService {
             email: userEmail,
             phone: userPhone,
             externalId: cardId
-        });
+        }, context);
     }
 
     /**
      * Evento de checkout iniciado
      */
-    async trackInitiateCheckout(cardId, planType, value, userEmail) {
+    async trackInitiateCheckout(cardId, planType, value, userEmail, req = null) {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
+        
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
         
         return this.sendEvent('InitiateCheckout', {
             contents: [{
@@ -241,14 +272,21 @@ class TikTokEventsService {
             value: value,
             currency: 'BRL',
         }, {
-            email: userEmail
-        });
+            email: userEmail,
+            externalId: cardId
+        }, context);
     }
     
     /**
      * Evento de cartão criado/adicionado
      */
-    async trackAddToCart(cardId, userEmail) {
+    async trackAddToCart(cardId, userEmail, req = null) {
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
+        
         return this.sendEvent('AddToCart', {
             contents: [{
                 content_id: cardId,
@@ -258,14 +296,21 @@ class TikTokEventsService {
             }],
             currency: 'BRL',
         }, {
-            email: userEmail
-        });
+            email: userEmail,
+            externalId: cardId
+        }, context);
     }
     
     /**
      * Evento de visualização de conteúdo
      */
-    async trackViewContent(cardId, contentType, contentName, userEmail) {
+    async trackViewContent(cardId, contentType, contentName, userEmail, req = null) {
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
+        
         return this.sendEvent('ViewContent', {
             contents: [{
                 content_id: cardId,
@@ -275,13 +320,19 @@ class TikTokEventsService {
             currency: 'BRL',
         }, {
             email: userEmail
-        });
+        }, context);
     }
     
     /**
      * Evento de registro completo
      */
-    async trackCompleteRegistration(userId, userEmail) {
+    async trackCompleteRegistration(userId, userEmail, req = null) {
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
+        
         return this.sendEvent('CompleteRegistration', {
             contents: [{
                 content_id: userId || 'user_registration',
@@ -292,7 +343,20 @@ class TikTokEventsService {
         }, {
             email: userEmail,
             externalId: userId
-        });
+        }, context);
+    }
+
+    /**
+     * Evento personalizado
+     */
+    async trackCustomEvent(eventName, properties, userData = {}, req = null) {
+        const context = req ? {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+        } : {};
+        
+        return this.sendEvent(eventName, properties, userData, context);
     }
 }
 

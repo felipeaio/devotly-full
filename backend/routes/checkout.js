@@ -19,18 +19,19 @@ router.post('/create-preference', async (req, res) => {
         
         // Rastreamento do evento InitiateCheckout via TikTok API Events
         try {
-            const planValues = { 'para_sempre': 297, 'anual': 97 };
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
             const planValue = planValues[plano] || 0;
             
             await tiktokEvents.trackInitiateCheckout(
                 cardId,
                 plano,
                 planValue,
-                email
+                email,
+                req
             );
-            console.log('Evento InitiateCheckout enviado para TikTok API Events');
+            console.log(`[${new Date().toISOString()}] TikTok InitiateCheckout event tracked for plan: ${plano}, value: ${planValue}`);
         } catch (tikTokError) {
-            console.error('Erro ao enviar evento para TikTok API:', tikTokError);
+            console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok InitiateCheckout:`, tikTokError.message);
             // Continuamos o fluxo mesmo se o evento falhar
         }
 

@@ -123,11 +123,11 @@ router.post('/', async (req, res) => {
     
     // Rastrear evento de criação de cartão (AddToCart) via TikTok API Events
     try {
-      await tiktokEvents.trackAddToCart(cardId, email);
-      console.log('Evento AddToCart enviado para TikTok API Events');
+      await tiktokEvents.trackAddToCart(cardId, email, req);
+      console.log(`[${new Date().toISOString()}] TikTok AddToCart event tracked for card: ${cardId}`);
     } catch (tikTokError) {
-      console.error('Erro ao enviar evento para TikTok API:', tikTokError);
-      // Continuamos o fluxo mesmo se o evento falhar
+      console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok AddToCart:`, tikTokError.message);
+      // Não falha a criação do cartão por erro no tracking
     }
 
     res.status(201).json({
@@ -437,6 +437,61 @@ router.put('/:id/edit', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Erro interno no servidor'
+    });
+  }
+});
+
+// Rota para rastrear visualização de cartão via API
+router.get('/:id/track-view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userEmail = req.headers['x-user-email'] || null;
+
+    if (!req.supabase) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Supabase client não disponível'
+      });
+    }
+
+    // Verificar se o cartão existe
+    const { data: card, error: fetchError } = await req.supabase
+      .from('cards')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !card) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Cartão não encontrado'
+      });
+    }
+
+    // Rastrear visualização via TikTok API Events
+    try {
+      await tiktokEvents.trackViewContent(
+        id,
+        'card',
+        card.conteudo?.cardTitle || 'Cartão Devocional',
+        userEmail,
+        req
+      );
+      console.log(`[${new Date().toISOString()}] TikTok ViewContent event tracked for card: ${id}`);
+    } catch (tikTokError) {
+      console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok ViewContent:`, tikTokError.message);
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Visualização rastreada'
+    });
+
+  } catch (error) {
+    console.error('Erro ao rastrear visualização:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno do servidor'
     });
   }
 });
