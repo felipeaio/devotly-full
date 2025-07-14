@@ -2,6 +2,7 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { z } from 'zod';
+import tiktokEvents from '../services/tiktokEvents.js';
 
 const router = express.Router();
 
@@ -118,6 +119,15 @@ router.post('/', async (req, res) => {
 
     if (error) {
       throw new Error(`Falha ao criar cartão: ${error.message}`);
+    }
+    
+    // Rastrear evento de criação de cartão (AddToCart) via TikTok API Events
+    try {
+      await tiktokEvents.trackAddToCart(cardId, email);
+      console.log('Evento AddToCart enviado para TikTok API Events');
+    } catch (tikTokError) {
+      console.error('Erro ao enviar evento para TikTok API:', tikTokError);
+      // Continuamos o fluxo mesmo se o evento falhar
     }
 
     res.status(201).json({
@@ -311,6 +321,20 @@ router.get('/:id', async (req, res) => {
     
     // Adicionar URL do QR Code aos dados
     data.qr_code_url = qrCodeData?.publicUrl;
+    
+    // Rastrear evento de visualização de cartão via TikTok API Events
+    try {
+      await tiktokEvents.trackViewContent(
+        cardId, 
+        'product',
+        data.conteudo?.cardTitle || 'Cartão Cristão Digital',
+        data.email
+      );
+      console.log(`Evento ViewContent enviado para TikTok API Events para cartão ${cardId}`);
+    } catch (tikTokError) {
+      console.error('Erro ao enviar evento para TikTok API:', tikTokError);
+      // Continuamos o fluxo mesmo se o evento falhar
+    }
     
     // Retornar os dados do cartão
     res.json({

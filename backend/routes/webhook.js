@@ -2,6 +2,7 @@ import express from 'express';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 import { sendPaymentConfirmationEmail } from '../services/emailService.js';
+import tiktokEvents from '../services/tiktokEvents.js';
 import QRCode from 'qrcode';
 const router = express.Router();
 
@@ -115,6 +116,26 @@ router.post('/mercadopago', async (req, res) => {
             throw new Error('cardId inválido em external_reference');
         }
         console.log('\n7. Dados extraídos:', { cardId, email, plano });
+        
+        // Rastrear evento de compra através do TikTok API Events
+        try {
+            console.log('\n7.1. Enviando evento de compra para TikTok API Events...');
+            const planValues = { 'para_sempre': 297, 'anual': 97 };
+            const planValue = planValues[plano] || 0;
+            
+            // Enviar evento de compra
+            await tiktokEvents.trackPurchase(
+                cardId,
+                plano,
+                planValue,
+                email,
+                null // telefone não disponível aqui
+            );
+            console.log('✅ Evento Purchase enviado para TikTok API Events');
+        } catch (tikTokError) {
+            console.error('⚠️ Erro ao enviar evento para TikTok API:', tikTokError);
+            // Continuamos o fluxo mesmo se o evento falhar
+        }
 
         // Verificar se o cartão existe
         console.log('\n8. Verificando cartão no Supabase...');

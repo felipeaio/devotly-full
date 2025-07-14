@@ -1,5 +1,6 @@
 import express from 'express';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import tiktokEvents from '../services/tiktokEvents.js';
 const router = express.Router();
 
 router.post('/create-preference', async (req, res) => {
@@ -14,6 +15,23 @@ router.post('/create-preference', async (req, res) => {
                 success: false,
                 error: 'Dados incompletos: plano, email e cardId são obrigatórios'
             });
+        }
+        
+        // Rastreamento do evento InitiateCheckout via TikTok API Events
+        try {
+            const planValues = { 'para_sempre': 297, 'anual': 97 };
+            const planValue = planValues[plano] || 0;
+            
+            await tiktokEvents.trackInitiateCheckout(
+                cardId,
+                plano,
+                planValue,
+                email
+            );
+            console.log('Evento InitiateCheckout enviado para TikTok API Events');
+        } catch (tikTokError) {
+            console.error('Erro ao enviar evento para TikTok API:', tikTokError);
+            // Continuamos o fluxo mesmo se o evento falhar
         }
 
         // Validar plano

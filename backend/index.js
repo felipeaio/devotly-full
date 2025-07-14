@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+// Importar serviço do TikTok API Events
+import './services/tiktokEvents.js';
 
 // Configuração correta para o diretório atual em ESM
 const __filename = fileURLToPath(import.meta.url);
