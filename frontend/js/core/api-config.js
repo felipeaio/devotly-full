@@ -12,6 +12,7 @@ export const API_CONFIG = {
         create: `${API_BASE_URL}/api/cards`,
         search: `${API_BASE_URL}/api/cards/search`,
         get: (id) => `${API_BASE_URL}/api/cards/${id}`,
-        edit: (id) => `${API_BASE_URL}/api/cards/${id}/edit`
+        edit: (id) => `${API_BASE_URL}/api/cards/${id}/edit`,
+        trackView: (id) => `${API_BASE_URL}/api/cards/${id}/track-view`
     }
 };

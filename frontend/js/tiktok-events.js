@@ -380,6 +380,160 @@ function trackSearch(searchString, contentId = null, contentName = null, value =
   console.log('TikTok: Evento Search rastreado', {searchString});
 }
 
+// Evento de engajamento com botões ou elementos
+function trackEngagement(elementType, elementName, value = null) {
+  const eventData = {
+    contents: [{
+      content_id: elementType || 'engagement',
+      content_type: 'interaction',
+      content_name: elementName || 'Interação do usuário'
+    }]
+  };
+  
+  if (value) {
+    eventData.value = value;
+    eventData.currency = 'BRL';
+  }
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('ClickButton', eventData, eventOptions);
+    console.log('TikTok: Evento ClickButton rastreado', {elementType, elementName});
+  } else {
+    enqueueEvent('ClickButton', eventData, eventOptions);
+  }
+}
+
+// Evento de início de formulário
+function trackFormStart(formType, formName) {
+  const eventData = {
+    contents: [{
+      content_id: formType || 'form',
+      content_type: 'form',
+      content_name: formName || 'Formulário'
+    }]
+  };
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('SubmitForm', eventData, eventOptions);
+    console.log('TikTok: Evento SubmitForm (início) rastreado', {formType, formName});
+  } else {
+    enqueueEvent('SubmitForm', eventData, eventOptions);
+  }
+}
+
+// Evento de submissão de formulário
+function trackFormSubmit(formType, formName, success = true) {
+  const eventData = {
+    contents: [{
+      content_id: formType || 'form',
+      content_type: 'form',
+      content_name: formName || 'Formulário'
+    }],
+    status: success ? 'success' : 'error'
+  };
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('Contact', eventData, eventOptions);
+    console.log('TikTok: Evento Contact (submissão) rastreado', {formType, formName, success});
+  } else {
+    enqueueEvent('Contact', eventData, eventOptions);
+  }
+}
+
+// Evento de rolagem da página
+function trackPageScroll(percentage, section = null) {
+  const eventData = {
+    contents: [{
+      content_id: 'page_scroll',
+      content_type: 'scroll',
+      content_name: section ? `Seção ${section}` : `${percentage}% da página`
+    }],
+    scroll_percentage: percentage
+  };
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('ViewContent', eventData, eventOptions);
+    console.log('TikTok: Evento ViewContent (scroll) rastreado', {percentage, section});
+  } else {
+    enqueueEvent('ViewContent', eventData, eventOptions);
+  }
+}
+
+// Evento de clique em botão específico
+function trackButtonClick(buttonType, buttonText, value = null) {
+  const eventData = {
+    contents: [{
+      content_id: buttonType || 'button',
+      content_type: 'button',
+      content_name: buttonText || 'Botão'
+    }]
+  };
+  
+  if (value) {
+    eventData.value = value;
+    eventData.currency = 'BRL';
+  }
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('ClickButton', eventData, eventOptions);
+    console.log('TikTok: Evento ClickButton rastreado', {buttonType, buttonText});
+  } else {
+    enqueueEvent('ClickButton', eventData, eventOptions);
+  }
+}
+
+// Evento de visualização de seção
+function trackSectionView(sectionId, sectionName) {
+  const eventData = {
+    contents: [{
+      content_id: sectionId || 'section',
+      content_type: 'section',
+      content_name: sectionName || 'Seção da página'
+    }]
+  };
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('ViewContent', eventData, eventOptions);
+    console.log('TikTok: Evento ViewContent (seção) rastreado', {sectionId, sectionName});
+  } else {
+    enqueueEvent('ViewContent', eventData, eventOptions);
+  }
+}
+
+// Evento de interação com mídia
+function trackMediaInteraction(mediaType, mediaName, action = 'play') {
+  const eventData = {
+    contents: [{
+      content_id: `${mediaType}_${action}`,
+      content_type: 'media',
+      content_name: `${action} ${mediaName || mediaType}`
+    }],
+    media_type: mediaType,
+    action: action
+  };
+  
+  const eventOptions = { event_id: generateEventId() };
+  
+  if (typeof ttq !== 'undefined') {
+    ttq.track('ClickButton', eventData, eventOptions);
+    console.log('TikTok: Evento ClickButton (mídia) rastreado', {mediaType, mediaName, action});
+  } else {
+    enqueueEvent('ClickButton', eventData, eventOptions);
+  }
+}
+
 // Eventos específicos da Devotly - Interface para facilitar o uso
 const TikTokEvents = {
   // Identificação de usuário
@@ -441,6 +595,88 @@ const TikTokEvents = {
   // Pesquisa (se implementada no futuro)
   search(searchTerm) {
     trackSearch(searchTerm);
+  },
+
+  // Rastreamento de engajamento
+  trackEngagement,
+  trackFormStart,
+  trackFormSubmit,
+  trackPageScroll,
+  trackButtonClick,
+  trackSectionView,
+  trackMediaInteraction,
+
+  // Eventos específicos para página Home
+  home: {
+    viewHero() {
+      trackSectionView('hero', 'Seção Hero - Página Inicial');
+    },
+    
+    viewHowItWorks() {
+      trackSectionView('how-it-works', 'Como Funciona');
+    },
+    
+    viewPricing() {
+      trackSectionView('pricing', 'Seção de Preços');
+    },
+    
+    clickCreateCard() {
+      trackButtonClick('cta-create', 'Criar Meu Cartão', 0);
+    },
+    
+    clickPlan(planType, planValue) {
+      const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
+      trackButtonClick(`plan-${planType}`, `Escolher ${planName}`, planValue);
+    },
+    
+    scrollProgress(percentage) {
+      // Rastrear apenas marcos importantes de scroll
+      if ([25, 50, 75, 100].includes(percentage)) {
+        trackPageScroll(percentage, 'home');
+      }
+    }
+  },
+
+  // Eventos específicos para página Create
+  create: {
+    startCreation() {
+      trackFormStart('card-creation', 'Criação de Cartão');
+    },
+    
+    fillStep(stepNumber, stepName) {
+      trackSectionView(`step-${stepNumber}`, `Etapa ${stepNumber}: ${stepName}`);
+    },
+    
+    uploadImage() {
+      trackEngagement('upload', 'Upload de Imagem');
+    },
+    
+    selectVerse() {
+      trackEngagement('verse-selection', 'Seleção de Versículo');
+    },
+    
+    addMusic() {
+      trackEngagement('music', 'Adicionar Música');
+    },
+    
+    previewCard() {
+      trackButtonClick('preview', 'Visualizar Cartão');
+    },
+    
+    editCard() {
+      trackButtonClick('edit', 'Editar Cartão');
+    },
+    
+    completeCreation(cardId) {
+      trackFormSubmit('card-creation', 'Criação de Cartão Completa', true);
+      if (cardId) {
+        trackAddToCart(cardId, 'Cartão Criado');
+      }
+    },
+    
+    navigateSteps(from, to) {
+      trackEngagement('navigation', `Navegar da Etapa ${from} para ${to}`);
+    }
   }
 };
 

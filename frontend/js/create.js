@@ -102,6 +102,13 @@ class DevotlyCreator {
     }
 
     initialize() {
+        // Rastrear visualização da página de criação
+        if (typeof TikTokEvents !== 'undefined') {
+            TikTokEvents.viewCreatePage();
+            TikTokEvents.create.startCreation();
+            console.log('TikTok: Página de criação rastreada');
+        }
+
         // Inicializar elementos
         this.initializeElements();
 
@@ -493,6 +500,11 @@ class DevotlyCreator {
                 const files = Array.from(e.target.files || []);
                 if (!files.length) return;
 
+                // Rastrear tentativa de upload
+                if (typeof TikTokEvents !== 'undefined') {
+                    TikTokEvents.create.uploadImage();
+                }
+
                 try {
                     const maxFiles = 5;
                     if (this.state.formData.images.length + files.length > maxFiles) {
@@ -589,6 +601,12 @@ class DevotlyCreator {
             fetchVerseButton.parentNode.replaceChild(newFetchVerseButton, fetchVerseButton);
             newFetchVerseButton.addEventListener('click', (e) => {
                 e.preventDefault();
+                
+                // Rastrear busca de versículo
+                if (typeof TikTokEvents !== 'undefined') {
+                    TikTokEvents.create.selectVerse();
+                }
+                
                 this.fetchBibleVerse();
             });
         }
@@ -644,6 +662,14 @@ class DevotlyCreator {
                 }
                 
                 try {
+                    // Rastrear seleção de plano
+                    if (typeof TikTokEvents !== 'undefined') {
+                        const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+                        const planValue = planValues[planoPtBr] || 0;
+                        TikTokEvents.create.completeCreation(this.state.cardId);
+                        TikTokEvents.selectPlan(planoPtBr, planValue);
+                    }
+                    
                     // Chamar selectPlan sem passar pelo método que está falhando
                     const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
                     const planoPtBr = planMapping[planType] || planType;
@@ -858,6 +884,13 @@ class DevotlyCreator {
         document.querySelectorAll('.suggestion-item').forEach(button => {
             button.addEventListener('click', () => {
                 const musicUrl = button.dataset.url;
+                
+                // Rastrear adição de música
+                if (typeof TikTokEvents !== 'undefined') {
+                    TikTokEvents.create.addMusic();
+                    TikTokEvents.trackEngagement('music', 'Música Selecionada');
+                }
+                
                 const musicLinkElem = document.getElementById('musicLink');
                 if (musicLinkElem) musicLinkElem.value = musicUrl;
                 this.state.formData.musicLink = musicUrl;
@@ -870,6 +903,12 @@ class DevotlyCreator {
                 const book = button.dataset.book;
                 const chapter = button.dataset.chapter;
                 const verse = button.dataset.verse;
+
+                // Rastrear seleção de versículo
+                if (typeof TikTokEvents !== 'undefined') {
+                    TikTokEvents.create.selectVerse();
+                    TikTokEvents.trackEngagement('verse', `${book} ${chapter}:${verse}`);
+                }
 
                 const bibleBookElem = document.getElementById('bibleBook');
                 if (bibleBookElem) bibleBookElem.value = book;
@@ -1092,8 +1131,22 @@ scrollToSection(sectionId) {
     handleNextStep() {
         if (this.validateStep(this.state.currentStep)) {
             if (this.state.currentStep < this.state.totalSteps - 1) { // Prevent going beyond last step
+                const previousStep = this.state.currentStep;
                 this.state.currentStep++;
                 this.updateStepUI();
+                
+                // Rastrear navegação entre etapas
+                if (typeof TikTokEvents !== 'undefined') {
+                    const stepNames = {
+                        0: 'Informações Básicas',
+                        1: 'Imagens',
+                        2: 'Versículo',
+                        3: 'Música',
+                        4: 'Finalização'
+                    };
+                    TikTokEvents.create.navigateSteps(previousStep + 1, this.state.currentStep + 1);
+                    TikTokEvents.create.fillStep(this.state.currentStep + 1, stepNames[this.state.currentStep] || 'Etapa');
+                }
             }
         }
     }
@@ -1102,8 +1155,14 @@ scrollToSection(sectionId) {
 
     prevStep() {
         if (this.state.currentStep > 0) { // Prevent going before first step
+            const previousStep = this.state.currentStep;
             this.state.currentStep--;
             this.updateStepUI();
+            
+            // Rastrear navegação para trás
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.create.navigateSteps(previousStep + 1, this.state.currentStep + 1);
+            }
         }
     }
 
@@ -1896,6 +1955,14 @@ scrollToSection(sectionId) {
             const planMapping = { 'forever': 'para_sempre', 'annual': 'anual' };
             const planoPtBr = planMapping[plan] || plan;
             this.state.formData.selectedPlan = planoPtBr;
+            
+            // Rastrear seleção de plano
+            if (typeof TikTokEvents !== 'undefined') {
+                const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+                const planValue = planValues[planoPtBr] || 0;
+                TikTokEvents.create.completeCreation(this.state.cardId);
+                TikTokEvents.selectPlan(planoPtBr, planValue);
+            }
             
             // Salvar seleção de plano no localStorage
             this.saveToLocalStorage();
@@ -2823,7 +2890,8 @@ class PreviewModal {
         this.addScrollPrevention();        // Inicializar navegador vertical se ainda não existir
         setTimeout(() => {
             if (!window.previewNavigator) {
-                window.previewNavigator = new VerticalPreviewNavigator();
+                restructurePreviewSections();
+                window.previewNavigator = new HorizontalPreviewNavigator();
             }
             
             // Garantir que a primeira seção esteja ativa

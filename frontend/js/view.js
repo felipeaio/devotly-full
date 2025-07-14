@@ -152,38 +152,26 @@ class DevotlyViewer {    constructor() {
 
             this.state.cardData = result.data;
 
-            if (this.state.cardData.status_pagamento !== 'aprovado') {
-                this.showState('paymentErrorState');
+            // Verificar se o cartão está pago ou se tem versão de preview
+            if (result.data.payment_status !== 'approved' && !result.data.preview_mode) {
+                this.showState('paymentPendingState');
                 return;
             }
 
-            // Rastrear visualização de cartão para o TikTok Pixel
-            try {
-                if (typeof window.TikTokEvents !== 'undefined') {
-                    const cardTitle = this.state.cardData.titulo || 'Cartão Devocional';
-                    window.TikTokEvents.viewCard(this.state.cardId, cardTitle);
-                    
-                    // Se houver dados do criador, identificar usuário
-                    if (this.state.cardData.email_criador) {
-                        window.TikTokEvents.identifyUser(
-                            this.state.cardData.email_criador, 
-                            null, 
-                            this.state.cardData.id_criador || this.state.cardId
-                        );
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao rastrear visualização de cartão TikTok:', error);
+            // Rastrear visualização do cartão via backend
+            this.trackCardView();
+
+            // Rastrear no frontend também
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.viewCard(this.state.cardId, result.data.conteudo?.cardTitle);
             }
 
             this.renderCard();
+            this.showState('cardViewState');
             this.setupEventListeners();
-            this.setupSectionIndicators(); // Adicionar esta linha
-            this.setupSectionObserver();
-            this.setupTouchInteractions();
 
         } catch (error) {
-            console.error('Erro ao buscar dados do cartão:', error);
+            console.error('Erro ao carregar cartão:', error);
             this.showState('errorState');
         }
     }
@@ -879,6 +867,29 @@ class DevotlyViewer {    constructor() {
         }
 
         return null;
+    }
+
+    /**
+     * Rastreia visualização do cartão via backend
+     */
+    async trackCardView() {
+        try {
+            const trackUrl = API_CONFIG.cards.trackView ? 
+                API_CONFIG.cards.trackView(this.state.cardId) : 
+                `${API_CONFIG.cards.get(this.state.cardId)}/track-view`;
+            
+            await fetch(trackUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Visualização de cartão rastreada via backend');
+        } catch (error) {
+            console.error('Erro ao rastrear visualização via backend:', error);
+            // Não falha o carregamento do cartão
+        }
     }
 }
 
