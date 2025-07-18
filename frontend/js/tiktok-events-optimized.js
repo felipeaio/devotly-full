@@ -122,6 +122,56 @@ async function processEventQueue() {
 }
 
 // ============================================================================
+// INICIALIZAÇÃO DO SISTEMA DE EVENTOS
+// ============================================================================
+
+// Função para inicializar o sistema de eventos (para compatibilidade)
+function initTikTokEvents() {
+    try {
+        // Verificar se ttq está disponível
+        if (typeof ttq === 'undefined') {
+            console.warn('TikTok Pixel (ttq) não está disponível. Eventos serão enfileirados para tentativa posterior.');
+        } else {
+            console.log('TikTok Pixel inicializado com sucesso');
+            
+            // Iniciar processamento da fila
+            processEventQueue();
+            
+            // Rastrear PageView automaticamente se ainda não foi feito
+            if (!window.tiktokPageViewTracked) {
+                trackPageView();
+                window.tiktokPageViewTracked = true;
+            }
+        }
+        
+        // Adicionar listeners para eventos de visibilidade da página
+        if (!window.tiktokVisibilityListenerAdded) {
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && typeof ttq !== 'undefined') {
+                    processEventQueue();
+                }
+            });
+            window.tiktokVisibilityListenerAdded = true;
+        }
+
+        // Tenta processar a fila a cada minuto
+        if (!window.tiktokQueueIntervalSet) {
+            setInterval(processEventQueue, 60000);
+            window.tiktokQueueIntervalSet = true;
+        }
+        
+        // Processa a fila no carregamento inicial da página
+        setTimeout(processEventQueue, 3000);
+        
+        console.log('TikTok Events otimizado inicializado com sucesso');
+        return true;
+    } catch (error) {
+        console.error('Erro ao inicializar TikTok Events:', error);
+        return false;
+    }
+}
+
+// ============================================================================
 // IDENTIFICAÇÃO DO USUÁRIO COM ADVANCED MATCHING
 // ============================================================================
 
@@ -555,6 +605,11 @@ const TikTokEvents = {
         trackLead('create_page_view', 15);
     },
     
+    // Visualização de cartão
+    viewCard(cardId) {
+        trackViewContent(cardId || 'card', 'Visualizar Cartão Devocional', 10);
+    },
+    
     // Plano selecionado
     selectPlan(planType, planValue) {
         trackClickButton(`Plano ${planType}`, 'plan_selection', planValue);
@@ -569,6 +624,66 @@ const TikTokEvents = {
     // Compra finalizada
     completePurchase(cardId, planType, planValue) {
         trackPurchase(cardId, `Plano ${planType}`, planValue);
+    },
+    
+    // Eventos específicos para página Create
+    create: {
+        startCreation() {
+            trackLead('start_creation', 15);
+            trackClickButton('Iniciar Criação', 'creation_start', 15);
+        },
+        
+        fillStep(stepNumber, stepName) {
+            trackViewContent(`step-${stepNumber}`, `Etapa ${stepNumber}: ${stepName}`, 5);
+        },
+        
+        uploadImage() {
+            trackClickButton('Upload Imagem', 'upload', 5);
+        },
+        
+        selectVerse() {
+            trackClickButton('Selecionar Versículo', 'verse_selection', 5);
+        },
+        
+        addMusic() {
+            trackClickButton('Adicionar Música', 'music', 5);
+        },
+        
+        previewCard() {
+            trackClickButton('Visualizar Cartão', 'preview', 5);
+        },
+        
+        editCard() {
+            trackClickButton('Editar Cartão', 'edit', 5);
+        },
+        
+        completeCreation(cardId) {
+            trackLead('complete_creation', 25);
+            if (cardId) {
+                trackViewContent(cardId, 'Cartão Criado', 25);
+            }
+        },
+        
+        navigateSteps(from, to) {
+            trackClickButton(`Etapa ${from} para ${to}`, 'navigation', 2);
+        }
+    },
+    
+    // Outros eventos úteis
+    startCardCreation() {
+        trackLead('card_creation_start', 20);
+    },
+    
+    identifyUser(email, phone, userId) {
+        return identifyUser(email, phone, userId);
+    },
+    
+    addPaymentInfo(planType, planValue) {
+        trackLead('payment_info', planValue);
+    },
+    
+    trackEngagement(type, description, value = 1) {
+        trackClickButton(description, type, value);
     }
 };
 
@@ -577,10 +692,22 @@ window.TikTokEvents = TikTokEvents;
 window.identifyUser = identifyUser;
 window.initTikTokEvents = initTikTokEvents;
 
-// Auto-inicializar
-document.addEventListener('DOMContentLoaded', initTikTokEvents);
+// Auto-inicializar apenas se não foi inicializado manualmente
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.tiktokEventsInitialized) {
+        initTikTokEvents();
+        window.tiktokEventsInitialized = true;
+    }
+});
 
 // Fallback se já carregou
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    initTikTokEvents();
+    if (!window.tiktokEventsInitialized) {
+        setTimeout(() => {
+            if (!window.tiktokEventsInitialized) {
+                initTikTokEvents();
+                window.tiktokEventsInitialized = true;
+            }
+        }, 100);
+    }
 }
