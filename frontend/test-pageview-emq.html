@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste EMQ PageView - Devotly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .test-button:active {
+            transform: translateY(-1px);
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .log-container {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .header p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .emq-score {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .url-params {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .quality-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .quality-indicator {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .quality-high { background: #d4edda; color: #155724; }
+        .quality-medium { background: #fff3cd; color: #856404; }
+        .quality-low { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🚀 Teste EMQ PageView</h1>
+            <p>Ferramenta especializada para testar e validar melhorias do Event Match Quality (EMQ) do evento PageView</p>
+            <div class="emq-score" id="currentEmq">EMQ: Calculando...</div>
+        </div>
+
+        <!-- Indicadores de Qualidade -->
+        <div class="quality-indicators">
+            <div class="quality-indicator quality-low" id="emailQuality">
+                📧 Email: 0%
+            </div>
+            <div class="quality-indicator quality-low" id="phoneQuality">
+                📱 Phone: 0%
+            </div>
+            <div class="quality-indicator quality-low" id="externalIdQuality">
+                🆔 External ID: 0%
+            </div>
+            <div class="quality-indicator quality-low" id="ttclidQuality">
+                🔗 TTCLID: Ausente
+            </div>
+        </div>
+
+        <!-- Estatísticas EMQ -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="emqScore">29</div>
+                <div class="stat-label">EMQ Score Atual</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="targetEmq">60+</div>
+                <div class="stat-label">Meta EMQ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="improvementNeeded">+31</div>
+                <div class="stat-label">Melhoria Necessária</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pageViewCount">0</div>
+                <div class="stat-label">PageViews Enviados</div>
+            </div>
+        </div>
+
+        <!-- Seção de Parâmetros da URL -->
+        <div class="test-section">
+            <h3>🔗 Parâmetros TikTok na URL</h3>
+            <div class="url-params" id="urlParams">
+                <strong>URL Atual:</strong> <span id="currentUrl"></span><br>
+                <strong>TTCLID:</strong> <span id="ttclidParam">Não encontrado</span><br>
+                <strong>TTP:</strong> <span id="ttpParam">Não encontrado</span>
+            </div>
+            <button class="test-button" onclick="simulateTikTokClick()">🔗 Simular Click do TikTok</button>
+            <button class="test-button" onclick="clearTikTokParams()">🗑️ Limpar Parâmetros</button>
+        </div>
+
+        <!-- Seção de Dados do Usuário -->
+        <div class="test-section">
+            <h3>👤 Configuração de Dados do Usuário</h3>
+            <div class="input-group">
+                <label for="testEmail">📧 Email:</label>
+                <input type="email" id="testEmail" placeholder="usuario@exemplo.com" oninput="updateEmqPreview()">
+            </div>
+            <div class="input-group">
+                <label for="testPhone">📱 Telefone:</label>
+                <input type="tel" id="testPhone" placeholder="+5511999999999" oninput="updateEmqPreview()">
+            </div>
+            <div class="input-group">
+                <label for="testExternalId">🆔 External ID:</label>
+                <input type="text" id="testExternalId" placeholder="user_123456" oninput="updateEmqPreview()">
+            </div>
+            <button class="test-button" onclick="setUserData()">💾 Aplicar Dados</button>
+            <button class="test-button" onclick="clearUserData()">🗑️ Limpar Dados</button>
+            <button class="test-button" onclick="generateRandomUser()">🎲 Gerar Usuário Teste</button>
+        </div>
+
+        <!-- Seção de Testes PageView -->
+        <div class="test-section">
+            <h3>📄 Testes de PageView EMQ</h3>
+            <button class="test-button" onclick="testPageViewBasic()">📄 PageView Básico</button>
+            <button class="test-button" onclick="testPageViewWithUser()">👤 PageView com Usuário</button>
+            <button class="test-button" onclick="testPageViewOptimized()">🚀 PageView Otimizado</button>
+            <button class="test-button" onclick="testPageViewStress()">💪 Teste de Stress</button>
+        </div>
+
+        <!-- Seção de Simulações -->
+        <div class="test-section">
+            <h3>🧪 Simulações Avançadas</h3>
+            <button class="test-button" onclick="simulateUserJourney()">🚶 Jornada do Usuário</button>
+            <button class="test-button" onclick="simulateOrganicTraffic()">🌐 Tráfego Orgânico</button>
+            <button class="test-button" onclick="simulateTikTokCampaign()">📱 Campanha TikTok</button>
+            <button class="test-button" onclick="runCompleteEmqTest()">🔬 Teste EMQ Completo</button>
+        </div>
+
+        <!-- Log Console -->
+        <div class="log-container" id="logContainer">
+            <div>🚀 Console EMQ PageView - Sistema iniciado e pronto para testes</div>
+            <div>📊 Meta: Elevar EMQ de 29/100 para 60+/100 pontos</div>
+        </div>
+
+        <!-- Controles do Console -->
+        <button class="test-button" onclick="clearLogs()" style="margin-top: 15px;">🧹 Limpar Console</button>
+        <button class="test-button" onclick="exportLogs()" style="margin-top: 15px;">📤 Exportar Logs</button>
+    </div>
+
+    <!-- TikTok Pixel -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t;
+            var ttq = w[t] = w[t] || [];
+            ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+            ttq.setAndDefer = function (t, e) {
+                t[e] = function () {
+                    t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
+                }
+            };
+            for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+            ttq.instance = function (t) {
+                for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+                return e
+            };
+            ttq.load = function (e, n) {
+                var i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                ttq._i = ttq._i || {};
+                ttq._i[e] = [];
+                ttq._i[e]._u = i;
+                ttq._t = ttq._t || {};
+                ttq._t[e] = +new Date;
+                ttq._o = ttq._o || {};
+                ttq._o[e] = n || {};
+                var o = document.createElement("script");
+                o.type = "text/javascript";
+                o.async = !0;
+                o.src = i + "?sdkid=" + e + "&lib=" + t;
+                var a = document.getElementsByTagName("script")[0];
+                a.parentNode.insertBefore(o, a)
+            };
+            ttq.load('D1QFD0RC77UF6MBM48MG');
+            ttq.page();
+        }(window, document, 'ttq');
+    </script>
+
+    <!-- Sistema TikTok Events Otimizado -->
+    <script src="js/tiktok-events-optimized.js"></script>
+
+    <script>
+        // Estado global do teste
+        let testState = {
+            pageViewCount: 0,
+            emqScore: 29,
+            userDataPresent: {
+                email: false,
+                phone: false,
+                externalId: false,
+                ttclid: false
+            }
+        };
+
+        // Sistema de logs avançado
+        function log(message, type = 'info', data = null) {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            let color = '#00ff41';
+            let icon = '📊';
+            
+            switch(type) {
+                case 'error': color = '#ff6b6b'; icon = '❌'; break;
+                case 'success': color = '#51cf66'; icon = '✅'; break;
+                case 'warning': color = '#ffd43b'; icon = '⚠️'; break;
+                case 'emq': color = '#74c0fc'; icon = '🎯'; break;
+                case 'test': color = '#faa2c1'; icon = '🧪'; break;
+            }
+            
+            let logEntry = `<div style="color: ${color}; margin: 8px 0; padding: 5px; border-left: 3px solid ${color}; padding-left: 10px;">
+                ${icon} [${timestamp}] ${message}`;
+            
+            if (data) {
+                logEntry += `<br><span style="margin-left: 20px; font-size: 12px; opacity: 0.8;">${JSON.stringify(data, null, 2)}</span>`;
+            }
+            
+            logEntry += '</div>';
+            logContainer.innerHTML += logEntry;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '<div style="color: #00ff41;">🧹 Console limpo - Pronto para novos testes</div>';
+        }
+
+        function exportLogs() {
+            const logs = document.getElementById('logContainer').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `emq-pageview-logs-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            log('📤 Logs exportados com sucesso', 'success');
+        }
+
+        // Atualização de estatísticas
+        function updateStats() {
+            document.getElementById('emqScore').textContent = testState.emqScore;
+            document.getElementById('pageViewCount').textContent = testState.pageViewCount;
+            document.getElementById('improvementNeeded').textContent = `+${Math.max(0, 60 - testState.emqScore)}`;
+            
+            // Atualizar EMQ atual no header
+            const emqElement = document.getElementById('currentEmq');
+            emqElement.textContent = `EMQ: ${testState.emqScore}/100`;
+            emqElement.className = 'emq-score';
+            if (testState.emqScore >= 60) {
+                emqElement.style.background = 'linear-gradient(135deg, #51cf66 0%, #40c057 100%)';
+            } else if (testState.emqScore >= 40) {
+                emqElement.style.background = 'linear-gradient(135deg, #ffd43b 0%, #fab005 100%)';
+            } else {
+                emqElement.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #fa5252 100%)';
+            }
+            
+            updateQualityIndicators();
+        }
+
+        function updateQualityIndicators() {
+            const indicators = {
+                email: document.getElementById('emailQuality'),
+                phone: document.getElementById('phoneQuality'),
+                externalId: document.getElementById('externalIdQuality'),
+                ttclid: document.getElementById('ttclidQuality')
+            };
+
+            // Email
+            if (testState.userDataPresent.email) {
+                indicators.email.className = 'quality-indicator quality-high';
+                indicators.email.textContent = '📧 Email: 100%';
+            } else {
+                indicators.email.className = 'quality-indicator quality-low';
+                indicators.email.textContent = '📧 Email: 0%';
+            }
+
+            // Phone
+            if (testState.userDataPresent.phone) {
+                indicators.phone.className = 'quality-indicator quality-high';
+                indicators.phone.textContent = '📱 Phone: 100%';
+            } else {
+                indicators.phone.className = 'quality-indicator quality-low';
+                indicators.phone.textContent = '📱 Phone: 0%';
+            }
+
+            // External ID
+            if (testState.userDataPresent.externalId) {
+                indicators.externalId.className = 'quality-indicator quality-high';
+                indicators.externalId.textContent = '🆔 External ID: 100%';
+            } else {
+                indicators.externalId.className = 'quality-indicator quality-low';
+                indicators.externalId.textContent = '🆔 External ID: 0%';
+            }
+
+            // TTCLID
+            if (testState.userDataPresent.ttclid) {
+                indicators.ttclid.className = 'quality-indicator quality-high';
+                indicators.ttclid.textContent = '🔗 TTCLID: Presente';
+            } else {
+                indicators.ttclid.className = 'quality-indicator quality-low';
+                indicators.ttclid.textContent = '🔗 TTCLID: Ausente';
+            }
+        }
+
+        // Calcular EMQ baseado nos dados presentes
+        function calculateEmq() {
+            let score = 15; // Base score para PageView
+            
+            if (testState.userDataPresent.email) score += 30;
+            if (testState.userDataPresent.phone) score += 25;
+            if (testState.userDataPresent.externalId) score += 15;
+            if (testState.userDataPresent.ttclid) score += 5;
+            
+            // User agent e URL sempre presentes (+10)
+            score += 10;
+            
+            testState.emqScore = Math.min(score, 100);
+            return testState.emqScore;
+        }
+
+        function updateEmqPreview() {
+            // Verificar dados dos inputs
+            testState.userDataPresent.email = document.getElementById('testEmail').value.includes('@');
+            testState.userDataPresent.phone = document.getElementById('testPhone').value.replace(/\D/g, '').length >= 10;
+            testState.userDataPresent.externalId = document.getElementById('testExternalId').value.trim().length > 0;
+            
+            calculateEmq();
+            updateStats();
+        }
+
+        // Funções de dados do usuário
+        function setUserData() {
+            const email = document.getElementById('testEmail').value;
+            const phone = document.getElementById('testPhone').value;
+            const externalId = document.getElementById('testExternalId').value;
+
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.identifyUser(email, phone, externalId);
+                log(`✅ Dados do usuário aplicados: Email=${email ? 'Sim' : 'Não'}, Phone=${phone ? 'Sim' : 'Não'}, ExternalID=${externalId ? 'Sim' : 'Não'}`, 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+            
+            updateEmqPreview();
+        }
+
+        function clearUserData() {
+            document.getElementById('testEmail').value = '';
+            document.getElementById('testPhone').value = '';
+            document.getElementById('testExternalId').value = '';
+            
+            testState.userDataPresent = {
+                email: false,
+                phone: false,
+                externalId: false,
+                ttclid: testState.userDataPresent.ttclid
+            };
+            
+            calculateEmq();
+            updateStats();
+            log('🗑️ Dados do usuário limpos', 'info');
+        }
+
+        function generateRandomUser() {
+            const emails = ['joao@exemplo.com', 'maria@teste.com', 'pedro@devotly.com.br', 'ana@gmail.com'];
+            const phones = ['+5511999999999', '+5511888888888', '+5521777777777', '+5511666666666'];
+            const externalIds = ['user_001', 'client_456', 'devotly_789', 'teste_123'];
+            
+            document.getElementById('testEmail').value = emails[Math.floor(Math.random() * emails.length)];
+            document.getElementById('testPhone').value = phones[Math.floor(Math.random() * phones.length)];
+            document.getElementById('testExternalId').value = externalIds[Math.floor(Math.random() * externalIds.length)];
+            
+            setUserData();
+            log('🎲 Usuário teste gerado aleatoriamente', 'test');
+        }
+
+        // Funções de parâmetros TikTok
+        function simulateTikTokClick() {
+            const ttclid = 'ttclid_test_' + Date.now();
+            const ttp = 'ttp_test_' + Date.now();
+            const newUrl = `${window.location.pathname}?ttclid=${ttclid}&ttp=${ttp}`;
+            
+            history.pushState({}, '', newUrl);
+            
+            testState.userDataPresent.ttclid = true;
+            calculateEmq();
+            updateStats();
+            updateUrlDisplay();
+            
+            log(`🔗 Simulação de click do TikTok: TTCLID=${ttclid}`, 'test');
+        }
+
+        function clearTikTokParams() {
+            history.pushState({}, '', window.location.pathname);
+            testState.userDataPresent.ttclid = false;
+            calculateEmq();
+            updateStats();
+            updateUrlDisplay();
+            log('🗑️ Parâmetros TikTok removidos da URL', 'info');
+        }
+
+        function updateUrlDisplay() {
+            document.getElementById('currentUrl').textContent = window.location.href;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById('ttclidParam').textContent = urlParams.get('ttclid') || 'Não encontrado';
+            document.getElementById('ttpParam').textContent = urlParams.get('ttp') || 'Não encontrado';
+        }
+
+        // Testes de PageView
+        function testPageViewBasic() {
+            if (typeof TikTokEvents !== 'undefined' && TikTokEvents.trackPageView) {
+                TikTokEvents.trackPageView();
+                testState.pageViewCount++;
+                updateStats();
+                log('📄 PageView básico enviado', 'test');
+            } else {
+                log('❌ TikTokEvents.trackPageView não disponível', 'error');
+            }
+        }
+
+        function testPageViewWithUser() {
+            setUserData();
+            setTimeout(() => {
+                testPageViewBasic();
+                log('👤 PageView enviado com dados do usuário', 'test');
+            }, 100);
+        }
+
+        function testPageViewOptimized() {
+            generateRandomUser();
+            simulateTikTokClick();
+            setTimeout(() => {
+                testPageViewBasic();
+                log('🚀 PageView otimizado enviado (usuário + TTCLID)', 'test');
+            }, 200);
+        }
+
+        function testPageViewStress() {
+            log('💪 Iniciando teste de stress...', 'test');
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    testPageViewBasic();
+                    log(`💪 Stress test ${i + 1}/5 enviado`, 'test');
+                    
+                    if (i === 4) {
+                        log('✅ Teste de stress concluído!', 'success');
+                    }
+                }, i * 1000);
+            }
+        }
+
+        // Simulações avançadas
+        function simulateUserJourney() {
+            log('🚶 Iniciando simulação de jornada do usuário...', 'test');
+            
+            const journey = [
+                () => { log('🚶 1/4 - Usuário chegou sem dados', 'test'); testPageViewBasic(); },
+                () => { log('🚶 2/4 - Usuário preencheu email', 'test'); document.getElementById('testEmail').value = 'jornada@teste.com'; setUserData(); testPageViewBasic(); },
+                () => { log('🚶 3/4 - Usuário adicionou telefone', 'test'); document.getElementById('testPhone').value = '+5511999888777'; setUserData(); testPageViewBasic(); },
+                () => { log('🚶 4/4 - Jornada completa!', 'success'); simulateTikTokClick(); testPageViewBasic(); }
+            ];
+            
+            journey.forEach((step, index) => {
+                setTimeout(step, index * 2000);
+            });
+        }
+
+        function simulateOrganicTraffic() {
+            clearUserData();
+            clearTikTokParams();
+            testPageViewBasic();
+            log('🌐 Tráfego orgânico simulado (sem dados especiais)', 'test');
+        }
+
+        function simulateTikTokCampaign() {
+            generateRandomUser();
+            simulateTikTokClick();
+            testPageViewBasic();
+            log('📱 Campanha TikTok simulada (dados completos)', 'test');
+        }
+
+        function runCompleteEmqTest() {
+            log('🔬 Iniciando teste EMQ completo...', 'test');
+            
+            const tests = [
+                { name: 'Sem dados', action: () => { clearUserData(); clearTikTokParams(); testPageViewBasic(); } },
+                { name: 'Apenas email', action: () => { clearUserData(); document.getElementById('testEmail').value = 'teste@exemplo.com'; setUserData(); testPageViewBasic(); } },
+                { name: 'Email + telefone', action: () => { document.getElementById('testPhone').value = '+5511999999999'; setUserData(); testPageViewBasic(); } },
+                { name: 'Dados completos', action: () => { document.getElementById('testExternalId').value = 'user_completo'; setUserData(); testPageViewBasic(); } },
+                { name: 'Otimizado + TTCLID', action: () => { simulateTikTokClick(); testPageViewBasic(); } }
+            ];
+            
+            tests.forEach((test, index) => {
+                setTimeout(() => {
+                    log(`🔬 Teste ${index + 1}/5: ${test.name}`, 'test');
+                    test.action();
+                    
+                    if (index === tests.length - 1) {
+                        setTimeout(() => {
+                            log('✅ Teste EMQ completo finalizado!', 'success');
+                            log(`🎯 EMQ Final: ${testState.emqScore}/100`, 'emq');
+                        }, 500);
+                    }
+                }, index * 3000);
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Sistema de teste EMQ PageView inicializado', 'success');
+            log('📋 Configure dados e execute testes para validar melhorias', 'info');
+            log(`🎯 Meta: Elevar EMQ de 29 para 60+ pontos`, 'emq');
+            
+            updateUrlDisplay();
+            
+            // Verificar parâmetros TikTok na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('ttclid')) {
+                testState.userDataPresent.ttclid = true;
+                calculateEmq();
+                updateStats();
+                log(`🔗 TTCLID detectado na URL: ${urlParams.get('ttclid')}`, 'success');
+            }
+            
+            updateStats();
+        });
+
+        // Interceptar eventos TikTok para monitoramento
+        if (typeof ttq !== 'undefined') {
+            const originalTrack = ttq.track;
+            ttq.track = function(eventName, properties) {
+                if (eventName === 'PageView') {
+                    log(`📊 TikTok Pixel PageView interceptado:`, 'emq', properties);
+                }
+                return originalTrack.apply(this, arguments);
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste EMQ ViewContent - Devotly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🎯 Teste EMQ ViewContent</h1>
+            <p>Ferramenta para testar e validar a qualidade dos eventos ViewContent do TikTok</p>
+        </div>
+
+        <!-- Estatísticas EMQ -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="emqScore">0</div>
+                <div class="stat-label">EMQ Score Estimado</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="emailCoverage">0%</div>
+                <div class="stat-label">Cobertura Email</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="phoneCoverage">0%</div>
+                <div class="stat-label">Cobertura Telefone</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="eventCount">0</div>
+                <div class="stat-label">Eventos Enviados</div>
+            </div>
+        </div>
+
+        <!-- Seção de Dados do Usuário -->
+        <div class="test-section">
+            <h3>👤 Dados do Usuário (Para EMQ)</h3>
+            <div class="input-group">
+                <label for="testEmail">Email:</label>
+                <input type="email" id="testEmail" placeholder="seu@email.com">
+            </div>
+            <div class="input-group">
+                <label for="testPhone">Telefone:</label>
+                <input type="tel" id="testPhone" placeholder="+5511999999999">
+            </div>
+            <div class="input-group">
+                <label for="testExternalId">External ID:</label>
+                <input type="text" id="testExternalId" placeholder="user_123">
+            </div>
+            <button class="test-button" onclick="setUserData()">💾 Definir Dados do Usuário</button>
+            <button class="test-button" onclick="clearUserData()">🗑️ Limpar Dados</button>
+        </div>
+
+        <!-- Seção de Testes ViewContent -->
+        <div class="test-section">
+            <h3>📱 Testes ViewContent</h3>
+            <button class="test-button" onclick="testViewContentCard()">👁️ ViewContent - Card</button>
+            <button class="test-button" onclick="testViewContentPage()">📄 ViewContent - Page</button>
+            <button class="test-button" onclick="testViewContentProduct()">🛍️ ViewContent - Product</button>
+            <button class="test-button" onclick="testViewContentService()">⚙️ ViewContent - Service</button>
+            <button class="test-button" onclick="testViewContentWithValue()">💰 ViewContent com Valor</button>
+        </div>
+
+        <!-- Seção de Simulação -->
+        <div class="test-section">
+            <h3>🧪 Simulação de Cenários</h3>
+            <button class="test-button" onclick="simulateCardViewing()">🎴 Simular Visualização de Card</button>
+            <button class="test-button" onclick="simulateUserJourney()">🚶 Simular Jornada do Usuário</button>
+            <button class="test-button" onclick="runEmqStressTest()">🔥 Teste de Stress EMQ</button>
+        </div>
+
+        <!-- Log Console -->
+        <div class="log-container" id="logContainer">
+            <div>📊 Console de Logs - Aguardando eventos...</div>
+        </div>
+
+        <!-- Botão para limpar logs -->
+        <button class="test-button" onclick="clearLogs()" style="margin-top: 10px;">🧹 Limpar Logs</button>
+    </div>
+
+    <!-- TikTok Pixel -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject = t;
+            var ttq = w[t] = w[t] || [];
+            ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+            ttq.setAndDefer = function (t, e) {
+                t[e] = function () {
+                    t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
+                }
+            };
+            for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+            ttq.instance = function (t) {
+                for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+                return e
+            };
+            ttq.load = function (e, n) {
+                var i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                ttq._i = ttq._i || {};
+                ttq._i[e] = [];
+                ttq._i[e]._u = i;
+                ttq._t = ttq._t || {};
+                ttq._t[e] = +new Date;
+                ttq._o = ttq._o || {};
+                ttq._o[e] = n || {};
+                var o = document.createElement("script");
+                o.type = "text/javascript";
+                o.async = !0;
+                o.src = i + "?sdkid=" + e + "&lib=" + t;
+                var a = document.getElementsByTagName("script")[0];
+                a.parentNode.insertBefore(o, a)
+            };
+            ttq.load('D1QFD0RC77UF6MBM48MG');
+            ttq.page();
+        }(window, document, 'ttq');
+    </script>
+
+    <!-- Sistema de TikTok Events -->
+    <script src="js/tiktok-events-optimized.js"></script>
+
+    <script>
+        // Estatísticas globais
+        let stats = {
+            eventCount: 0,
+            emailCoverage: 0,
+            phoneCoverage: 0,
+            emqScore: 0
+        };
+
+        // Sistema de logs
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#00ff00';
+            
+            logContainer.innerHTML += `<div style="color: ${color}; margin: 5px 0;">[${timestamp}] ${message}</div>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '<div>📊 Console de Logs - Logs limpos...</div>';
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('eventCount').textContent = stats.eventCount;
+            document.getElementById('emailCoverage').textContent = stats.emailCoverage + '%';
+            document.getElementById('phoneCoverage').textContent = stats.phoneCoverage + '%';
+            document.getElementById('emqScore').textContent = stats.emqScore;
+        }
+
+        // Calcular EMQ score estimado
+        function calculateEmqScore() {
+            let score = 0;
+            
+            // Base score
+            score += 20;
+            
+            // Email coverage (max 30 points)
+            score += (stats.emailCoverage / 100) * 30;
+            
+            // Phone coverage (max 25 points) 
+            score += (stats.phoneCoverage / 100) * 25;
+            
+            // External ID presence (15 points)
+            const externalId = document.getElementById('testExternalId').value;
+            if (externalId) score += 15;
+            
+            // TTCLID/TTP parameters (10 points)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('ttclid') || urlParams.get('ttp')) score += 10;
+            
+            stats.emqScore = Math.round(score);
+            updateStats();
+        }
+
+        // Funções de dados do usuário
+        function setUserData() {
+            const email = document.getElementById('testEmail').value;
+            const phone = document.getElementById('testPhone').value;
+            const externalId = document.getElementById('testExternalId').value;
+
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.identifyUser(email, phone, externalId);
+                log(`✅ Usuário identificado: Email=${email}, Phone=${phone}, ExternalID=${externalId}`, 'success');
+                
+                // Atualizar cobertura
+                stats.emailCoverage = email ? 100 : 0;
+                stats.phoneCoverage = phone ? 100 : 0;
+                calculateEmqScore();
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        function clearUserData() {
+            document.getElementById('testEmail').value = '';
+            document.getElementById('testPhone').value = '';
+            document.getElementById('testExternalId').value = '';
+            
+            stats.emailCoverage = 0;
+            stats.phoneCoverage = 0;
+            calculateEmqScore();
+            
+            log('🗑️ Dados do usuário limpos', 'info');
+        }
+
+        // Testes ViewContent
+        function testViewContentCard() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'card',
+                    content_category: 'digital_greeting_card',
+                    content_id: 'test_card_001',
+                    content_name: 'Cartão Teste - EMQ',
+                    value: 0,
+                    currency: 'BRL'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log('📱 ViewContent enviado: Tipo Card', 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        function testViewContentPage() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'page',
+                    content_category: 'landing_page',
+                    content_id: 'test_page_001',
+                    content_name: 'Página Teste - EMQ'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log('📄 ViewContent enviado: Tipo Page', 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        function testViewContentProduct() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'product',
+                    content_category: 'digital_service',
+                    content_id: 'premium_plan',
+                    content_name: 'Plano Premium - Teste',
+                    value: 29.90,
+                    currency: 'BRL'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log('🛍️ ViewContent enviado: Tipo Product com valor R$ 29,90', 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        function testViewContentService() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'service',
+                    content_category: 'card_creation',
+                    content_id: 'card_creator_service',
+                    content_name: 'Serviço de Criação de Cartões'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log('⚙️ ViewContent enviado: Tipo Service', 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        function testViewContentWithValue() {
+            const randomValue = (Math.random() * 100).toFixed(2);
+            
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'product',
+                    content_category: 'premium_feature',
+                    content_id: 'value_test_' + Date.now(),
+                    content_name: 'Teste com Valor - EMQ',
+                    value: parseFloat(randomValue),
+                    currency: 'BRL'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log(`💰 ViewContent enviado: Com valor R$ ${randomValue}`, 'success');
+            } else {
+                log('❌ TikTokEvents não disponível', 'error');
+            }
+        }
+
+        // Simulações avançadas
+        function simulateCardViewing() {
+            const cardTypes = ['birthday', 'anniversary', 'christmas', 'valentine', 'graduation'];
+            const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+            
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent({
+                    content_type: 'card',
+                    content_category: 'digital_greeting_card',
+                    content_id: `${randomType}_card_${Date.now()}`,
+                    content_name: `Cartão ${randomType.charAt(0).toUpperCase() + randomType.slice(1)}`,
+                    value: 0,
+                    currency: 'BRL'
+                });
+                
+                stats.eventCount++;
+                updateStats();
+                log(`🎴 Simulação: Visualização de cartão ${randomType}`, 'success');
+            }
+        }
+
+        function simulateUserJourney() {
+            const journey = [
+                { type: 'page', category: 'landing_page', name: 'Página Inicial' },
+                { type: 'service', category: 'card_creation', name: 'Serviço de Criação' },
+                { type: 'product', category: 'premium_plan', name: 'Plano Premium', value: 29.90 },
+                { type: 'card', category: 'digital_greeting_card', name: 'Cartão Criado' }
+            ];
+            
+            let delay = 0;
+            journey.forEach((step, index) => {
+                setTimeout(() => {
+                    if (typeof TikTokEvents !== 'undefined') {
+                        TikTokEvents.trackViewContent({
+                            content_type: step.type,
+                            content_category: step.category,
+                            content_id: `journey_step_${index + 1}`,
+                            content_name: step.name,
+                            value: step.value || 0,
+                            currency: 'BRL'
+                        });
+                        
+                        stats.eventCount++;
+                        updateStats();
+                        log(`🚶 Jornada ${index + 1}/4: ${step.name}`, 'success');
+                    }
+                }, delay);
+                delay += 2000; // 2 segundos entre cada evento
+            });
+        }
+
+        function runEmqStressTest() {
+            log('🔥 Iniciando teste de stress EMQ...', 'info');
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    if (typeof TikTokEvents !== 'undefined') {
+                        TikTokEvents.trackViewContent({
+                            content_type: 'card',
+                            content_category: 'stress_test',
+                            content_id: `stress_test_${i + 1}`,
+                            content_name: `Teste de Stress ${i + 1}`,
+                            value: Math.random() * 50,
+                            currency: 'BRL'
+                        });
+                        
+                        stats.eventCount++;
+                        updateStats();
+                        log(`🔥 Stress Test ${i + 1}/10 enviado`, 'success');
+                        
+                        if (i === 9) {
+                            log('✅ Teste de stress concluído!', 'success');
+                        }
+                    }
+                }, i * 500); // 500ms entre cada evento
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Sistema de teste EMQ ViewContent iniciado', 'success');
+            log('📋 Configure os dados do usuário e execute os testes', 'info');
+            
+            // Verificar parâmetros TikTok na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('ttclid')) {
+                log(`🔗 TTCLID detectado: ${urlParams.get('ttclid')}`, 'success');
+            }
+            if (urlParams.get('ttp')) {
+                log(`🔗 TTP detectado: ${urlParams.get('ttp')}`, 'success');
+            }
+            
+            calculateEmqScore();
+        });
+
+        // Interceptar eventos TikTok para logging
+        if (typeof ttq !== 'undefined') {
+            const originalTrack = ttq.track;
+            ttq.track = function(eventName, properties) {
+                if (eventName === 'ViewContent') {
+                    log(`📊 TikTok Pixel ViewContent: ${JSON.stringify(properties)}`, 'info');
+                }
+                return originalTrack.apply(this, arguments);
+            };
+        }
+    </script>
+</body>
+</html>

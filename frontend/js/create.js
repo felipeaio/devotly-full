@@ -976,6 +976,17 @@ class DevotlyCreator {
 
                 e.target.value = value;
                 this.state.formData.userPhone = value;
+                
+                // Armazenar telefone para uso no TikTok Events
+                if (value && value.length >= 10) { // Mínimo para telefone válido
+                    localStorage.setItem('user_phone', value);
+                    // Identificar usuário no TikTok Events
+                    if (typeof TikTokEvents !== 'undefined' && TikTokEvents.identifyUser) {
+                        const email = document.getElementById('userEmail')?.value || null;
+                        TikTokEvents.identifyUser(email, value, null);
+                        console.log('TikTok: Usuário identificado automaticamente com telefone');
+                    }
+                }
             });
         }
         
@@ -987,6 +998,17 @@ class DevotlyCreator {
             newUserEmailInput.addEventListener('input', (e) => {
                 const email = e.target.value.trim();
                 this.state.formData.email = email;
+                
+                // Armazenar email para uso no TikTok Events
+                if (email && email.includes('@')) {
+                    localStorage.setItem('user_email', email);
+                    // Identificar usuário no TikTok Events
+                    if (typeof TikTokEvents !== 'undefined' && TikTokEvents.identifyUser) {
+                        const phone = document.getElementById('userPhone')?.value || null;
+                        TikTokEvents.identifyUser(email, phone, null);
+                        console.log('TikTok: Usuário identificado automaticamente com email');
+                    }
+                }
                 
                 // Auto-fill userName with email username if userName is empty
                 const userNameInput = document.getElementById('userName');

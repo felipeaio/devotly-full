@@ -161,9 +161,27 @@ class DevotlyViewer {    constructor() {
             // Rastrear visualização do cartão via backend
             this.trackCardView();
 
-            // Rastrear no frontend também
+            // Rastrear no frontend também com dados completos
             if (typeof TikTokEvents !== 'undefined') {
-                TikTokEvents.viewCard(this.state.cardId, result.data.conteudo?.cardTitle);
+                // Identificar usuário se houver email no cartão
+                if (result.data.email) {
+                    TikTokEvents.identifyUser(result.data.email, result.data.conteudo?.userPhone, this.state.cardId);
+                }
+                
+                // Rastrear visualização com dados detalhados
+                TikTokEvents.viewCard(this.state.cardId);
+                
+                // Rastrear também como ViewContent direto com mais detalhes
+                if (typeof trackViewContent === 'function') {
+                    trackViewContent(
+                        this.state.cardId, 
+                        result.data.conteudo?.cardTitle || 'Cartão Devocional',
+                        10,
+                        'BRL',
+                        'product',
+                        'digital_card'
+                    );
+                }
             }
 
             this.renderCard();

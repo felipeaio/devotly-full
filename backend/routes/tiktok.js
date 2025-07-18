@@ -51,23 +51,48 @@ router.post('/track-event', async (req, res) => {
         
         switch (eventName) {
             case 'PageView':
-                result = await tiktokEvents.trackViewContent(
-                    eventData.path || 'page',
-                    eventData.title || 'Página',
-                    serverUserData.email,
-                    req,
-                    eventId
+                // PageView otimizado para máximo EMQ
+                result = await tiktokEvents.sendEventToAllPixels(
+                    'PageView',
+                    {
+                        // Dados específicos da página
+                        content_type: 'page',
+                        content_name: eventData.title || document?.title || 'Página',
+                        content_category: 'website_page',
+                        url: eventData.url || context.pageUrl,
+                        referrer: eventData.referrer || context.referrer || '',
+                        page_title: eventData.title || 'Página',
+                        page_path: eventData.path || '/',
+                        timestamp: timestamp || new Date().toISOString()
+                    },
+                    serverUserData,
+                    context
                 );
+                
+                console.log('[TikTok EMQ] PageView processado com dados otimizados:', {
+                    email_present: !!serverUserData.email,
+                    phone_present: !!serverUserData.phone,
+                    external_id_present: !!serverUserData.userId,
+                    ttclid_present: !!context.ttclid,
+                    user_agent_present: !!context.userAgent,
+                    url_present: !!context.pageUrl
+                });
                 break;
 
             case 'ViewContent':
-                result = await tiktokEvents.trackViewContent(
-                    eventData.content_id,
-                    eventData.content_name,
-                    eventData.content_name,
-                    serverUserData.email,
-                    req,
-                    eventId
+                result = await tiktokEvents.sendEventToAllPixels(
+                    'ViewContent',
+                    {
+                        content_id: eventData.content_id || 'unknown',
+                        content_type: eventData.content_type || 'product',
+                        content_name: eventData.content_name || 'Conteúdo',
+                        content_category: eventData.content_category || 'digital_product',
+                        value: Number(eventData.value || 0),
+                        currency: eventData.currency || 'BRL',
+                        quantity: eventData.quantity || 1
+                    },
+                    serverUserData,
+                    context
                 );
                 break;
 

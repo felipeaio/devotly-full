@@ -262,6 +262,20 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
+            
+            // Capturar e armazenar parâmetros do TikTok da URL
+            const ttclid = urlParams.get('ttclid');
+            const ttp = urlParams.get('ttp');
+            
+            if (ttclid) {
+                localStorage.setItem('ttclid', ttclid);
+                console.log('TikTok Click ID capturado:', ttclid);
+            }
+            if (ttp) {
+                localStorage.setItem('ttp', ttp);
+                console.log('TikTok Tracking Parameter capturado:', ttp);
+            }
+            
             const externalReference = urlParams.get('external_reference');
             const userEmailElement = document.getElementById('userEmail');
             const paymentId = urlParams.get('payment_id');
@@ -286,6 +300,21 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
                     
                     // Salvar email no localStorage para uso futuro
                     localStorage.setItem('devotly_user_email', email);
+                    localStorage.setItem('user_email', email);
+                    
+                    // Identificar usuário no TikTok Events com todos os dados disponíveis
+                    if (typeof TikTokEvents !== 'undefined' && TikTokEvents.identifyUser) {
+                        TikTokEvents.identifyUser(email, null, cardId);
+                        console.log('TikTok: Usuário identificado na página de sucesso');
+                    }
+                    
+                    // Rastrear conversão completa
+                    if (typeof TikTokEvents !== 'undefined' && TikTokEvents.completePurchase) {
+                        const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+                        const planValue = planValues[plano] || 17.99;
+                        TikTokEvents.completePurchase(cardId, plano, planValue);
+                        console.log('TikTok: Compra rastreada com valor:', planValue);
+                    }
                 }
             } else {
                 // Tenta recuperar o email do localStorage
