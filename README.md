@@ -7,6 +7,23 @@ Devotly é uma plataforma para criação de cartões digitais cristãos com vers
 - **backend**: API Node.js com Express
 - **frontend**: Interface web em HTML, CSS e JavaScript
 
+## Integrações
+
+### TikTok Pixel e API Events
+
+O projeto inclui integração completa com TikTok Pixel (client-side) e TikTok API Events (server-side) para rastreamento de conversões e eventos de usuário.
+
+- **TikTok Pixel Code**: `D1QFD0RC77UF6MBM48MG`
+- **TikTok API Access Token**: `08538eef624276105c15fff5c1dfefe76b9726f2`
+
+A documentação completa da integração pode ser encontrada em [TIKTOK_INTEGRATION.md](TIKTOK_INTEGRATION.md).
+
+Para testar a integração do TikTok API Events, execute:
+
+```bash
+node backend/tests/tiktok-events-test.js
+```
+
 ## Requisitos
 
 - Node.js 18+
@@ -15,6 +32,7 @@ Devotly é uma plataforma para criação de cartões digitais cristãos com vers
 - Conta no Supabase (https://supabase.com)
 - Conta no Mercado Pago (para processamento de pagamentos)
 - Conta no Resend (para envio de emails)
+- Conta no TikTok Business (para tracking de conversões)
 
 ## Variáveis de Ambiente Necessárias
 
@@ -37,67 +55,67 @@ PORT=3000
 
 1. Execute o script PowerShell:
 
-```powershell
-.\deploy.ps1
-```
+    ```powershell
+    .\deploy.ps1
+    ```
 
 ### Método 2: Deploy usando o script automatizado (Linux/Mac)
 
 1. Dê permissão de execução ao script:
 
-```bash
-chmod +x deploy.sh
-```
+    ```bash
+    chmod +x deploy.sh
+    ```
 
 2. Execute o script:
 
-```bash
-./deploy.sh
-```
+    ```bash
+    ./deploy.sh
+    ```
 
 ### Método 3: Deploy manual
 
 1. Instale o CLI do Railway:
 
-```bash
-npm install -g @railway/cli
-```
+    ```bash
+    npm install -g @railway/cli
+    ```
 
 2. Faça login no Railway:
 
-```bash
-railway login
-```
+    ```bash
+    railway login
+    ```
 
 3. Vincule o projeto ao Railway:
 
-```bash
-railway link
-```
+    ```bash
+    railway link
+    ```
 
 4. Configure as variáveis de ambiente:
 
-```bash
-railway variables set SUPABASE_URL=sua_url_do_supabase
-railway variables set SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
-# ... continue com as demais variáveis
-```
+    ```bash
+    railway variables set SUPABASE_URL=sua_url_do_supabase
+    railway variables set SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+    # ... continue com as demais variáveis
+    ```
 
 5. Deploy do backend:
 
-```bash
-cd backend
-railway up
-cd ..
-```
+    ```bash
+    cd backend
+    railway up
+    cd ..
+    ```
 
 6. Deploy do frontend:
 
-```bash
-cd frontend
-railway up
-cd ..
-```
+    ```bash
+    cd frontend
+    railway up
+    cd ..
+    ```
 
 ## Configuração Pós-Deploy
 

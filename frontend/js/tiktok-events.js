@@ -1,15 +1,28 @@
 /**
- * TikTok Pixel Events - Devotly
- * Implementa eventos de rastreamento para o TikTok Pixel conforme recomendações do TikTok
- * Inclui funis, eventos e parâmetros para melhorar o desempenho e os relatórios
+ * TikTok Pixel Events - Devotly OTIMIZADO
+ * Implementa eventos de rastreamento para o TikTok Pixel com Advanced Matching
+ * Inclui todos os eventos necessários para alta qualidade e correspondência
  * 
- * Versão: 1.2.0
- * Última atualização: Inclui tratamento de erros e fallbacks para eventos
+ * Versão: 2.0.0 - OTIMIZADO
+ * Última atualização: Advanced Matching + Deduplicação + Events API Integration
  */
+
+// Configuração da API
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://devotly-full-production.up.railway.app';
 
 // Fila local para eventos não enviados (armazenada em localStorage)
 const TIKTOK_EVENT_QUEUE_KEY = 'devotly_tiktok_event_queue';
 let eventQueueProcessing = false;
+
+// Cache para dados do usuário
+let userDataCache = {
+    email: null,
+    phone: null,
+    userId: null,
+    hashedData: {}
+};
 
 // Função para inicializar o sistema de eventos
 function initTikTokEvents() {
@@ -22,6 +35,9 @@ function initTikTokEvents() {
       
       // Iniciar processamento da fila
       processEventQueue();
+      
+      // Rastrear PageView automaticamente
+      trackPageView();
     }
     
     // Adicionar listeners para eventos de visibilidade da página
@@ -41,45 +57,62 @@ function initTikTokEvents() {
   }
 }
 
-// Função para hash SHA-256 (necessária para dados PII)
-async function sha256(str) {
+// Função para hash SHA-256 + Base64 (Advanced Matching)
+async function sha256Base64(str) {
   if (!str) return null;
   
   try {
-    const buffer = new TextEncoder().encode(str);
+    const buffer = new TextEncoder().encode(str.trim().toLowerCase());
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Converter para Base64
+    return btoa(hashHex.match(/.{2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join(''));
   } catch (error) {
-    console.error('Erro ao gerar hash SHA-256:', error);
+    console.error('Erro ao gerar hash SHA-256 + Base64:', error);
     return null;
   }
 }
 
-// Função para identificar usuário (para dados PII)
+// Função para identificar usuário com Advanced Matching
 async function identifyUser(email, phone, userId) {
   try {
     const hashedData = {};
     
     if (email) {
-      hashedData.email = await sha256(email.trim().toLowerCase());
+      const hashedEmail = await sha256Base64(email);
+      if (hashedEmail) {
+        hashedData.email = hashedEmail;
+        userDataCache.email = email;
+        userDataCache.hashedData.email = hashedEmail;
+      }
     }
     
     if (phone) {
       // Remove não-dígitos do telefone antes do hash
       const cleanPhone = phone.replace(/\D/g, '');
-      hashedData.phone_number = await sha256(cleanPhone);
+      const hashedPhone = await sha256Base64(cleanPhone);
+      if (hashedPhone) {
+        hashedData.phone_number = hashedPhone;
+        userDataCache.phone = cleanPhone;
+        userDataCache.hashedData.phone_number = hashedPhone;
+      }
     }
     
     if (userId) {
-      hashedData.external_id = await sha256(userId);
+      const hashedUserId = await sha256Base64(userId);
+      if (hashedUserId) {
+        hashedData.external_id = hashedUserId;
+        userDataCache.userId = userId;
+        userDataCache.hashedData.external_id = hashedUserId;
+      }
     }
     
     if (Object.keys(hashedData).length > 0) {
       // Tenta enviar o evento, ou enfileira se não for possível
       if (typeof ttq !== 'undefined') {
         ttq.identify(hashedData);
-        console.log('TikTok: Usuário identificado com', Object.keys(hashedData).join(', '));
+        console.log('TikTok: Usuário identificado com Advanced Matching', Object.keys(hashedData).join(', '));
         return true;
       } else {
         // Enfileira o evento para tentativa posterior
@@ -94,9 +127,20 @@ async function identifyUser(email, phone, userId) {
   }
 }
 
-// Gera ID único para eventos
+// Gera ID único para eventos (para deduplicação)
 function generateEventId() {
-  return Date.now() + '_' + Math.floor(Math.random() * 1000);
+  return `devotly_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+}
+
+// Obtém dados de Advanced Matching
+function getAdvancedMatchingData() {
+  return {
+    ...userDataCache.hashedData,
+    // Adicionar dados do navegador
+    user_agent: navigator.userAgent,
+    // Adicionar URL atual
+    url: window.location.href
+  };
 }
 
 // Enfileira um evento para tentativa posterior

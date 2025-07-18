@@ -39,6 +39,7 @@ import cardsRouter from './routes/cards.js';
 import uploadRouter from './routes/upload.js';
 import checkoutRouter from './routes/checkout.js';
 import webhookRouter from './routes/webhook.js';
+import tiktokRouter from './routes/tiktok.js';
 
 // Resolve o caminho do diretório raiz
 const rootDir = path.resolve(__dirname, '..');
@@ -180,6 +181,7 @@ app.use('/api/cards', cardsRouter);
 app.use('/api/upload-image', supabaseMiddleware, uploadRouter);
 app.use('/api/upload', supabaseMiddleware, uploadRouter); // Alias para compatibilidade
 app.use('/api/checkout', supabaseMiddleware, checkoutRouter);
+app.use('/api/tiktok', tiktokRouter);
 app.use('/webhook', supabaseMiddleware);
 app.use('/webhook', webhookRouter);
 
