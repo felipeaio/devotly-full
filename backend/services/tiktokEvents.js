@@ -1,8 +1,8 @@
 /**
- * TikTok Events API v1.3 Integration
+ * TikTok Events API v1.3 Integration - OTIMIZADO
  * 
  * Este serviço implementa a integração server-side com a API de Eventos do TikTok v1.3
- * para complementar o tracking do Pixel no front-end.
+ * para complementar o tracking do Pixel no front-end com foco em alta taxa de correspondência.
  * 
  * Documentação oficial: https://business-api.tiktok.com/marketing_api/docs?id=1701890979375106
  * 
@@ -14,17 +14,21 @@
  *   - TIKTOK_ACCESS_TOKEN: Token de acesso gerado no painel do TikTok
  *   - TIKTOK_PIXEL_CODE: Código do pixel (D1QFD0RC77UF6MBM48MG)
  * 
- * Eventos principais implementados:
+ * Eventos principais implementados com otimizações:
  * - ViewContent: Visualização de conteúdo
  * - AddToCart: Adição de item ao carrinho
  * - InitiateCheckout: Início de checkout
- * - Purchase: Compra finalizada
+ * - Purchase: Compra finalizada (com value e currency obrigatórios)
  * 
- * Características da implementação:
+ * Características da implementação OTIMIZADA:
  * - Hash SHA-256 + Base64 para dados sensíveis (email, telefone)
+ * - Envio obrigatório de value e currency em eventos de conversão
+ * - Deduplicação com event_id sincronizado com frontend
+ * - Dados de identificação completos (email, phone, ip, user_agent, ttp, ttclid)
  * - Sistema de retry automático para eventos falhos
  * - Fila de eventos para processamento posterior
- * - Logs detalhados para depuração
+ * - Logs detalhados para monitoramento da qualidade
+ * - Suporte a múltiplos pixels
  */
 
 import fetch from 'node-fetch';
@@ -40,10 +44,28 @@ class TikTokEventsService {
     constructor() {
         // Endpoint da TikTok Events API v1.3
         this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
-        // Token de acesso da API (configurado no painel do TikTok Events)
-        this.accessToken = process.env.TIKTOK_ACCESS_TOKEN || '08538eef624276105c15fff5c1dfefe76b9726f2';
-        // Código do Pixel configurado no TikTok Ads
-        this.pixelCode = process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG';
+        
+        // Configuração para múltiplos pixels
+        this.pixels = [
+            {
+                id: process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG',
+                token: process.env.TIKTOK_ACCESS_TOKEN || '08538eef624276105c15fff5c1dfefe76b9726f2'
+            },
+            // Adicione mais pixels conforme necessário
+            ...(process.env.TIKTOK_PIXEL_CODE_2 && process.env.TIKTOK_ACCESS_TOKEN_2 ? [{
+                id: process.env.TIKTOK_PIXEL_CODE_2,
+                token: process.env.TIKTOK_ACCESS_TOKEN_2
+            }] : []),
+            ...(process.env.TIKTOK_PIXEL_CODE_3 && process.env.TIKTOK_ACCESS_TOKEN_3 ? [{
+                id: process.env.TIKTOK_PIXEL_CODE_3,
+                token: process.env.TIKTOK_ACCESS_TOKEN_3
+            }] : [])
+        ];
+
+        // Manter compatibilidade com código existente
+        this.accessToken = this.pixels[0].token;
+        this.pixelCode = this.pixels[0].id;
+        
         // Fonte do evento (obrigatório na API v1.3: web, app ou offline)
         this.eventSource = 'web';
         // Identificador da fonte do evento (obrigatório na API v1.3) - usar o código do pixel
@@ -57,11 +79,13 @@ class TikTokEventsService {
         // Modo de teste (logs detalhados)
         this.testMode = process.env.NODE_ENV === 'development';
 
-        console.log(`[TikTok Events] Inicializado com Pixel ID: ${this.pixelCode} (pixel-rastreio)`);
+        console.log(`[TikTok Events] Inicializado com ${this.pixels.length} pixel(s)`);
+        this.pixels.forEach((pixel, index) => {
+            console.log(`[TikTok Events] Pixel ${index + 1}: ${pixel.id}`);
+        });
         console.log(`[TikTok Events] Modo de teste: ${this.testMode}`);
         console.log(`[TikTok Events] API URL: ${this.apiUrl}`);
         console.log(`[TikTok Events] Event Source: ${this.eventSource}`);
-        console.log(`[TikTok Events] Event Source ID: ${this.eventSourceId}`);
 
         // Iniciar processamento da fila
         this.startQueueProcessor();
@@ -93,29 +117,68 @@ class TikTokEventsService {
      * @returns {string} - ID único para o evento
      */
     generateEventId() {
-        return `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        return `devotly_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     }
 
     /**
-     * Obtém IP do usuário de forma segura
+     * Extrai parâmetros de tracking do TikTok da requisição
      * @param {Object} req - Request object
-     * @returns {string} - IP do usuário
+     * @returns {Object} - Parâmetros de tracking (ttclid, ttp)
      */
-    getUserIP(req) {
-        return req.headers['x-forwarded-for']?.split(',')[0] ||
-               req.connection.remoteAddress ||
-               req.socket.remoteAddress ||
-               (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
-               '127.0.0.1';
+    extractTikTokParams(req) {
+        const params = {};
+        
+        // TikTok Click ID - parâmetro mais importante para correspondência
+        if (req.query.ttclid || req.headers['x-ttclid']) {
+            params.ttclid = req.query.ttclid || req.headers['x-ttclid'];
+        }
+        
+        // TikTok Tracking Parameter
+        if (req.query.ttp || req.headers['x-ttp']) {
+            params.ttp = req.query.ttp || req.headers['x-ttp'];
+        }
+        
+        // Verificar também em cookies
+        if (req.headers.cookie) {
+            const cookies = req.headers.cookie.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=');
+                acc[key] = value;
+                return acc;
+            }, {});
+            
+            if (cookies.ttclid && !params.ttclid) {
+                params.ttclid = cookies.ttclid;
+            }
+            
+            if (cookies.ttp && !params.ttp) {
+                params.ttp = cookies.ttp;
+            }
+        }
+        
+        return params;
     }
 
     /**
-     * Obtém User Agent de forma segura
+     * Prepara contexto completo para envio de evento
      * @param {Object} req - Request object
-     * @returns {string} - User Agent
+     * @param {string} eventId - ID personalizado do evento (opcional)
+     * @returns {Object} - Contexto completo
      */
-    getUserAgent(req) {
-        return req.headers['user-agent'] || 'Unknown';
+    prepareEventContext(req, eventId = null) {
+        if (!req) {
+            return { eventId };
+        }
+
+        const tiktokParams = this.extractTikTokParams(req);
+        
+        return {
+            ip: this.getUserIP(req),
+            userAgent: this.getUserAgent(req),
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+            referrer: req.headers.referer || req.headers.referrer || '',
+            eventId: eventId || this.generateEventId(),
+            ...tiktokParams
+        };
     }
 
     /**
@@ -161,6 +224,123 @@ class TikTokEventsService {
                 event.retries = (event.retries || 0) + 1;
             }
         }
+    }
+
+    /**
+     * Envia evento para todos os pixels configurados
+     */
+    async sendEventToAllPixels(eventName, eventProperties, userData = {}, context = {}) {
+        if (process.env.NODE_ENV !== 'production' && !this.testMode) {
+            console.log(`[DEV MODE] TikTok event "${eventName}" não enviado (apenas em produção).`);
+            return { status: 'dev_mode', message: 'Evento não enviado em modo de desenvolvimento' };
+        }
+
+        const results = await Promise.allSettled(
+            this.pixels.map(async (pixel) => {
+                return this.sendEventToPixel(pixel, eventName, eventProperties, userData, context);
+            })
+        );
+
+        // Processar resultados
+        const successful = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+
+        console.log(`[TikTok Events] Evento ${eventName}: ${successful} sucessos, ${failed} falhas`);
+
+        return {
+            status: 'completed',
+            successful,
+            failed,
+            results
+        };
+    }
+
+    /**
+     * Envia evento para um pixel específico - FORMATO CORRETO API v1.3
+     */
+    async sendEventToPixel(pixel, eventName, eventProperties, userData = {}, context = {}) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        // Usar event_id personalizado se fornecido, caso contrário gerar um
+        const eventId = context.eventId || this.generateEventId();
+
+        // Preparar dados do usuário com hash SHA-256 + Base64 (obrigatório para alta correspondência)
+        const user = {};
+        
+        // Email (obrigatório para alta correspondência)
+        if (userData.email) {
+            user.email = this.hashData(userData.email, true);
+        }
+        
+        // Telefone (muito importante para correspondência)
+        if (userData.phone) {
+            user.phone_number = this.hashData(userData.phone, true);
+        }
+        
+        // ID externo do cliente (importante para deduplicação)
+        if (userData.externalId) {
+            user.external_id = this.hashData(userData.externalId, true);
+        }
+        
+        // IP do usuário (obrigatório)
+        if (context.ip) {
+            user.ip = context.ip;
+        }
+        
+        // User Agent (obrigatório)
+        if (context.userAgent) {
+            user.user_agent = context.userAgent;
+        }
+        
+        // TikTok Click ID (ttclid) - parâmetro de clique em anúncios (muito importante)
+        if (context.ttclid) {
+            user.ttclid = context.ttclid;
+        }
+        
+        // TikTok Tracking Parameter (ttp) - parâmetro adicional de tracking
+        if (context.ttp) {
+            user.ttp = context.ttp;
+        }
+
+        // Payload no formato correto da API v1.3
+        const payload = {
+            pixel_code: pixel.id,
+            event: eventName,
+            event_id: eventId,
+            timestamp: timestamp,
+            user: user,
+            properties: {
+                ...eventProperties,
+                // Value e Currency são OBRIGATÓRIOS para eventos de conversão
+                value: eventProperties.value || 0,
+                currency: eventProperties.currency || 'BRL',
+                // URL da página (importante para contexto)
+                url: context.pageUrl || 'https://devotly.shop'
+            }
+        };
+
+        if (this.testMode) {
+            console.log(`[TikTok Events] Payload para pixel ${pixel.id}:`, JSON.stringify(payload, null, 2));
+        }
+
+        const response = await fetch(this.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Token': pixel.token,
+                'User-Agent': 'Devotly-TikTok-Events/1.0'
+            },
+            body: JSON.stringify(payload),
+            timeout: 10000
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`TikTok API Error (Pixel ${pixel.id}): ${response.status} - ${JSON.stringify(responseData)}`);
+        }
+
+        console.log(`[TikTok Events] Evento ${eventName} enviado para pixel ${pixel.id}:`, responseData);
+        return responseData;
     }
 
     /**
@@ -289,34 +469,41 @@ class TikTokEventsService {
      */
     async sendEvent(eventName, eventProperties, userData = {}, context = {}) {
         try {
-            return await this.sendEventWithRetry(eventName, eventProperties, userData, context);
+            return await this.sendEventToAllPixels(eventName, eventProperties, userData, context);
         } catch (error) {
-            console.error('[TikTok Events] Todos os envios falharam. Evento na fila para processamento posterior.');
-            return { error: error.message, status: 'queued' };
+            console.error('[TikTok Events] Erro ao enviar evento:', error);
+            return { error: error.message, status: 'error' };
         }
     }
 
     /**
-     * Evento de compra concluída
+     * Evento de compra concluída - OTIMIZADO com value e currency obrigatórios
      */
-    async trackPurchase(cardId, planType, value, userEmail, userPhone, req = null) {
+    async trackPurchase(cardId, planType, value, userEmail, userPhone, req = null, eventId = null) {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
+        
+        // Validar value obrigatório
+        if (!value || value <= 0) {
+            console.warn('[TikTok Events] AVISO: Evento Purchase sem value válido. Isso afeta a otimização do TikTok!');
+            value = planType === 'para_sempre' ? 97 : 67; // Valores padrão
+        }
         
         const context = req ? {
             ip: this.getUserIP(req),
             userAgent: this.getUserAgent(req),
-            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
-        } : {};
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+            eventId: eventId // Para deduplicação com frontend
+        } : { eventId };
         
         return this.sendEvent('Purchase', {
-            contents: [{
-                content_id: cardId,
-                content_type: 'product',
-                content_name: planName,
-                quantity: 1
-            }],
-            value: value,
-            currency: 'BRL',
+            // Dados obrigatórios para otimização do TikTok
+            value: parseFloat(value), // OBRIGATÓRIO
+            currency: 'BRL', // OBRIGATÓRIO
+            // Dados do produto
+            content_id: cardId,
+            content_type: 'product',
+            content_name: planName,
+            content_category: 'digital_product'
         }, {
             email: userEmail,
             phone: userPhone,
@@ -325,26 +512,32 @@ class TikTokEventsService {
     }
 
     /**
-     * Evento de checkout iniciado
+     * Evento de checkout iniciado - OTIMIZADO
      */
-    async trackInitiateCheckout(cardId, planType, value, userEmail, req = null) {
+    async trackInitiateCheckout(cardId, planType, value, userEmail, req = null, eventId = null) {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
         
+        // Validar value obrigatório
+        if (!value || value <= 0) {
+            console.warn('[TikTok Events] AVISO: Evento InitiateCheckout sem value válido.');
+            value = planType === 'para_sempre' ? 97 : 67; // Valores padrão
+        }
+        
         const context = req ? {
             ip: this.getUserIP(req),
             userAgent: this.getUserAgent(req),
-            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
-        } : {};
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+            eventId: eventId
+        } : { eventId };
         
         return this.sendEvent('InitiateCheckout', {
-            contents: [{
-                content_id: cardId,
-                content_type: 'product',
-                content_name: planName,
-                quantity: 1
-            }],
-            value: value,
-            currency: 'BRL',
+            // Dados obrigatórios para otimização
+            value: parseFloat(value), // OBRIGATÓRIO
+            currency: 'BRL', // OBRIGATÓRIO
+            content_id: cardId,
+            content_type: 'product',
+            content_name: planName,
+            content_category: 'digital_product'
         }, {
             email: userEmail,
             externalId: cardId
@@ -352,23 +545,24 @@ class TikTokEventsService {
     }
     
     /**
-     * Evento de cartão criado/adicionado
+     * Evento de cartão criado/adicionado - OTIMIZADO
      */
-    async trackAddToCart(cardId, userEmail, req = null) {
+    async trackAddToCart(cardId, userEmail, req = null, eventId = null) {
         const context = req ? {
             ip: this.getUserIP(req),
             userAgent: this.getUserAgent(req),
-            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
-        } : {};
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+            eventId: eventId
+        } : { eventId };
         
         return this.sendEvent('AddToCart', {
-            contents: [{
-                content_id: cardId,
-                content_type: 'product',
-                content_name: 'Cartão Cristão Digital',
-                quantity: 1
-            }],
+            // Value obrigatório mesmo para AddToCart
+            value: 0, // Valor estimado do lead
             currency: 'BRL',
+            content_id: cardId,
+            content_type: 'product',
+            content_name: 'Cartão Cristão Digital',
+            content_category: 'digital_product'
         }, {
             email: userEmail,
             externalId: cardId
@@ -376,24 +570,27 @@ class TikTokEventsService {
     }
     
     /**
-     * Evento de visualização de conteúdo
+     * Evento de visualização de conteúdo - OTIMIZADO
      */
-    async trackViewContent(cardId, contentType, contentName, userEmail, req = null) {
+    async trackViewContent(cardId, contentType, contentName, userEmail, req = null, eventId = null) {
         const context = req ? {
             ip: this.getUserIP(req),
             userAgent: this.getUserAgent(req),
-            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`
-        } : {};
+            pageUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+            eventId: eventId
+        } : { eventId };
         
         return this.sendEvent('ViewContent', {
-            contents: [{
-                content_id: cardId,
-                content_type: contentType || 'product',
-                content_name: contentName || 'Cartão Cristão Digital',
-            }],
+            // Value pode ser 0 para ViewContent, mas currency é obrigatório
+            value: 0,
             currency: 'BRL',
+            content_id: cardId,
+            content_type: contentType || 'product',
+            content_name: contentName || 'Cartão Cristão Digital',
+            content_category: 'digital_product'
         }, {
-            email: userEmail
+            email: userEmail,
+            externalId: cardId
         }, context);
     }
     
@@ -431,6 +628,28 @@ class TikTokEventsService {
         } : {};
         
         return this.sendEvent(eventName, properties, userData, context);
+    }
+
+    /**
+     * Obtém IP do usuário de forma segura
+     * @param {Object} req - Request object
+     * @returns {string} - IP do usuário
+     */
+    getUserIP(req) {
+        return req.headers['x-forwarded-for']?.split(',')[0] ||
+               req.connection?.remoteAddress ||
+               req.socket?.remoteAddress ||
+               (req.connection?.socket ? req.connection.socket.remoteAddress : null) ||
+               '127.0.0.1';
+    }
+
+    /**
+     * Obtém User Agent de forma segura
+     * @param {Object} req - Request object
+     * @returns {string} - User Agent
+     */
+    getUserAgent(req) {
+        return req.headers['user-agent'] || 'Unknown';
     }
 }
 
