@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Rastrear interação com menu
         if (typeof TikTokEvents !== 'undefined') {
-            TikTokEvents.trackEngagement('menu', isOpen ? 'Fechar Menu' : 'Abrir Menu');
+            TikTokEvents.trackClickButton(isOpen ? 'Fechar Menu' : 'Abrir Menu', 'navigation', 1);
         }
     });
 
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Rastrear mudança de slide
         if (typeof TikTokEvents !== 'undefined') {
-            TikTokEvents.trackEngagement('slider', `Slide ${index + 1}`);
+            TikTokEvents.trackClickButton(`Slide ${index + 1}`, 'slider', 1);
         }
     }
 
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Rastrear quando o contador finaliza
                 if (typeof TikTokEvents !== 'undefined') {
-                    TikTokEvents.trackEngagement('counter', 'Contador Finalizado');
+                    TikTokEvents.trackClickButton('Contador Finalizado', 'engagement', 5);
                 }
             }
         }
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rastrear quando usuário fica 30 segundos na página
     setTimeout(() => {
         if (!timeTracked && typeof TikTokEvents !== 'undefined') {
-            TikTokEvents.trackEngagement('time', 'Tempo na Página: 30s');
+            TikTokEvents.trackClickButton('Tempo na Página: 30s', 'engagement', 10);
             timeTracked = true;
         }
     }, 30000);
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof TikTokEvents !== 'undefined') {
             const timeOnPage = Math.round((Date.now() - pageStartTime) / 1000);
             if (timeOnPage > 10) { // Só rastrear se ficou mais de 10 segundos
-                TikTokEvents.trackEngagement('time', `Tempo Total na Página: ${timeOnPage}s`);
+                TikTokEvents.trackClickButton(`Tempo Total na Página: ${timeOnPage}s`, 'engagement', Math.min(timeOnPage / 10, 20));
             }
         }
     });

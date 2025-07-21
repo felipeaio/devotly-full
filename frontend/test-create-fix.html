@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Create Fix - Devotly</title>
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .button { padding: 10px 20px; margin: 10px; background: #d4af37; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .verse-suggestions { margin: 20px 0; }
+        .verse-suggestion { padding: 10px; margin: 5px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .verse-suggestion:hover { background: #e0e0e0; }
+        .log { background: #000; color: #0f0; padding: 10px; border-radius: 5px; font-family: monospace; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Teste de Correção - Create Page</h1>
+    <p>Teste para verificar se o problema dos botões de versículo foi resolvido.</p>
+    
+    <div class="test-section">
+        <h3>🔧 Status da Correção</h3>
+        <p id="status">Carregando TikTok Events...</p>
+        <button class="button" onclick="testMethods()">Testar Métodos</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📖 Teste de Versículos (Simulação)</h3>
+        <div class="verse-suggestions" aria-labelledby="verse-suggestions-title">
+            <div class="verse-suggestion" data-book="João" data-chapter="3" data-verse="16">
+                João 3:16 - Porque Deus amou o mundo de tal maneira...
+            </div>
+            <div class="verse-suggestion" data-book="Salmos" data-chapter="23" data-verse="1">
+                Salmos 23:1 - O Senhor é o meu pastor, nada me faltará
+            </div>
+            <div class="verse-suggestion" data-book="Romanos" data-chapter="8" data-verse="28">
+                Romanos 8:28 - E sabemos que todas as coisas contribuem...
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Console de Logs</h3>
+        <div class="log" id="logConsole"></div>
+        <button class="button" onclick="clearLogs()">Limpar Logs</button>
+    </div>
+
+    <script src="js/tiktok-events-v3.js"></script>
+    <script>
+        function log(message) {
+            const logConsole = document.getElementById('logConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            logConsole.innerHTML += `[${timestamp}] ${message}<br>`;
+            logConsole.scrollTop = logConsole.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('logConsole').innerHTML = '';
+        }
+
+        function testMethods() {
+            log('🧪 Iniciando testes de métodos...');
+            
+            try {
+                if (typeof TikTokEvents !== 'undefined') {
+                    log('✅ TikTokEvents está disponível');
+                    
+                    // Testar métodos essenciais
+                    const methods = [
+                        'trackEngagement',
+                        'trackClickButton', 
+                        'create.selectVerse',
+                        'getCoverage',
+                        'forceDataDetection'
+                    ];
+                    
+                    methods.forEach(method => {
+                        const path = method.split('.');
+                        let obj = TikTokEvents;
+                        
+                        for (let i = 0; i < path.length; i++) {
+                            if (obj && typeof obj[path[i]] !== 'undefined') {
+                                obj = obj[path[i]];
+                            } else {
+                                log(`❌ Método ${method} NÃO está disponível`);
+                                return;
+                            }
+                        }
+                        
+                        log(`✅ Método ${method} está disponível`);
+                    });
+                    
+                    // Testar trackEngagement especificamente
+                    log('🎯 Testando trackEngagement...');
+                    TikTokEvents.trackEngagement('test', 'Teste de Compatibilidade', 1);
+                    log('✅ trackEngagement executado com sucesso');
+                    
+                } else {
+                    log('❌ TikTokEvents NÃO está disponível');
+                }
+            } catch (error) {
+                log(`❌ Erro nos testes: ${error.message}`);
+            }
+        }
+
+        // Configurar listeners dos versículos (simulando o create.js)
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Página carregada, configurando testes...');
+            
+            // Aguardar um pouco para o TikTok Events carregar
+            setTimeout(() => {
+                const statusElement = document.getElementById('status');
+                
+                if (typeof TikTokEvents !== 'undefined') {
+                    statusElement.innerHTML = '✅ TikTok Events v3 carregado com sucesso!';
+                    statusElement.style.color = 'green';
+                    log('✅ TikTok Events v3 inicializado');
+                    
+                    // Testar métodos automaticamente
+                    testMethods();
+                } else {
+                    statusElement.innerHTML = '❌ TikTok Events não carregou';
+                    statusElement.style.color = 'red';
+                    log('❌ TikTok Events não foi carregado');
+                }
+                
+                // Configurar listeners dos versículos
+                const verseSuggestions = document.querySelectorAll('.verse-suggestion');
+                log(`📖 Configurando ${verseSuggestions.length} versículos de teste...`);
+                
+                verseSuggestions.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const book = button.dataset.book;
+                        const chapter = button.dataset.chapter;
+                        const verse = button.dataset.verse;
+                        
+                        log(`📖 Versículo clicado: ${book} ${chapter}:${verse}`);
+                        
+                        try {
+                            // Rastrear seleção de versículo (código do create.js)
+                            if (typeof TikTokEvents !== 'undefined') {
+                                TikTokEvents.create.selectVerse();
+                                log('✅ TikTokEvents.create.selectVerse() executado');
+                                
+                                TikTokEvents.trackClickButton(`Versículo ${book} ${chapter}:${verse}`, 'verse_selection', 5);
+                                log(`✅ trackClickButton executado para ${book} ${chapter}:${verse}`);
+                                
+                                // Testar também o trackEngagement para compatibilidade
+                                TikTokEvents.trackEngagement('verse', `${book} ${chapter}:${verse}`);
+                                log(`✅ trackEngagement executado para ${book} ${chapter}:${verse}`);
+                                
+                                log('🎉 Todos os métodos executados com sucesso!');
+                            } else {
+                                log('❌ TikTokEvents não está disponível');
+                            }
+                        } catch (error) {
+                            log(`❌ Erro ao rastrear versículo: ${error.message}`);
+                        }
+                    });
+                });
+                
+                log('✅ Configuração de testes concluída');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

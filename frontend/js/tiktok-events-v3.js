@@ -1182,6 +1182,9 @@ window.TikTokEvents = {
     trackContact: (type, value) => window.TikTokManager.trackContact(type, value),
     trackLead: (type, value) => window.TikTokManager.trackLead(type, value),
     
+    // Alias para compatibilidade com versão anterior
+    trackEngagement: (type, description, value = 1) => window.TikTokManager.trackClickButton(description, type, value),
+    
     // Métodos específicos do Devotly
     viewHomePage: () => window.TikTokManager.trackViewContent('home', 'Página Inicial', 0, 'BRL'),
     viewCreatePage: () => window.TikTokManager.trackViewContent('create', 'Página de Criação', 15, 'BRL'),

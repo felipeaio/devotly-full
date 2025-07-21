@@ -931,7 +931,7 @@ class DevotlyCreator {
                 // Rastrear adição de música
                 if (typeof TikTokEvents !== 'undefined') {
                     TikTokEvents.create.addMusic();
-                    TikTokEvents.trackEngagement('music', 'Música Selecionada');
+                    TikTokEvents.trackClickButton('Música Selecionada', 'music_selection', 5);
                 }
                 
                 const musicLinkElem = document.getElementById('musicLink');
@@ -950,7 +950,7 @@ class DevotlyCreator {
                 // Rastrear seleção de versículo
                 if (typeof TikTokEvents !== 'undefined') {
                     TikTokEvents.create.selectVerse();
-                    TikTokEvents.trackEngagement('verse', `${book} ${chapter}:${verse}`);
+                    TikTokEvents.trackClickButton(`Versículo ${book} ${chapter}:${verse}`, 'verse_selection', 5);
                 }
 
                 const bibleBookElem = document.getElementById('bibleBook');
