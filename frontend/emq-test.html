@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste EMQ - TikTok Events</title>
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #d4af37;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #333;
+            color: white;
+        }
+        button {
+            background: #d4af37;
+            color: #1a1a1a;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #f4cf47;
+        }
+        .metrics {
+            background: #1e3a1e;
+            border-color: #4CAF50;
+        }
+        .status {
+            font-family: monospace;
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .emq-score {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .excellent { color: #4CAF50; }
+        .good { color: #8BC34A; }
+        .fair { color: #FF9800; }
+        .poor { color: #F44336; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Teste de EMQ - TikTok Events v3.0</h1>
+    <p>Esta página testa as melhorias de EMQ (Event Match Quality) implementadas no sistema TikTok Events.</p>
+
+    <!-- Seção de Identificação -->
+    <div class="section">
+        <h2>📧 Identificação do Usuário</h2>
+        <div class="form-group">
+            <label for="testEmail">Email:</label>
+            <input type="email" id="testEmail" placeholder="teste@devotly.com" value="">
+        </div>
+        <div class="form-group">
+            <label for="testPhone">Telefone:</label>
+            <input type="tel" id="testPhone" placeholder="(11) 99999-9999" value="">
+        </div>
+        <div class="form-group">
+            <label for="testName">Nome:</label>
+            <input type="text" id="testName" placeholder="João Silva" value="">
+        </div>
+        <button onclick="identifyUser()">🆔 Identificar Usuário</button>
+        <button onclick="autoDetect()">🔍 Auto-Detectar</button>
+    </div>
+
+    <!-- Seção de Eventos -->
+    <div class="section">
+        <h2>🎯 Eventos de Teste</h2>
+        <button onclick="trackViewContent()">👁️ ViewContent</button>
+        <button onclick="trackAddToCart()">🛒 AddToCart</button>
+        <button onclick="trackInitiateCheckout()">💳 InitiateCheckout</button>
+        <button onclick="trackPurchase()">✅ Purchase</button>
+        <button onclick="trackClickButton()">🔘 ClickButton</button>
+    </div>
+
+    <!-- Seção de Métricas -->
+    <div class="section metrics">
+        <h2>📊 Métricas EMQ</h2>
+        <div id="emqScore" class="emq-score">-- / 100</div>
+        <div id="coverage"></div>
+        <div id="recommendations"></div>
+        <button onclick="updateMetrics()">🔄 Atualizar Métricas</button>
+        <button onclick="showDetailedMetrics()">📈 Métricas Detalhadas</button>
+    </div>
+
+    <!-- Status do Sistema -->
+    <div class="section">
+        <h2>⚙️ Status do Sistema</h2>
+        <div id="systemStatus" class="status">Carregando...</div>
+        <button onclick="getSystemStatus()">🔄 Atualizar Status</button>
+    </div>
+
+    <script src="js/tiktok-events-v3.js"></script>
+    <script>
+        // Aguardar carregamento do TikTok Manager
+        setTimeout(() => {
+            updateMetrics();
+            getSystemStatus();
+            console.log('🎯 Página de teste EMQ carregada');
+        }, 1000);
+
+        function identifyUser() {
+            const email = document.getElementById('testEmail').value;
+            const phone = document.getElementById('testPhone').value;
+            const name = document.getElementById('testName').value;
+
+            if (email || phone || name) {
+                const userId = email ? `test_${btoa(email).substr(0, 12)}_${Date.now()}` : null;
+                window.TikTokEvents.identifyUser(email, phone, userId);
+                console.log('🆔 Usuário identificado:', { email: !!email, phone: !!phone, name: !!name });
+                
+                setTimeout(updateMetrics, 500);
+            } else {
+                alert('Preencha pelo menos um campo para identificação');
+            }
+        }
+
+        function autoDetect() {
+            if (typeof window.TikTokEvents.forceDataDetection === 'function') {
+                window.TikTokEvents.forceDataDetection();
+                console.log('🔍 Auto-detecção forçada');
+                setTimeout(updateMetrics, 500);
+            }
+        }
+
+        function trackViewContent() {
+            window.TikTokEvents.trackViewContent('test-content', 'Produto de Teste', 15, 'BRL');
+            setTimeout(updateMetrics, 500);
+        }
+
+        function trackAddToCart() {
+            window.TikTokEvents.trackAddToCart('test-product', 'Produto Teste', 29.90, 'BRL');
+            setTimeout(updateMetrics, 500);
+        }
+
+        function trackInitiateCheckout() {
+            window.TikTokEvents.trackInitiateCheckout('test-checkout', 'Checkout Teste', 29.90, 'BRL');
+            setTimeout(updateMetrics, 500);
+        }
+
+        function trackPurchase() {
+            window.TikTokEvents.trackPurchase('test-purchase', 'Compra Teste', 29.90, 'BRL');
+            setTimeout(updateMetrics, 500);
+        }
+
+        function trackClickButton() {
+            window.TikTokEvents.trackClickButton('Botão de Teste', 'test_button', 5);
+            setTimeout(updateMetrics, 500);
+        }
+
+        function updateMetrics() {
+            if (typeof window.TikTokEvents.getMetrics === 'function') {
+                const metrics = window.TikTokEvents.getMetrics();
+                
+                // Atualizar score EMQ
+                const score = metrics.emqScore?.current || metrics.qualityMetrics?.averageEMQ || 0;
+                const scoreElement = document.getElementById('emqScore');
+                scoreElement.textContent = `${score} / 100`;
+                
+                if (score >= 70) scoreElement.className = 'emq-score excellent';
+                else if (score >= 60) scoreElement.className = 'emq-score good';
+                else if (score >= 40) scoreElement.className = 'emq-score fair';
+                else scoreElement.className = 'emq-score poor';
+
+                // Atualizar cobertura
+                const coverage = metrics.emqCoverage || {};
+                document.getElementById('coverage').innerHTML = `
+                    <h4>📈 Cobertura dos Identificadores:</h4>
+                    <p>📧 Email: ${coverage.email || 0}%</p>
+                    <p>📱 Telefone: ${coverage.phone || 0}%</p>
+                    <p>🆔 External ID: ${coverage.external_id || 0}%</p>
+                    <p><strong>📊 Média: ${coverage.average || 0}%</strong></p>
+                `;
+
+                // Atualizar recomendações
+                const recommendations = metrics.recommendations || [];
+                document.getElementById('recommendations').innerHTML = `
+                    <h4>💡 Recomendações:</h4>
+                    ${recommendations.map(rec => `<p>${rec}</p>`).join('')}
+                `;
+            }
+        }
+
+        function showDetailedMetrics() {
+            if (typeof window.TikTokEvents.getMetrics === 'function') {
+                const metrics = window.TikTokEvents.getMetrics();
+                console.log('📊 Métricas Detalhadas:', metrics);
+                alert('Métricas detalhadas foram logadas no console (F12)');
+            }
+        }
+
+        async function getSystemStatus() {
+            try {
+                const response = await fetch('/api/tiktok/status');
+                const status = await response.json();
+                
+                document.getElementById('systemStatus').textContent = JSON.stringify(status, null, 2);
+                console.log('⚙️ Status do Sistema:', status);
+            } catch (error) {
+                document.getElementById('systemStatus').textContent = `Erro: ${error.message}`;
+                console.error('❌ Erro ao obter status:', error);
+            }
+        }
+
+        // Auto-atualizar métricas a cada 10 segundos
+        setInterval(updateMetrics, 10000);
+    </script>
+</body>
+</html>

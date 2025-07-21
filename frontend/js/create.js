@@ -102,11 +102,20 @@ class DevotlyCreator {
     }
 
     initialize() {
-        // Rastrear visualização da página de criação
+        // Rastrear visualização da página de criação - EMQ OTIMIZADO
         if (typeof TikTokEvents !== 'undefined') {
+            // Forçar detecção de dados antes dos eventos
+            TikTokEvents.forceDataDetection();
+            
             TikTokEvents.viewCreatePage();
             TikTokEvents.create.startCreation();
-            console.log('TikTok: Página de criação rastreada');
+            console.log('TikTok: Página de criação rastreada (EMQ otimizado)');
+            
+            // Log de cobertura EMQ
+            setTimeout(() => {
+                const coverage = TikTokEvents.getCoverage();
+                console.log('📊 Cobertura EMQ inicial:', coverage);
+            }, 1000);
         }
 
         // Inicializar elementos
@@ -687,24 +696,44 @@ class DevotlyCreator {
                             price: planValue
                         }));
                         
-                        // Salvar dados do usuário para eventos de identificação
+                        // Salvar dados do usuário para eventos de identificação - EMQ OTIMIZADO
                         const userEmail = document.getElementById('userEmail')?.value;
-                        if (userEmail) {
-                            localStorage.setItem('devotlyUserData', JSON.stringify({
-                                email: userEmail,
-                                name: document.getElementById('userName')?.value || ''
-                            }));
+                        const userPhone = document.getElementById('userPhone')?.value;
+                        const userName = document.getElementById('userName')?.value;
+                        
+                        if (userEmail || userPhone || userName) {
+                            const userData = {
+                                email: userEmail || '',
+                                phone: userPhone || '',
+                                name: userName || ''
+                            };
                             
-                            // Identificar usuário com email hash
+                            localStorage.setItem('devotlyUserData', JSON.stringify(userData));
+                            
+                            // Identificar usuário com dados completos - EMQ OTIMIZADO
                             if (typeof window.TikTokEvents !== 'undefined') {
-                                window.TikTokEvents.identifyUser(userEmail, null, null);
+                                // Gerar userId baseado nos dados do usuário
+                                const userId = userEmail ? `user_${btoa(userEmail).substr(0, 12)}_${Date.now()}` : null;
+                                window.TikTokEvents.identifyUser(userEmail, userPhone, userId);
+                                
+                                console.log('🆔 Usuário identificado para EMQ:', {
+                                    email: !!userEmail,
+                                    phone: !!userPhone,
+                                    name: !!userName
+                                });
                             }
                         }
                         
-                        // Rastrear evento de adição ao carrinho 
+                        // Rastrear evento de adição ao carrinho - EMQ OTIMIZADO
                         if (typeof window.TikTokEvents !== 'undefined') {
                             window.TikTokEvents.startCardCreation();
                             window.TikTokEvents.selectPlan(planoPtBr, planValue);
+                            
+                            // Log de cobertura após identificação
+                            setTimeout(() => {
+                                const coverage = window.TikTokEvents.getCoverage();
+                                console.log('📊 Cobertura EMQ após identificação:', coverage);
+                            }, 500);
                         }
                     } catch (pixelError) {
                         console.error('Erro ao rastrear evento TikTok:', pixelError);
@@ -745,12 +774,20 @@ class DevotlyCreator {
                     }
                     console.log('Checkout criado, redirecionando:', mpData.init_point);
                     
-                    // Rastrear evento de início de checkout (AddPaymentInfo)
+                    // Rastrear evento de início de checkout (AddPaymentInfo) - EMQ OTIMIZADO
                     try {
                         if (typeof window.TikTokEvents !== 'undefined') {
                             // Recuperar dados do plano do localStorage
                             const cardData = JSON.parse(localStorage.getItem('devotlyCardData')) || {};
                             const planValue = cardData.price || 0;
+                            
+                            // Garantir que usuário está identificado antes do checkout
+                            const userEmail = document.getElementById('userEmail')?.value;
+                            const userPhone = document.getElementById('userPhone')?.value;
+                            if (userEmail || userPhone) {
+                                const userId = userEmail ? `checkout_${btoa(userEmail).substr(0, 12)}_${Date.now()}` : null;
+                                window.TikTokEvents.identifyUser(userEmail, userPhone, userId);
+                            }
                             
                             // Rastrear evento de adição de informações de pagamento
                             window.TikTokEvents.addPaymentInfo(planoPtBr, planValue);
@@ -759,8 +796,14 @@ class DevotlyCreator {
                             localStorage.setItem('devotlyPaymentData', JSON.stringify({
                                 value: planValue,
                                 cardId: checkoutData.cardId,
-                                planType: planoPtBr
+                                planType: planoPtBr,
+                                userEmail: userEmail,
+                                userPhone: userPhone
                             }));
+                            
+                            // Log de cobertura antes do checkout
+                            const coverage = window.TikTokEvents.getCoverage();
+                            console.log('📊 Cobertura EMQ no checkout:', coverage);
                         }
                     } catch (pixelError) {
                         console.error('Erro ao rastrear evento de checkout TikTok:', pixelError);

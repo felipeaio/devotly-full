@@ -162,68 +162,145 @@ class TikTokEventsServiceV3 {
     }
     
     /**
-     * Prepara dados do usuário com validação rigorosa
+     * Prepara dados do usuário com validação rigorosa - EMQ OTIMIZADO
      */
     prepareUserData(userData = {}) {
         const hashedUserData = {};
         let hashSuccessCount = 0;
         
-        // Email - sempre inclui, mesmo que vazio
-        if (userData.email && userData.email.trim() !== '') {
+        console.log('🔍 Preparando dados do usuário para EMQ:', {
+            hasEmail: !!userData.email,
+            hasPhone: !!userData.phone,
+            hasUserId: !!userData.userId
+        });
+        
+        // EMAIL - Meta: 90%+ cobertura
+        if (userData.email && typeof userData.email === 'string' && userData.email.trim() !== '') {
             const normalizedEmail = userData.email.trim().toLowerCase();
-            if (normalizedEmail.includes('@') && normalizedEmail.includes('.')) {
+            if (normalizedEmail.includes('@') && normalizedEmail.includes('.') && normalizedEmail.length > 5) {
                 hashedUserData.email = this.hashData(normalizedEmail);
-                if (hashedUserData.email) hashSuccessCount++;
+                if (hashedUserData.email) {
+                    hashSuccessCount++;
+                    console.log('✅ Email hasheado com sucesso');
+                } else {
+                    hashedUserData.email = '';
+                    console.log('❌ Falha no hash do email');
+                }
             } else {
                 hashedUserData.email = '';
+                console.log('❌ Email inválido:', normalizedEmail);
             }
         } else {
             hashedUserData.email = '';
+            console.log('⚪ Email não fornecido');
         }
         
-        // Telefone - sempre inclui, mesmo que vazio
-        if (userData.phone && userData.phone.trim() !== '') {
+        // TELEFONE - Meta: 90%+ cobertura
+        if (userData.phone && typeof userData.phone === 'string' && userData.phone.trim() !== '') {
             const normalizedPhone = this.normalizePhoneNumber(userData.phone);
-            if (normalizedPhone) {
+            if (normalizedPhone && normalizedPhone.length >= 12) { // +55 + 10/11 dígitos
                 hashedUserData.phone_number = this.hashData(normalizedPhone);
-                if (hashedUserData.phone_number) hashSuccessCount++;
+                if (hashedUserData.phone_number) {
+                    hashSuccessCount++;
+                    console.log('✅ Telefone hasheado com sucesso:', normalizedPhone);
+                } else {
+                    hashedUserData.phone_number = '';
+                    console.log('❌ Falha no hash do telefone');
+                }
             } else {
                 hashedUserData.phone_number = '';
+                console.log('❌ Telefone inválido após normalização:', userData.phone, '->', normalizedPhone);
             }
         } else {
             hashedUserData.phone_number = '';
+            console.log('⚪ Telefone não fornecido');
         }
         
-        // External ID - sempre inclui
-        if (userData.userId && userData.userId.trim() !== '') {
-            hashedUserData.external_id = this.hashData(userData.userId);
-            if (hashedUserData.external_id) hashSuccessCount++;
+        // EXTERNAL_ID - Meta: 100% cobertura (sempre garantido)
+        if (userData.userId && typeof userData.userId === 'string' && userData.userId.trim() !== '') {
+            const cleanUserId = userData.userId.trim();
+            hashedUserData.external_id = this.hashData(cleanUserId);
+            if (hashedUserData.external_id) {
+                hashSuccessCount++;
+                console.log('✅ External ID hasheado com sucesso');
+            } else {
+                console.log('❌ Falha no hash do external_id, gerando fallback');
+                const fallbackId = this.generateFallbackExternalId(userData);
+                hashedUserData.external_id = this.hashData(fallbackId);
+            }
         } else {
-            // Gerar external_id baseado em dados disponíveis
+            // Sempre gerar external_id como fallback
             const fallbackId = this.generateFallbackExternalId(userData);
             hashedUserData.external_id = this.hashData(fallbackId);
+            console.log('🔄 External ID de fallback gerado');
         }
         
-        // Atualizar taxa de sucesso de hash
-        this.metrics.hashSuccessRate = (hashSuccessCount / 3) * 100;
+        // Calcular taxa de sucesso EMQ
+        const totalFields = 3; // email, phone, external_id
+        this.metrics.hashSuccessRate = (hashSuccessCount / totalFields) * 100;
+        this.metrics.dataQuality = {
+            email_coverage: hashedUserData.email !== '' ? 100 : 0,
+            phone_coverage: hashedUserData.phone_number !== '' ? 100 : 0,
+            external_id_coverage: 100, // Sempre garantido
+            total_coverage: ((hashedUserData.email !== '' ? 1 : 0) + 
+                           (hashedUserData.phone_number !== '' ? 1 : 0) + 1) / 3 * 100
+        };
+        
+        console.log('📊 Cobertura EMQ calculada:', this.metrics.dataQuality);
         
         return hashedUserData;
     }
     
     /**
-     * Gera external_id de fallback
+     * Gera external_id de fallback baseado em dados disponíveis - EMQ OTIMIZADO
      */
     generateFallbackExternalId(userData) {
-        const components = [
-            userData.email || '',
-            userData.phone || '',
-            userData.ip || '',
-            userData.user_agent?.slice(0, 50) || '',
-            Date.now().toString()
-        ].filter(Boolean);
+        const components = [];
+        
+        // 1. Dados primários do usuário
+        if (userData.email && userData.email.trim()) {
+            components.push(`email_${userData.email.trim().toLowerCase()}`);
+        }
+        if (userData.phone && userData.phone.trim()) {
+            const phoneDigits = userData.phone.replace(/\D/g, '');
+            if (phoneDigits.length >= 8) {
+                components.push(`phone_${phoneDigits}`);
+            }
+        }
+        
+        // 2. Dados de contexto
+        if (userData.ip && userData.ip !== '127.0.0.1') {
+            components.push(`ip_${userData.ip}`);
+        }
+        if (userData.user_agent) {
+            const uaHash = crypto.createHash('md5').update(userData.user_agent).digest('hex').substr(0, 8);
+            components.push(`ua_${uaHash}`);
+        }
+        
+        // 3. Dados temporais para unicidade
+        const timestamp = Date.now();
+        components.push(`ts_${timestamp}`);
+        
+        // 4. Componente aleatório como fallback final
+        if (components.length === 1) { // Só timestamp
+            const randomId = Math.random().toString(36).substr(2, 12);
+            components.push(`rand_${randomId}`);
+        }
         
         const combined = components.join('|');
-        return `devotly_${crypto.createHash('md5').update(combined).digest('hex').substr(0, 16)}`;
+        const hash = crypto.createHash('sha256').update(combined).digest('hex').substr(0, 24);
+        
+        const externalId = `devotly_${hash}`;
+        
+        console.log('🆔 External ID de fallback gerado:', {
+            components: components.length,
+            hasEmail: !!userData.email,
+            hasPhone: !!userData.phone,
+            hasIP: !!userData.ip,
+            externalId: externalId.substr(0, 20) + '...'
+        });
+        
+        return externalId;
     }
     
     /**
@@ -486,19 +563,25 @@ class TikTokEventsServiceV3 {
     /**
      * ViewContent
      */
-    async trackViewContent(contentId, contentName, value = null, currency = 'BRL', context = {}, userData = {}) {
+    async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product', context = {}, userData = {}) {
+        const validValue = this.validateValue(value);
+        
         const eventData = {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Conteúdo'),
-            content_type: 'product',
-            currency: String(currency)
+            content_type: String(category),
+            currency: String(currency),
+            contents: [{
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Conteúdo'),
+                category: String(category),
+                quantity: 1,
+                price: validValue || 0
+            }]
         };
         
-        if (value !== null) {
-            const validValue = this.validateValue(value);
-            if (validValue !== null) {
-                eventData.value = validValue;
-            }
+        if (validValue !== null && validValue > 0) {
+            eventData.value = validValue;
         }
         
         return this.sendEvent('ViewContent', eventData, context, userData);
@@ -507,7 +590,7 @@ class TikTokEventsServiceV3 {
     /**
      * Purchase - Compra (DEVE ter value > 0)
      */
-    async trackPurchase(contentId, contentName, value, currency = 'BRL', context = {}, userData = {}) {
+    async trackPurchase(contentId, contentName, value, currency = 'BRL', category = 'product', context = {}, userData = {}) {
         const validValue = this.validateValue(value);
         
         if (!validValue || validValue <= 0) {
@@ -517,13 +600,13 @@ class TikTokEventsServiceV3 {
         const eventData = {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Produto'),
-            content_type: 'product',
+            content_type: String(category),
             value: validValue,
             currency: String(currency),
             contents: [{
-                content_id: String(contentId || 'unknown'),
-                content_name: String(contentName || 'Produto'),
-                content_type: 'product',
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Produto'),
+                category: String(category),
                 quantity: 1,
                 price: validValue
             }]
@@ -535,16 +618,24 @@ class TikTokEventsServiceV3 {
     /**
      * InitiateCheckout
      */
-    async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL', context = {}, userData = {}) {
+    async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL', category = 'product', context = {}, userData = {}) {
+        const validValue = this.validateValue(value);
+        
         const eventData = {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Produto'),
-            content_type: 'product',
-            currency: String(currency)
+            content_type: String(category),
+            currency: String(currency),
+            contents: [{
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Produto'),
+                category: String(category),
+                quantity: 1,
+                price: validValue || 0
+            }]
         };
         
-        const validValue = this.validateValue(value);
-        if (validValue !== null) {
+        if (validValue !== null && validValue > 0) {
             eventData.value = validValue;
         }
         
@@ -585,6 +676,74 @@ class TikTokEventsServiceV3 {
         }
         
         return this.sendEvent('Contact', eventData, context, userData);
+    }
+    
+    /**
+     * Obtém métricas de qualidade EMQ
+     */
+    getMetrics() {
+        const emqScore = this.calculateAverageEMQ();
+        
+        return {
+            ...this.metrics,
+            emq: {
+                currentScore: emqScore,
+                targetScore: 70,
+                status: emqScore >= 70 ? 'TARGET_ACHIEVED' : 'IMPROVING',
+                coverage: this.metrics.dataQuality || {
+                    email_coverage: 0,
+                    phone_coverage: 0,
+                    external_id_coverage: 100,
+                    total_coverage: 33
+                }
+            },
+            recommendations: this.getEMQRecommendations(emqScore)
+        };
+    }
+    
+    /**
+     * Calcula EMQ médio
+     */
+    calculateAverageEMQ() {
+        if (this.metrics.eventsSent === 0) return 0;
+        
+        const totalScore = this.metrics.eventsSent * 20 + // Base score
+                          (this.metrics.dataQuality?.email_coverage || 0) * this.metrics.eventsSent * 0.25 +
+                          (this.metrics.dataQuality?.phone_coverage || 0) * this.metrics.eventsSent * 0.25 +
+                          (this.metrics.dataQuality?.external_id_coverage || 0) * this.metrics.eventsSent * 0.15;
+        
+        return Math.round(totalScore / this.metrics.eventsSent / 100 * 100);
+    }
+    
+    /**
+     * Gera recomendações para melhorar EMQ
+     */
+    getEMQRecommendations(currentScore) {
+        const recommendations = [];
+        
+        if (!this.metrics.dataQuality) {
+            recommendations.push('⚠️ Implementar coleta de dados do usuário');
+            return recommendations;
+        }
+        
+        if (this.metrics.dataQuality.email_coverage < 90) {
+            recommendations.push('📧 Melhorar captura de email (atual: ' + this.metrics.dataQuality.email_coverage + '%)');
+        }
+        if (this.metrics.dataQuality.phone_coverage < 90) {
+            recommendations.push('📱 Implementar captura de telefone (atual: ' + this.metrics.dataQuality.phone_coverage + '%)');
+        }
+        if (currentScore < 70) {
+            recommendations.push('🎯 Priorizar identificação do usuário antes dos eventos');
+        }
+        if (this.metrics.dataQuality.total_coverage < 80) {
+            recommendations.push('📊 Aumentar cobertura geral dos identificadores');
+        }
+        
+        if (recommendations.length === 0) {
+            recommendations.push('✅ Excelente! Mantenha a qualidade EMQ atual');
+        }
+        
+        return recommendations;
     }
 }
 

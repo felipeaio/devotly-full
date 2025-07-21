@@ -249,53 +249,236 @@ class TikTokEventsManager {
     }
     
     /**
-     * Gera userId único baseado em características do dispositivo
+     * Gera userId único baseado em características do dispositivo e dados disponíveis - EMQ OTIMIZADO
      */
     generateUserId() {
-        const components = [
-            navigator.userAgent.slice(0, 50),
+        // Tentar usar dados reais se disponíveis
+        const email = this.userCache.email || localStorage.getItem('devotly_auto_email');
+        const phone = this.userCache.phone || localStorage.getItem('devotly_auto_phone');
+        const name = localStorage.getItem('devotly_auto_name');
+        
+        let baseComponents = [];
+        
+        // 1. Priorizar dados reais do usuário
+        if (email) {
+            baseComponents.push(`email_${btoa(email).replace(/[^a-zA-Z0-9]/g, '').substr(0, 8)}`);
+        }
+        if (phone) {
+            baseComponents.push(`phone_${btoa(phone).replace(/[^a-zA-Z0-9]/g, '').substr(0, 8)}`);
+        }
+        if (name) {
+            baseComponents.push(`name_${btoa(name).replace(/[^a-zA-Z0-9]/g, '').substr(0, 6)}`);
+        }
+        
+        // 2. Adicionar características do dispositivo/sessão
+        const deviceFingerprint = [
+            navigator.userAgent.slice(0, 30),
             screen.width + 'x' + screen.height,
             navigator.language,
-            new Date().getTimezoneOffset(),
-            Math.random().toString(36).substr(2, 9)
+            new Date().getTimezoneOffset().toString(),
+            navigator.platform?.slice(0, 10) || 'unknown'
         ];
         
-        const combined = components.join('|');
-        const hash = btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substr(0, 16);
-        return `devotly_${Date.now()}_${hash}`;
+        // 3. Dados de sessão persistentes
+        const sessionData = [
+            this.userCache.ttclid || 'no_ttclid',
+            this.userCache.fbp || 'no_fbp',
+            localStorage.getItem('devotly_session_id') || this.generateSessionId()
+        ];
+        
+        // 4. Combinar todos os componentes
+        const allComponents = [
+            ...baseComponents,
+            ...deviceFingerprint,
+            ...sessionData,
+            Math.random().toString(36).substr(2, 6) // Componente aleatório para unicidade
+        ];
+        
+        const combined = allComponents.join('|');
+        const hash = btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substr(0, 20);
+        
+        const userId = `devotly_${Date.now()}_${hash}`;
+        
+        console.log('🆔 UserId gerado:', userId);
+        console.log('📊 Componentes usados:', {
+            hasEmail: !!email,
+            hasPhone: !!phone, 
+            hasName: !!name,
+            hasttclid: !!this.userCache.ttclid,
+            components: baseComponents.length
+        });
+        
+        return userId;
     }
     
     /**
-     * Busca dados em formulários da página
+     * Gera ID de sessão persistente
+     */
+    generateSessionId() {
+        let sessionId = localStorage.getItem('devotly_session_id');
+        if (!sessionId) {
+            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 12)}`;
+            localStorage.setItem('devotly_session_id', sessionId);
+        }
+        return sessionId;
+    }
+    
+    /**
+     * Busca dados em formulários da página - EMQ OTIMIZADO
      */
     autoDetectUserData() {
+        const detectedData = {
+            email: null,
+            phone: null,
+            name: null
+        };
+        
         try {
-            // Buscar emails
-            const emailInputs = document.querySelectorAll('input[type="email"], input[name*="email"], input[id*="email"]');
-            for (const input of emailInputs) {
-                if (input.value && input.value.includes('@')) {
-                    return { email: input.value.trim() };
+            // 1. DETECÇÃO DE EMAIL (Meta: 90%+ cobertura)
+            const emailSelectors = [
+                'input[type="email"]',
+                'input[name*="email"]', 
+                'input[id*="email"]',
+                'input[name*="Email"]',
+                'input[id*="userEmail"]',
+                'input[placeholder*="email"]',
+                'input[placeholder*="@"]'
+            ];
+            
+            for (const selector of emailSelectors) {
+                const inputs = document.querySelectorAll(selector);
+                for (const input of inputs) {
+                    if (input.value && input.value.includes('@') && input.value.includes('.')) {
+                        const email = input.value.trim().toLowerCase();
+                        if (this.validateEmail(email)) {
+                            detectedData.email = email;
+                            console.log('📧 Email detectado automaticamente:', email);
+                            break;
+                        }
+                    }
                 }
+                if (detectedData.email) break;
             }
             
-            // Buscar telefones
-            const phoneInputs = document.querySelectorAll('input[type="tel"], input[name*="phone"], input[name*="telefone"]');
-            for (const input of phoneInputs) {
-                if (input.value && input.value.replace(/\D/g, '').length >= 8) {
-                    return { phone: input.value.trim() };
+            // 2. DETECÇÃO DE TELEFONE (Meta: 90%+ cobertura)
+            const phoneSelectors = [
+                'input[type="tel"]',
+                'input[name*="phone"]',
+                'input[name*="Phone"]', 
+                'input[id*="phone"]',
+                'input[id*="Phone"]',
+                'input[name*="telefone"]',
+                'input[id*="telefone"]',
+                'input[id*="userPhone"]',
+                'input[placeholder*="telefone"]',
+                'input[placeholder*="WhatsApp"]',
+                'input[placeholder*="(99)"]'
+            ];
+            
+            for (const selector of phoneSelectors) {
+                const inputs = document.querySelectorAll(selector);
+                for (const input of inputs) {
+                    if (input.value && input.value.replace(/\D/g, '').length >= 8) {
+                        const phone = input.value.trim();
+                        const normalizedPhone = this.normalizePhone(phone);
+                        if (normalizedPhone) {
+                            detectedData.phone = normalizedPhone;
+                            console.log('📱 Telefone detectado automaticamente:', normalizedPhone);
+                            break;
+                        }
+                    }
+                }
+                if (detectedData.phone) break;
+            }
+            
+            // 3. DETECÇÃO DE NOME (para external_id)
+            const nameSelectors = [
+                'input[name*="name"]',
+                'input[name*="Name"]',
+                'input[id*="name"]',
+                'input[id*="Name"]',
+                'input[id*="userName"]',
+                'input[placeholder*="nome"]'
+            ];
+            
+            for (const selector of nameSelectors) {
+                const inputs = document.querySelectorAll(selector);
+                for (const input of inputs) {
+                    if (input.value && input.value.trim().length > 2) {
+                        detectedData.name = input.value.trim();
+                        console.log('👤 Nome detectado automaticamente:', detectedData.name);
+                        break;
+                    }
+                }
+                if (detectedData.name) break;
+            }
+            
+            // 4. AUTO-IDENTIFICAR SE DADOS VÁLIDOS ENCONTRADOS
+            if (detectedData.email || detectedData.phone) {
+                this.autoIdentifyFromDetection(detectedData);
+            }
+            
+        } catch (error) {
+            console.warn('⚠️ Erro na detecção automática:', error);
+        }
+        
+        return detectedData;
+    }
+    
+    /**
+     * Valida formato de email
+     */
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    /**
+     * Auto-identifica usuário com dados detectados
+     */
+    async autoIdentifyFromDetection(detectedData) {
+        try {
+            // Só identifica se temos novos dados válidos
+            const hasNewEmail = detectedData.email && detectedData.email !== this.userCache.email;
+            const hasNewPhone = detectedData.phone && detectedData.phone !== this.userCache.phone;
+            
+            if (hasNewEmail || hasNewPhone) {
+                console.log('🔍 Auto-identificando usuário com dados detectados...');
+                
+                // Gerar userId baseado nos dados detectados
+                let userId = this.userCache.userId;
+                if (!userId && (detectedData.email || detectedData.name)) {
+                    const baseData = detectedData.email || detectedData.name || 'anonymous';
+                    userId = `devotly_auto_${btoa(baseData).replace(/[^a-zA-Z0-9]/g, '').substr(0, 12)}_${Date.now()}`;
+                }
+                
+                await this.identifyUser(detectedData.email, detectedData.phone, userId);
+                
+                // Salvar dados detectados
+                if (detectedData.email) {
+                    localStorage.setItem('devotly_auto_email', detectedData.email);
+                }
+                if (detectedData.phone) {
+                    localStorage.setItem('devotly_auto_phone', detectedData.phone);
+                }
+                if (detectedData.name) {
+                    localStorage.setItem('devotly_auto_name', detectedData.name);
                 }
             }
         } catch (error) {
-            console.warn('Erro na detecção automática:', error);
+            console.warn('⚠️ Erro na auto-identificação:', error);
         }
-        
-        return {};
     }
     
     /**
-     * Prepara dados de Advanced Matching com máxima qualidade
+     * Prepara dados de Advanced Matching com máxima qualidade - EMQ OTIMIZADO
      */
     async prepareAdvancedMatching() {
+        // Tentar detectar dados automaticamente se não temos
+        if (!this.userCache.validated || !this.userCache.email || !this.userCache.phone) {
+            this.autoDetectUserData();
+        }
+        
         const baseData = {
             user_agent: navigator.userAgent,
             url: window.location.href,
@@ -303,17 +486,24 @@ class TikTokEventsManager {
             ip: '', // Será capturado pelo servidor
         };
         
-        // Email hasheado
+        // EMAIL - Meta: 90%+ cobertura
         if (this.userCache.hashedData.email) {
             baseData.email = this.userCache.hashedData.email;
         } else if (this.userCache.email) {
             baseData.email = await this.hashData(this.userCache.email);
             this.userCache.hashedData.email = baseData.email;
         } else {
-            baseData.email = '';
+            // Tentar detecção last-minute
+            const autoData = this.autoDetectUserData();
+            if (autoData.email) {
+                baseData.email = await this.hashData(autoData.email);
+                this.userCache.hashedData.email = baseData.email;
+            } else {
+                baseData.email = ''; // String vazia em vez de null/undefined
+            }
         }
         
-        // Telefone hasheado
+        // TELEFONE - Meta: 90%+ cobertura
         if (this.userCache.hashedData.phone_number) {
             baseData.phone_number = this.userCache.hashedData.phone_number;
         } else if (this.userCache.phone) {
@@ -325,19 +515,34 @@ class TikTokEventsManager {
                 baseData.phone_number = '';
             }
         } else {
-            baseData.phone_number = '';
+            // Tentar detecção last-minute
+            const autoData = this.autoDetectUserData();
+            if (autoData.phone) {
+                const normalizedPhone = this.normalizePhone(autoData.phone);
+                if (normalizedPhone) {
+                    baseData.phone_number = await this.hashData(normalizedPhone);
+                    this.userCache.hashedData.phone_number = baseData.phone_number;
+                } else {
+                    baseData.phone_number = '';
+                }
+            } else {
+                baseData.phone_number = '';
+            }
         }
         
-        // External ID hasheado
+        // EXTERNAL_ID - Meta: 100% cobertura (sempre garantido)
         if (this.userCache.hashedData.external_id) {
             baseData.external_id = this.userCache.hashedData.external_id;
         } else {
+            // Garantir external_id sempre presente
             const userId = this.userCache.userId || this.generateUserId();
+            this.userCache.userId = userId;
             baseData.external_id = await this.hashData(userId);
             this.userCache.hashedData.external_id = baseData.external_id;
+            localStorage.setItem('devotly_user_id', userId);
         }
         
-        // Parâmetros do TikTok
+        // Parâmetros do TikTok - Bonus EMQ
         if (this.userCache.ttclid) {
             baseData.ttclid = this.userCache.ttclid;
         }
@@ -345,13 +550,31 @@ class TikTokEventsManager {
             baseData.ttp = this.userCache.ttp;
         }
         
-        // Parâmetros do Facebook para cross-platform
+        // Parâmetros do Facebook para cross-platform matching
         if (this.userCache.fbp) {
             baseData.fbp = this.userCache.fbp;
         }
         if (this.userCache.fbc) {
             baseData.fbc = this.userCache.fbc;
         }
+        
+        // Validação final - Garantir que nunca enviamos null/undefined
+        Object.keys(baseData).forEach(key => {
+            if (baseData[key] === null || baseData[key] === undefined) {
+                baseData[key] = '';
+            }
+        });
+        
+        // Log de cobertura EMQ
+        const coverage = {
+            email: baseData.email !== '' ? '✅' : '❌',
+            phone: baseData.phone_number !== '' ? '✅' : '❌', 
+            external_id: baseData.external_id !== '' ? '✅' : '❌',
+            ttclid: baseData.ttclid ? '✅' : '⚪',
+            fbp: baseData.fbp ? '✅' : '⚪'
+        };
+        
+        console.log('📊 Cobertura EMQ:', coverage);
         
         return baseData;
     }
@@ -598,7 +821,7 @@ class TikTokEventsManager {
     }
     
     /**
-     * Configura listeners de eventos
+     * Configura listeners de eventos - EMQ OTIMIZADO
      */
     setupEventListeners() {
         // Auto-detect quando TikTok carregar
@@ -606,14 +829,21 @@ class TikTokEventsManager {
             if (typeof ttq !== 'undefined') {
                 this.processQueue();
             }
+            // Detectar dados automaticamente no carregamento
+            setTimeout(() => this.autoDetectUserData(), 500);
         });
         
         // Processar quando página ficar visível
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 this.processQueue();
+                this.autoDetectUserData();
             }
         });
+        
+        // LISTENERS PARA DETECÇÃO EM TEMPO REAL
+        this.setupFormListeners();
+        this.setupInputListeners();
         
         // Auto-track PageView
         if (document.readyState === 'complete') {
@@ -623,6 +853,57 @@ class TikTokEventsManager {
                 setTimeout(() => this.trackPageView(), 100);
             });
         }
+    }
+    
+    /**
+     * Configura listeners para formulários
+     */
+    setupFormListeners() {
+        // Listener para submissão de formulários
+        document.addEventListener('submit', (event) => {
+            console.log('📋 Formulário submetido, detectando dados...');
+            this.autoDetectUserData();
+        }, true);
+        
+        // Listener para mudanças em formulários
+        document.addEventListener('change', (event) => {
+            if (event.target.matches('input[type="email"], input[name*="email"], input[id*="email"]')) {
+                console.log('📧 Campo de email alterado');
+                setTimeout(() => this.autoDetectUserData(), 100);
+            }
+            if (event.target.matches('input[type="tel"], input[name*="phone"], input[id*="phone"]')) {
+                console.log('📱 Campo de telefone alterado');
+                setTimeout(() => this.autoDetectUserData(), 100);
+            }
+        }, true);
+    }
+    
+    /**
+     * Configura listeners para campos de input
+     */
+    setupInputListeners() {
+        // Listener para blur (quando usuário sai do campo)
+        document.addEventListener('blur', (event) => {
+            if (event.target.matches('input[type="email"], input[name*="email"], input[id*="email"]')) {
+                if (event.target.value && event.target.value.includes('@')) {
+                    console.log('📧 Email preenchido:', event.target.value);
+                    setTimeout(() => this.autoDetectUserData(), 100);
+                }
+            }
+            if (event.target.matches('input[type="tel"], input[name*="phone"], input[id*="phone"]')) {
+                if (event.target.value && event.target.value.replace(/\D/g, '').length >= 8) {
+                    console.log('📱 Telefone preenchido:', event.target.value);
+                    setTimeout(() => this.autoDetectUserData(), 100);
+                }
+            }
+        }, true);
+        
+        // Detectar dados a cada 3 segundos (para capturar preenchimento automático)
+        setInterval(() => {
+            if (!this.userCache.validated || (!this.userCache.email || !this.userCache.phone)) {
+                this.autoDetectUserData();
+            }
+        }, 3000);
     }
     
     // ============================================================================
@@ -650,19 +931,21 @@ class TikTokEventsManager {
     /**
      * ViewContent - Visualização de conteúdo
      */
-    async trackViewContent(contentId, contentName, value = null, currency = 'BRL') {
+    async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product') {
+        const validValue = this.validateValue(value);
+        
         return this.sendEvent('ViewContent', {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Conteúdo'),
-            content_type: 'product',
-            value: this.validateValue(value),
+            content_type: String(category),
+            value: validValue,
             currency: String(currency),
             contents: [{
-                content_id: String(contentId || 'unknown'),
-                content_name: String(contentName || 'Conteúdo'),
-                content_type: 'product',
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Conteúdo'),
+                category: String(category),
                 quantity: 1,
-                price: this.validateValue(value)
+                price: validValue
             }]
         });
     }
@@ -670,7 +953,7 @@ class TikTokEventsManager {
     /**
      * Purchase - Compra finalizada
      */
-    async trackPurchase(contentId, contentName, value, currency = 'BRL') {
+    async trackPurchase(contentId, contentName, value, currency = 'BRL', category = 'product') {
         // Purchase DEVE ter valor > 0
         const validValue = this.validateValue(value);
         if (validValue <= 0) {
@@ -681,13 +964,13 @@ class TikTokEventsManager {
         return this.sendEvent('Purchase', {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Produto'),
-            content_type: 'product',
+            content_type: String(category),
             value: validValue,
             currency: String(currency),
             contents: [{
-                content_id: String(contentId || 'unknown'),
-                content_name: String(contentName || 'Produto'),
-                content_type: 'product',
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Produto'),
+                category: String(category),
                 quantity: 1,
                 price: validValue
             }]
@@ -697,27 +980,35 @@ class TikTokEventsManager {
     /**
      * InitiateCheckout - Início de checkout
      */
-    async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') {
+    async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL', category = 'product') {
+        const validValue = this.validateValue(value);
+        
         return this.sendEvent('InitiateCheckout', {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Produto'),
-            content_type: 'product',
-            value: this.validateValue(value),
+            content_type: String(category),
+            value: validValue,
             currency: String(currency),
             contents: [{
-                content_id: String(contentId || 'unknown'),
-                content_name: String(contentName || 'Produto'),
-                content_type: 'product',
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Produto'),
+                category: String(category),
                 quantity: 1,
-                price: this.validateValue(value)
+                price: validValue
             }]
         });
     }
     
     /**
-     * ClickButton - Clique em botão
+     * ClickButton - Clique em botão - EMQ OTIMIZADO
      */
     async trackClickButton(buttonText, buttonType = 'cta', value = null) {
+        // Detectar dados automaticamente antes do evento
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento ClickButton...');
+            this.autoDetectUserData();
+        }
+        
         return this.sendEvent('ClickButton', {
             button_text: String(buttonText || 'Botão'),
             button_type: String(buttonType),
@@ -726,9 +1017,15 @@ class TikTokEventsManager {
     }
     
     /**
-     * Contact - Formulário de contato
+     * Contact - Formulário de contato - EMQ OTIMIZADO
      */
     async trackContact(contactType = 'form', value = 5) {
+        // Detectar dados automaticamente antes do evento
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento Contact...');
+            this.autoDetectUserData();
+        }
+        
         return this.sendEvent('Contact', {
             contact_type: String(contactType),
             value: this.validateValue(value),
@@ -737,13 +1034,47 @@ class TikTokEventsManager {
     }
     
     /**
-     * Lead - Geração de lead
+     * Lead - Geração de lead - EMQ OTIMIZADO
      */
     async trackLead(leadType = 'lead', value = 10) {
+        // Detectar dados automaticamente antes do evento
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento Lead...');
+            this.autoDetectUserData();
+        }
+        
         return this.sendEvent('Lead', {
             lead_type: String(leadType),
             value: this.validateValue(value),
             currency: 'BRL'
+        });
+    }
+    
+    /**
+     * AddToCart - Adicionar ao carrinho - EMQ OTIMIZADO
+     */
+    async trackAddToCart(contentId, contentName, value, currency = 'BRL', category = 'product') {
+        // Detectar dados automaticamente antes do evento
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento AddToCart...');
+            this.autoDetectUserData();
+        }
+        
+        const validValue = this.validateValue(value);
+        
+        return this.sendEvent('AddToCart', {
+            content_id: String(contentId || 'unknown'),
+            content_name: String(contentName || 'Produto'),
+            content_type: String(category),
+            value: validValue,
+            currency: String(currency),
+            contents: [{
+                id: String(contentId || 'unknown'),
+                name: String(contentName || 'Produto'),
+                category: String(category),
+                quantity: 1,
+                price: validValue
+            }]
         });
     }
     
@@ -765,23 +1096,60 @@ class TikTokEventsManager {
     }
     
     /**
-     * Obtém métricas de qualidade
+     * Obtém métricas de qualidade EMQ
      */
     getQualityMetrics() {
+        const emailCoverage = this.userCache.hashedData.email !== '' ? 100 : 0;
+        const phoneCoverage = this.userCache.hashedData.phone_number !== '' ? 100 : 0;
+        const externalIdCoverage = this.userCache.hashedData.external_id !== '' ? 100 : 0;
+        
+        const averageCoverage = (emailCoverage + phoneCoverage + externalIdCoverage) / 3;
+        
         return {
             ...this.qualityMetrics,
             userDataQuality: {
                 email: !!this.userCache.email,
                 phone: !!this.userCache.phone,
                 userId: !!this.userCache.userId,
-                ttclid: !!this.userCache.ttclid
+                ttclid: !!this.userCache.ttclid,
+                validated: this.userCache.validated
             },
             emqCoverage: {
-                email: this.userCache.hashedData.email ? 100 : 0,
-                phone: this.userCache.hashedData.phone_number ? 100 : 0,
-                external_id: this.userCache.hashedData.external_id ? 100 : 0
-            }
+                email: emailCoverage,
+                phone: phoneCoverage,
+                external_id: externalIdCoverage,
+                average: averageCoverage,
+                target: 90 // Meta de cobertura
+            },
+            emqScore: {
+                current: this.qualityMetrics.averageEMQ,
+                target: 70,
+                status: this.qualityMetrics.averageEMQ >= 70 ? '✅ Meta atingida' : '🎯 Em progresso'
+            },
+            recommendations: this.getEMQRecommendations()
         };
+    }
+    
+    /**
+     * Gera recomendações para melhorar EMQ
+     */
+    getEMQRecommendations() {
+        const recommendations = [];
+        
+        if (!this.userCache.email) {
+            recommendations.push('📧 Implementar captura de email nos formulários');
+        }
+        if (!this.userCache.phone) {
+            recommendations.push('📱 Adicionar campo de telefone opcional');
+        }
+        if (!this.userCache.ttclid) {
+            recommendations.push('🔗 Implementar parâmetros de tracking nas URLs');
+        }
+        if (this.qualityMetrics.averageEMQ < 70) {
+            recommendations.push('🎯 Melhorar identificação do usuário antes dos eventos');
+        }
+        
+        return recommendations;
     }
 }
 
@@ -800,6 +1168,7 @@ window.TikTokEvents = {
     trackViewContent: (id, name, value, currency) => window.TikTokManager.trackViewContent(id, name, value, currency),
     trackPurchase: (id, name, value, currency) => window.TikTokManager.trackPurchase(id, name, value, currency),
     trackInitiateCheckout: (id, name, value, currency) => window.TikTokManager.trackInitiateCheckout(id, name, value, currency),
+    trackAddToCart: (id, name, value, currency) => window.TikTokManager.trackAddToCart(id, name, value, currency),
     trackClickButton: (text, type, value) => window.TikTokManager.trackClickButton(text, type, value),
     trackContact: (type, value) => window.TikTokManager.trackContact(type, value),
     trackLead: (type, value) => window.TikTokManager.trackLead(type, value),
@@ -808,9 +1177,13 @@ window.TikTokEvents = {
     viewHomePage: () => window.TikTokManager.trackViewContent('home', 'Página Inicial', 0, 'BRL'),
     viewCreatePage: () => window.TikTokManager.trackViewContent('create', 'Página de Criação', 15, 'BRL'),
     viewCard: (cardId) => window.TikTokManager.trackViewContent(cardId, 'Visualizar Cartão', 10, 'BRL'),
-    selectPlan: (planType, value) => window.TikTokManager.trackClickButton(`Plano ${planType}`, 'plan_selection', value),
+    selectPlan: (planType, value) => window.TikTokManager.trackAddToCart('plan', `Plano ${planType}`, value),
     startCheckout: (cardId, planType, value) => window.TikTokManager.trackInitiateCheckout(cardId, `Plano ${planType}`, value),
     completePurchase: (cardId, planType, value) => window.TikTokManager.trackPurchase(cardId, `Plano ${planType}`, value),
+    
+    // Novos métodos EMQ otimizados
+    startCardCreation: () => window.TikTokManager.trackLead('start_creation', 15),
+    addPaymentInfo: (planType, value) => window.TikTokManager.trackContact('payment_info', value),
     
     // Métodos de criação
     create: {
@@ -823,8 +1196,18 @@ window.TikTokEvents = {
         completeCreation: (cardId) => window.TikTokManager.trackLead('complete_creation', 25)
     },
     
-    // Utilitários
-    getMetrics: () => window.TikTokManager.getQualityMetrics()
+    // Utilitários EMQ
+    getMetrics: () => window.TikTokManager.getQualityMetrics(),
+    forceDataDetection: () => window.TikTokManager.autoDetectUserData(),
+    getCoverage: () => {
+        const metrics = window.TikTokManager.getQualityMetrics();
+        return {
+            email: metrics.emqCoverage.email,
+            phone: metrics.emqCoverage.phone,
+            external_id: metrics.emqCoverage.external_id,
+            average: metrics.emqCoverage.average
+        };
+    }
 };
 
 // Função de inicialização compatível

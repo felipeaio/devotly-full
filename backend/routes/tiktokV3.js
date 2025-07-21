@@ -81,6 +81,7 @@ router.post('/track-event', async (req, res) => {
                     eventData.content_name || eventData.contentName || 'Conteúdo',
                     eventData.value,
                     eventData.currency || 'BRL',
+                    eventData.category || 'product',
                     context,
                     enhancedUserData
                 );
@@ -100,6 +101,7 @@ router.post('/track-event', async (req, res) => {
                     eventData.content_name || eventData.contentName || 'Produto',
                     eventData.value,
                     eventData.currency || 'BRL',
+                    eventData.category || 'product',
                     context,
                     enhancedUserData
                 );
@@ -111,6 +113,7 @@ router.post('/track-event', async (req, res) => {
                     eventData.content_name || eventData.contentName || 'Produto',
                     eventData.value,
                     eventData.currency || 'BRL',
+                    eventData.category || 'product',
                     context,
                     enhancedUserData
                 );
@@ -265,31 +268,45 @@ router.post('/identify', async (req, res) => {
 });
 
 /**
- * Rota para obter status e métricas do serviço
+ * Rota para obter status e métricas do serviço - EMQ OTIMIZADO
  * GET /api/tiktok/status
  */
 router.get('/status', (req, res) => {
     try {
         const metrics = tiktokEventsV3.getMetrics();
         
-        console.log('📊 Consultando status do TikTok Events');
+        console.log('📊 Consultando status do TikTok Events (EMQ Otimizado)');
 
         res.json({
             success: true,
             status: 'ativo',
-            version: '3.0',
+            version: '3.0 - EMQ Optimized',
             config: {
                 pixelCode: process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG',
                 hasAccessToken: !!process.env.TIKTOK_ACCESS_TOKEN,
-                targetEMQ: '70+ pontos'
+                targetEMQ: '70+ pontos',
+                emqOptimizations: true
             },
             metrics,
+            emq: metrics.emq || {
+                currentScore: 0,
+                targetScore: 70,
+                status: 'INITIALIZING',
+                coverage: {
+                    email_coverage: 0,
+                    phone_coverage: 0,
+                    external_id_coverage: 100,
+                    total_coverage: 33
+                }
+            },
             health: {
                 serviceActive: true,
                 configValid: !!process.env.TIKTOK_ACCESS_TOKEN,
-                emqStatus: metrics.averageEMQ >= 70 ? 'excellent' : 
-                          metrics.averageEMQ >= 60 ? 'good' : 
-                          metrics.averageEMQ >= 40 ? 'fair' : 'poor'
+                emqStatus: (metrics.emq?.currentScore || 0) >= 70 ? 'excellent' : 
+                          (metrics.emq?.currentScore || 0) >= 60 ? 'good' : 
+                          (metrics.emq?.currentScore || 0) >= 40 ? 'fair' : 'poor',
+                coverageStatus: (metrics.emq?.coverage?.total_coverage || 0) >= 80 ? 'optimal' :
+                               (metrics.emq?.coverage?.total_coverage || 0) >= 60 ? 'good' : 'needs_improvement'
             },
             timestamp: new Date().toISOString()
         });
