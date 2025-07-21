@@ -101,7 +101,7 @@ class TikTokEventsService {
      */
     hashData(data, encodeBase64 = false) {
         if (!data || data === null || data === undefined || String(data).trim() === '') {
-            return null;
+            return "";
         }
         
         // Normalizar dados (trim e lowercase para email, apenas trim para outros)
@@ -125,10 +125,13 @@ class TikTokEventsService {
      * @returns {string|null} - Telefone normalizado ou null
      */
     normalizePhoneNumber(phone) {
-        if (!phone || typeof phone !== 'string') return null;
+        if (!phone || typeof phone !== 'string') return "";
         
         // Remove todos os caracteres não numéricos
         const digitsOnly = phone.replace(/\D/g, '');
+        
+        // Validação básica: deve ter pelo menos 8 dígitos
+        if (digitsOnly.length < 8) return "";
         
         // Se começa com 55 (Brasil) e tem 13 dígitos, assume que já está correto
         if (digitsOnly.startsWith('55') && digitsOnly.length === 13) {
@@ -155,13 +158,13 @@ class TikTokEventsService {
             return `+5511${digitsOnly}`;
         }
         
-        // Se já tem + no início, mantém como está
-        if (phone.startsWith('+')) {
+        // Se já tem + no início e tem formato válido, mantém como está
+        if (phone.startsWith('+') && digitsOnly.length >= 10) {
             return phone;
         }
         
-        // Caso contrário, retorna null para não enviar dados incorretos
-        return null;
+        // Para outros casos, retorna string vazia para manter cobertura sem dados inválidos
+        return "";
     }
 
     /**
@@ -346,9 +349,10 @@ class TikTokEventsService {
             user: user,
             properties: {
                 ...eventProperties,
-                // Value e Currency são OBRIGATÓRIOS para eventos de conversão
-                value: eventProperties.value || 0,
-                currency: eventProperties.currency || 'BRL',
+                // Value e Currency são OBRIGATÓRIOS para eventos de conversão - garantir números decimais válidos
+                value: eventProperties.value !== null && !isNaN(eventProperties.value) && eventProperties.value >= 0 ? 
+                       Number(parseFloat(eventProperties.value).toFixed(2)) : 0.00,
+                currency: String(eventProperties.currency || 'BRL'),
                 // URL da página (importante para contexto)
                 url: context.pageUrl || 'https://devotly.shop'
             }
@@ -530,11 +534,15 @@ class TikTokEventsService {
     async trackPurchase(cardId, planType, value, userEmail, userPhone, req = null, eventId = null) {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
         
-        // Validar value obrigatório
-        if (!value || value <= 0) {
-            console.warn('[TikTok Events] AVISO: Evento Purchase sem value válido. Isso afeta a otimização do TikTok!');
-            value = planType === 'para_sempre' ? 97 : 67; // Valores padrão
+        // Validar value obrigatório com rigor para Purchase
+        if (!value || isNaN(value) || value <= 0) {
+            console.error('[TikTok Events] ERRO CRÍTICO: Purchase DEVE ter value > 0. Valor recebido:', value);
+            value = planType === 'para_sempre' ? 97.00 : 67.00; // Valores padrão como decimal
+            console.warn(`[TikTok Events] Usando valor padrão: ${value}`);
         }
+        
+        // Garantir que value seja número decimal válido
+        const validValue = Number(parseFloat(value).toFixed(2));
         
         const context = req ? {
             ip: this.getUserIP(req),
@@ -543,19 +551,22 @@ class TikTokEventsService {
             eventId: eventId // Para deduplicação com frontend
         } : { eventId };
         
+        console.log(`[TikTok Events] Purchase preparado com value válido: ${validValue} BRL`);
+        
         return this.sendEvent('Purchase', {
             // Dados obrigatórios para otimização do TikTok
-            value: parseFloat(value), // OBRIGATÓRIO
-            currency: 'BRL', // OBRIGATÓRIO
+            value: validValue, // OBRIGATÓRIO - número decimal
+            currency: 'BRL', // OBRIGATÓRIO - string
             // Dados do produto
-            content_id: cardId,
+            content_id: String(cardId || 'unknown'),
             content_type: 'product',
-            content_name: planName,
-            content_category: 'digital_product'
+            content_name: String(planName),
+            content_category: 'digital_product',
+            quantity: 1
         }, {
-            email: userEmail,
-            phone: userPhone,
-            externalId: cardId
+            email: userEmail || "",
+            phone: userPhone || "",
+            userId: String(cardId || generateExternalId())
         }, context);
     }
 
@@ -566,10 +577,13 @@ class TikTokEventsService {
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
         
         // Validar value obrigatório
-        if (!value || value <= 0) {
+        if (!value || isNaN(value) || value <= 0) {
             console.warn('[TikTok Events] AVISO: Evento InitiateCheckout sem value válido.');
-            value = planType === 'para_sempre' ? 97 : 67; // Valores padrão
+            value = planType === 'para_sempre' ? 97.00 : 67.00; // Valores padrão como decimal
         }
+        
+        // Garantir que value seja número decimal válido
+        const validValue = Number(parseFloat(value).toFixed(2));
         
         const context = req ? {
             ip: this.getUserIP(req),
@@ -580,15 +594,17 @@ class TikTokEventsService {
         
         return this.sendEvent('InitiateCheckout', {
             // Dados obrigatórios para otimização
-            value: parseFloat(value), // OBRIGATÓRIO
-            currency: 'BRL', // OBRIGATÓRIO
-            content_id: cardId,
+            value: validValue, // OBRIGATÓRIO - número decimal
+            currency: 'BRL', // OBRIGATÓRIO - string
+            content_id: String(cardId || 'unknown'),
             content_type: 'product',
-            content_name: planName,
-            content_category: 'digital_product'
+            content_name: String(planName),
+            content_category: 'digital_product',
+            quantity: 1
         }, {
-            email: userEmail,
-            externalId: cardId
+            email: userEmail || "",
+            phone: userPhone || "",
+            userId: String(cardId || generateExternalId())
         }, context);
     }
     
@@ -712,12 +728,10 @@ class TikTokEventsService {
         // Email - sempre incluir, mesmo que vazio
         if (userData.email && userData.email.trim() !== '') {
             const hashedEmail = this.hashData(userData.email, true);
+            hashedUserData.email = hashedEmail;
             if (hashedEmail) {
-                hashedUserData.email = hashedEmail;
                 validDataCount++;
                 console.log('[TikTok Events] Email hasheado com sucesso');
-            } else {
-                hashedUserData.email = "";
             }
         } else {
             hashedUserData.email = "";
@@ -728,12 +742,10 @@ class TikTokEventsService {
             const normalizedPhone = this.normalizePhoneNumber(userData.phone);
             if (normalizedPhone) {
                 const hashedPhone = this.hashData(normalizedPhone, true);
+                hashedUserData.phone_number = hashedPhone;
                 if (hashedPhone) {
-                    hashedUserData.phone_number = hashedPhone;
                     validDataCount++;
                     console.log(`[TikTok Events] Telefone normalizado (${normalizedPhone}) e hasheado`);
-                } else {
-                    hashedUserData.phone_number = "";
                 }
             } else {
                 hashedUserData.phone_number = "";
@@ -745,18 +757,16 @@ class TikTokEventsService {
         // External ID - sempre incluir
         if (userData.userId && userData.userId.trim() !== '') {
             const hashedUserId = this.hashData(userData.userId, true);
+            hashedUserData.external_id = hashedUserId;
             if (hashedUserId) {
-                hashedUserData.external_id = hashedUserId;
                 validDataCount++;
                 console.log('[TikTok Events] External ID hasheado com sucesso');
-            } else {
-                hashedUserData.external_id = "";
             }
         } else {
             // Gerar um external_id básico se não houver
             const generatedId = `devotly_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const hashedGeneratedId = this.hashData(generatedId, true);
-            hashedUserData.external_id = hashedGeneratedId || "";
+            hashedUserData.external_id = hashedGeneratedId;
             console.log('[TikTok Events] External ID gerado automaticamente');
         }
         

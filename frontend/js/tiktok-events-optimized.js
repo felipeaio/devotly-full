@@ -30,7 +30,7 @@ let userDataCache = {
 // Função para hash SHA-256 + Base64 (Advanced Matching)
 async function sha256Base64(str) {
     if (!str || str === null || str === undefined || str.trim() === '') {
-        return null;
+        return "";
     }
     
     try {
@@ -39,7 +39,7 @@ async function sha256Base64(str) {
             (str.includes('@') ? str.trim().toLowerCase() : str.trim()) : 
             String(str).trim();
             
-        if (normalizedStr === '') return null;
+        if (normalizedStr === '') return "";
         
         const buffer = new TextEncoder().encode(normalizedStr);
         const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -49,7 +49,7 @@ async function sha256Base64(str) {
         return btoa(hashHex.match(/.{2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join(''));
     } catch (error) {
         console.error('Erro ao gerar hash SHA-256 + Base64:', error);
-        return null;
+        return "";
     }
 }
 
@@ -60,10 +60,13 @@ function generateEventId() {
 
 // Função para normalizar telefone para formato E.164
 function normalizePhoneNumber(phone) {
-    if (!phone || typeof phone !== 'string') return null;
+    if (!phone || typeof phone !== 'string') return "";
     
     // Remove todos os caracteres não numéricos
     const digitsOnly = phone.replace(/\D/g, '');
+    
+    // Validação básica: deve ter pelo menos 8 dígitos
+    if (digitsOnly.length < 8) return "";
     
     // Se começa com 55 (Brasil) e tem 13 dígitos, assume que já está correto
     if (digitsOnly.startsWith('55') && digitsOnly.length === 13) {
@@ -90,13 +93,13 @@ function normalizePhoneNumber(phone) {
         return `+5511${digitsOnly}`;
     }
     
-    // Se já tem + no início, mantém como está
-    if (phone.startsWith('+')) {
+    // Se já tem + no início e tem formato válido, mantém como está
+    if (phone.startsWith('+') && digitsOnly.length >= 10) {
         return phone;
     }
     
-    // Caso contrário, retorna null para não enviar dados incorretos
-    return null;
+    // Para outros casos, retorna string vazia para manter cobertura sem dados inválidos
+    return "";
 }
 
 // Função para extrair parâmetros do TikTok da URL
@@ -183,24 +186,16 @@ async function getAdvancedMatchingDataAsync() {
     } else if (userDataCache.email && userDataCache.email.trim() !== '') {
         // Hash SHA-256 + Base64 do email
         const hashedEmail = await sha256Base64(userDataCache.email);
-        if (hashedEmail) {
-            userDataCache.hashedData.email = hashedEmail;
-            baseData.email = hashedEmail;
-        } else {
-            baseData.email = ""; // String vazia em vez de null/undefined
-        }
+        userDataCache.hashedData.email = hashedEmail;
+        baseData.email = hashedEmail;
     } else {
         // Tentar encontrar email em formulários da página
         const emailFromForm = findEmailInPage();
         if (emailFromForm) {
             userDataCache.email = emailFromForm;
             const hashedEmail = await sha256Base64(emailFromForm);
-            if (hashedEmail) {
-                userDataCache.hashedData.email = hashedEmail;
-                baseData.email = hashedEmail;
-            } else {
-                baseData.email = "";
-            }
+            userDataCache.hashedData.email = hashedEmail;
+            baseData.email = hashedEmail;
         } else {
             baseData.email = ""; // Sempre enviar campo email para cobertura
         }
@@ -214,12 +209,8 @@ async function getAdvancedMatchingDataAsync() {
         const normalizedPhone = normalizePhoneNumber(userDataCache.phone);
         if (normalizedPhone) {
             const hashedPhone = await sha256Base64(normalizedPhone);
-            if (hashedPhone) {
-                userDataCache.hashedData.phone_number = hashedPhone;
-                baseData.phone_number = hashedPhone;
-            } else {
-                baseData.phone_number = "";
-            }
+            userDataCache.hashedData.phone_number = hashedPhone;
+            baseData.phone_number = hashedPhone;
         } else {
             baseData.phone_number = "";
         }
@@ -231,12 +222,8 @@ async function getAdvancedMatchingDataAsync() {
             const normalizedPhone = normalizePhoneNumber(phoneFromForm);
             if (normalizedPhone) {
                 const hashedPhone = await sha256Base64(normalizedPhone);
-                if (hashedPhone) {
-                    userDataCache.hashedData.phone_number = hashedPhone;
-                    baseData.phone_number = hashedPhone;
-                } else {
-                    baseData.phone_number = "";
-                }
+                userDataCache.hashedData.phone_number = hashedPhone;
+                baseData.phone_number = hashedPhone;
             } else {
                 baseData.phone_number = "";
             }
@@ -251,12 +238,8 @@ async function getAdvancedMatchingDataAsync() {
     } else {
         const externalId = generateExternalId();
         const hashedExternalId = await sha256Base64(externalId);
-        if (hashedExternalId) {
-            userDataCache.hashedData.external_id = hashedExternalId;
-            baseData.external_id = hashedExternalId;
-        } else {
-            baseData.external_id = "";
-        }
+        userDataCache.hashedData.external_id = hashedExternalId;
+        baseData.external_id = hashedExternalId;
     }
     
     // IP ADDRESS - Capturado automaticamente pelo TikTok, mas podemos incluir
@@ -306,12 +289,8 @@ async function getAdvancedMatchingData() {
     } else {
         const externalId = generateExternalId();
         const hashedExternalId = await sha256Base64(externalId);
-        if (hashedExternalId) {
-            userDataCache.hashedData.external_id = hashedExternalId;
-            baseData.external_id = hashedExternalId;
-        } else {
-            baseData.external_id = "";
-        }
+        userDataCache.hashedData.external_id = hashedExternalId;
+        baseData.external_id = hashedExternalId;
     }
     
     // Adicionar parâmetros do TikTok se disponíveis
@@ -535,13 +514,11 @@ async function identifyUser(email, phone, userId) {
         if (email && email.trim() !== '') {
             const normalizedEmail = email.trim().toLowerCase();
             const hashedEmail = await sha256Base64(normalizedEmail);
-            if (hashedEmail) {
-                hashedData.email = hashedEmail;
-                userDataCache.email = normalizedEmail;
-                userDataCache.hashedData.email = hashedEmail;
-                identificationCount++;
-                console.log('TikTok: Email identificado e hasheado');
-            }
+            hashedData.email = hashedEmail;
+            userDataCache.email = normalizedEmail;
+            userDataCache.hashedData.email = hashedEmail;
+            identificationCount++;
+            console.log('TikTok: Email identificado e hasheado');
         }
         
         // Hash do telefone (normalizar para E.164 antes)
@@ -549,13 +526,11 @@ async function identifyUser(email, phone, userId) {
             const normalizedPhone = normalizePhoneNumber(phone.trim());
             if (normalizedPhone) {
                 const hashedPhone = await sha256Base64(normalizedPhone);
-                if (hashedPhone) {
-                    hashedData.phone_number = hashedPhone;
-                    userDataCache.phone = normalizedPhone;
-                    userDataCache.hashedData.phone_number = hashedPhone;
-                    identificationCount++;
-                    console.log(`TikTok: Telefone normalizado (${normalizedPhone}) e hasheado`);
-                }
+                hashedData.phone_number = hashedPhone;
+                userDataCache.phone = normalizedPhone;
+                userDataCache.hashedData.phone_number = hashedPhone;
+                identificationCount++;
+                console.log(`TikTok: Telefone normalizado (${normalizedPhone}) e hasheado`);
             }
         }
         
@@ -567,13 +542,11 @@ async function identifyUser(email, phone, userId) {
         
         if (finalUserId) {
             const hashedUserId = await sha256Base64(finalUserId);
-            if (hashedUserId) {
-                hashedData.external_id = hashedUserId;
-                userDataCache.userId = finalUserId;
-                userDataCache.hashedData.external_id = hashedUserId;
-                identificationCount++;
-                console.log('TikTok: External ID gerado e hasheado');
-            }
+            hashedData.external_id = hashedUserId;
+            userDataCache.userId = finalUserId;
+            userDataCache.hashedData.external_id = hashedUserId;
+            identificationCount++;
+            console.log('TikTok: External ID gerado e hasheado');
         }
         
         // Adicionar parâmetros do TikTok
@@ -760,6 +733,9 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
         // Garantir dados de Advanced Matching atualizados e completos
         const advancedMatching = getAdvancedMatchingData();
         
+        // Garantir que value seja um número decimal válido
+        const validValue = value !== null && !isNaN(value) && value >= 0 ? Number(parseFloat(value).toFixed(2)) : 0.00;
+        
         // Estrutura obrigatória do contents array conforme TikTok API
         const contents = [{
             content_id: String(contentId || 'unknown'),
@@ -767,15 +743,15 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
             content_name: String(contentName || 'Conteúdo Devotly'),
             content_category: contentCategory,
             quantity: 1,
-            price: value || 0
+            price: validValue
         }];
 
         const eventData = {
             event_id: eventId,
             contents: contents,
-            // Campos obrigatórios para otimização
-            value: Number(value || 0),
-            currency: currency,
+            // Campos obrigatórios para otimização - sempre números decimais válidos
+            value: validValue,
+            currency: String(currency || 'BRL'),
             // Advanced Matching Data para máximo EMQ
             ...advancedMatching
         };
@@ -786,8 +762,8 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
             content_id: contentId ? '✓ Presente' : '⚠️ Default usado',
             content_type: '✓ Presente',
             content_name: contentName ? '✓ Presente' : '⚠️ Default usado',
-            value: '✓ Presente',
-            currency: '✓ Presente',
+            value: `✓ ${validValue} (número decimal)`,
+            currency: `✓ ${currency}`,
             email: eventData.email && eventData.email !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente/vazio',
             phone_number: eventData.phone_number && eventData.phone_number !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente/vazio',
             external_id: eventData.external_id && eventData.external_id !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente/vazio',
@@ -802,7 +778,7 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
             console.log('TikTok: ViewContent enviado com EMQ otimizado', {
                 contentId, 
                 contentName, 
-                value,
+                value: validValue,
                 matchingFields: Object.keys(advancedMatching).length
             });
         } else {
@@ -816,8 +792,8 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
             content_type: contentType,
             content_name: String(contentName || 'Conteúdo Devotly'),
             content_category: contentCategory,
-            value: Number(value || 0),
-            currency: currency,
+            value: validValue,
+            currency: String(currency || 'BRL'),
             quantity: 1
         }, {
             email: userDataCache.email || "",
@@ -837,8 +813,8 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
                     content_type: contentType || 'product',
                     content_name: String(contentName || 'Conteúdo Devotly')
                 }],
-                value: Number(value || 0),
-                currency: currency || 'BRL',
+                value: 0.00,
+                currency: String(currency || 'BRL'),
                 ...getAdvancedMatchingData()
             };
             enqueueEvent('ViewContent', fallbackEventData);
@@ -859,18 +835,24 @@ function trackClickButton(buttonText, buttonType = 'cta', value = null, currency
         // Garantir dados de Advanced Matching atualizados
         const advancedMatching = getAdvancedMatchingData();
         
+        // Garantir que value seja um número decimal válido
+        const validValue = value !== null && !isNaN(value) && value >= 0 ? Number(parseFloat(value).toFixed(2)) : 0.00;
+        
         const eventData = {
             event_id: eventId,
-            button_text: buttonText,
-            button_type: buttonType,
-            value: value || 0,
-            currency: currency,
+            button_text: String(buttonText || 'Botão'),
+            button_type: String(buttonType),
+            value: validValue,
+            currency: String(currency || 'BRL'),
             ...advancedMatching
         };
 
         // Log para monitoramento da qualidade
         console.log('TikTok: ClickButton - Qualidade dos dados:', {
             event_id: '✓ Presente',
+            button_text: '✓ Presente',
+            value: `✓ ${validValue} (número decimal)`,
+            currency: `✓ ${currency}`,
             email: eventData.email && eventData.email !== "" ? '✓ Hash presente' : '✗ Ausente/vazio',
             phone_number: eventData.phone_number && eventData.phone_number !== "" ? '✓ Hash presente' : '✗ Ausente/vazio',
             external_id: eventData.external_id && eventData.external_id !== "" ? '✓ Hash presente' : '✗ Ausente/vazio',
@@ -882,17 +864,17 @@ function trackClickButton(buttonText, buttonType = 'cta', value = null, currency
 
         if (typeof ttq !== 'undefined') {
             ttq.track('ClickButton', eventData);
-            console.log('TikTok: ClickButton rastreado com EMQ otimizado', {buttonText, buttonType});
+            console.log('TikTok: ClickButton rastreado com EMQ otimizado', {buttonText, buttonType, value: validValue});
         } else {
             enqueueEvent('ClickButton', eventData);
         }
 
         // Enviar para servidor (Events API) com mesma qualidade
         sendEventToServer('ClickButton', {
-            button_text: buttonText,
-            button_type: buttonType,
-            value: value || 0,
-            currency: currency
+            button_text: String(buttonText || 'Botão'),
+            button_type: String(buttonType),
+            value: validValue,
+            currency: String(currency || 'BRL')
         }, {
             email: userDataCache.email || "",
             phone: userDataCache.phone || "",
@@ -912,26 +894,30 @@ function trackClickButton(buttonText, buttonType = 'cta', value = null, currency
 function trackLead(leadType, value = 10, currency = 'BRL') {
     try {
         const eventId = generateEventId();
+        
+        // Garantir que value seja um número decimal válido
+        const validValue = value !== null && !isNaN(value) && value >= 0 ? Number(parseFloat(value).toFixed(2)) : 10.00;
+        
         const eventData = {
             event_id: eventId,
-            lead_type: leadType,
-            value: value, // OBRIGATÓRIO para otimização
-            currency: currency, // OBRIGATÓRIO
+            lead_type: String(leadType || 'lead'),
+            value: validValue, // OBRIGATÓRIO para otimização
+            currency: String(currency || 'BRL'), // OBRIGATÓRIO
             ...getAdvancedMatchingData()
         };
 
         if (typeof ttq !== 'undefined') {
             ttq.track('Lead', eventData);
-            console.log('TikTok: Lead rastreado', {leadType, value});
+            console.log('TikTok: Lead rastreado', {leadType, value: validValue});
         } else {
             enqueueEvent('Lead', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('Lead', {
-            lead_type: leadType,
-            value: value,
-            currency: currency,
+            lead_type: String(leadType || 'lead'),
+            value: validValue,
+            currency: String(currency || 'BRL'),
             content_category: 'lead_generation'
         }, userDataCache, eventId);
 
@@ -948,26 +934,30 @@ function trackLead(leadType, value = 10, currency = 'BRL') {
 function trackContact(contactType, value = 5, currency = 'BRL') {
     try {
         const eventId = generateEventId();
+        
+        // Garantir que value seja um número decimal válido
+        const validValue = value !== null && !isNaN(value) && value >= 0 ? Number(parseFloat(value).toFixed(2)) : 5.00;
+        
         const eventData = {
             event_id: eventId,
-            contact_type: contactType,
-            value: value, // OBRIGATÓRIO para otimização
-            currency: currency, // OBRIGATÓRIO
+            contact_type: String(contactType || 'contact'),
+            value: validValue, // OBRIGATÓRIO para otimização
+            currency: String(currency || 'BRL'), // OBRIGATÓRIO
             ...getAdvancedMatchingData()
         };
 
         if (typeof ttq !== 'undefined') {
             ttq.track('Contact', eventData);
-            console.log('TikTok: Contact rastreado', {contactType, value});
+            console.log('TikTok: Contact rastreado', {contactType, value: validValue});
         } else {
             enqueueEvent('Contact', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('Contact', {
-            contact_type: contactType,
-            value: value,
-            currency: currency,
+            contact_type: String(contactType || 'contact'),
+            value: validValue,
+            currency: String(currency || 'BRL'),
             content_category: 'contact_form'
         }, userDataCache, eventId);
 
@@ -984,33 +974,40 @@ function trackContact(contactType, value = 5, currency = 'BRL') {
 function trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') {
     try {
         const eventId = generateEventId();
+        
+        // Garantir que value seja um número decimal válido e obrigatório para checkout
+        const validValue = value !== null && !isNaN(value) && value > 0 ? Number(parseFloat(value).toFixed(2)) : 0.01;
+        
         const eventData = {
             event_id: eventId,
             contents: [{
-                content_id: contentId || 'unknown',
+                content_id: String(contentId || 'unknown'),
                 content_type: 'product',
-                content_name: contentName || 'Produto Devotly'
+                content_name: String(contentName || 'Produto Devotly'),
+                quantity: 1,
+                price: validValue
             }],
-            value: value, // OBRIGATÓRIO
-            currency: currency, // OBRIGATÓRIO
+            value: validValue, // OBRIGATÓRIO
+            currency: String(currency || 'BRL'), // OBRIGATÓRIO
             ...getAdvancedMatchingData()
         };
 
         if (typeof ttq !== 'undefined') {
             ttq.track('InitiateCheckout', eventData);
-            console.log('TikTok: InitiateCheckout rastreado', {contentId, contentName, value});
+            console.log('TikTok: InitiateCheckout rastreado', {contentId, contentName, value: validValue});
         } else {
             enqueueEvent('InitiateCheckout', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('InitiateCheckout', {
-            content_id: contentId,
+            content_id: String(contentId || 'unknown'),
             content_type: 'product',
-            content_name: contentName,
+            content_name: String(contentName || 'Produto Devotly'),
             content_category: 'digital_product',
-            value: value,
-            currency: currency
+            value: validValue,
+            currency: String(currency || 'BRL'),
+            quantity: 1
         }, userDataCache, eventId);
 
         return true;
@@ -1021,38 +1018,60 @@ function trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') 
 }
 
 /**
- * 7. PURCHASE - Compra Finalizada
+ * 7. PURCHASE - Compra Finalizada (CRÍTICO PARA EMQ)
  */
 function trackPurchase(contentId, contentName, value, currency = 'BRL') {
     try {
         const eventId = generateEventId();
+        
+        // CRITICAL: Purchase DEVE ter value > 0 - validação rigorosa
+        if (!value || isNaN(value) || value <= 0) {
+            console.error('TikTok: Purchase requer value > 0. Valor recebido:', value);
+            return false;
+        }
+        
+        const validValue = Number(parseFloat(value).toFixed(2));
+        
         const eventData = {
             event_id: eventId,
             contents: [{
-                content_id: contentId || 'unknown',
+                content_id: String(contentId || 'unknown'),
                 content_type: 'product',
-                content_name: contentName || 'Produto Devotly'
+                content_name: String(contentName || 'Produto Devotly'),
+                quantity: 1,
+                price: validValue
             }],
-            value: value, // OBRIGATÓRIO
-            currency: currency, // OBRIGATÓRIO
+            value: validValue, // OBRIGATÓRIO - valor da compra
+            currency: String(currency || 'BRL'), // OBRIGATÓRIO - moeda
             ...getAdvancedMatchingData()
         };
 
+        console.log('TikTok: Purchase - Dados de qualidade EMQ:', {
+            event_id: '✓ Presente',
+            value: `✓ ${validValue} (número decimal obrigatório)`,
+            currency: `✓ ${currency}`,
+            content_id: contentId ? '✓ Presente' : '⚠️ Default',
+            email: eventData.email && eventData.email !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
+            phone_number: eventData.phone_number && eventData.phone_number !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
+            external_id: eventData.external_id && eventData.external_id !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente'
+        });
+
         if (typeof ttq !== 'undefined') {
             ttq.track('Purchase', eventData);
-            console.log('TikTok: Purchase rastreado', {contentId, contentName, value});
+            console.log('TikTok: Purchase rastreado com EMQ otimizado', {contentId, contentName, value: validValue});
         } else {
             enqueueEvent('Purchase', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('Purchase', {
-            content_id: contentId,
+            content_id: String(contentId || 'unknown'),
             content_type: 'product',
-            content_name: contentName,
+            content_name: String(contentName || 'Produto Devotly'),
             content_category: 'digital_product',
-            value: value,
-            currency: currency
+            value: validValue,
+            currency: String(currency || 'BRL'),
+            quantity: 1
         }, userDataCache, eventId);
 
         return true;
