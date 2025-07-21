@@ -645,6 +645,7 @@ class TikTokEventsServiceV3 {
     
     /**
      * Detecta contexto da página no servidor
+     * Atualizado para usar content_type válidos no TikTok
      */
     detectPageContextServer(context) {
         const url = context.url || '';
@@ -655,21 +656,21 @@ class TikTokEventsServiceV3 {
                 page: 'create',
                 group: 'card_creation',
                 funnel_stage: 'consideration',
-                content_type: 'creation_tool'
+                content_type: 'product' // Ferramenta de criação como produto
             };
         } else if (url.includes('/view') || referer.includes('/view')) {
             return {
                 page: 'view',
                 group: 'card_viewing',
                 funnel_stage: 'engagement',
-                content_type: 'content_view'
+                content_type: 'product' // Cartão como produto digital
             };
         } else if (url === '/' || url.includes('home') || referer.includes('devotly.shop')) {
             return {
                 page: 'home',
                 group: 'landing',
                 funnel_stage: 'awareness',
-                content_type: 'landing_page'
+                content_type: 'website' // Página inicial como website
             };
         }
         
@@ -677,27 +678,28 @@ class TikTokEventsServiceV3 {
             page: 'other',
             group: 'general',
             funnel_stage: 'awareness',
-            content_type: 'page_view'
+            content_type: 'website' // Default como website
         };
     }
     
     /**
      * Melhora categoria no servidor
+     * Atualizado para usar valores válidos no TikTok
      */
     enhanceContentCategoryServer(originalCategory, pageContext) {
         if (pageContext.page === 'create') {
-            if (originalCategory.includes('step') || originalCategory.includes('creation')) return 'creation_step';
-            if (originalCategory.includes('navigation')) return 'creation_navigation';
-            if (originalCategory.includes('template')) return 'design_template';
-            if (originalCategory.includes('preview')) return 'card_preview';
-            return 'creation_tool';
+            // Página de criação = ferramenta/produto
+            return 'product';
         } else if (pageContext.page === 'view') {
-            return 'digital_card';
+            // Visualização de cartão = produto digital
+            return 'product';
         } else if (pageContext.page === 'home') {
-            return 'marketing_content';
+            // Página inicial = website
+            return 'website';
         }
         
-        return originalCategory || 'content';
+        // Default para conteúdo geral
+        return 'website';
     }
     
     /**

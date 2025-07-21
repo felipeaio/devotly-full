@@ -1025,6 +1025,7 @@ class TikTokEventsManager {
     
     /**
      * Detecta contexto da página atual para melhorar categorização
+     * Atualizado para usar content_type válidos no TikTok
      */
     detectPageContext() {
         const url = window.location.pathname;
@@ -1035,21 +1036,21 @@ class TikTokEventsManager {
                 page: 'create',
                 group: 'card_creation',
                 funnel_stage: 'consideration',
-                content_type: 'creation_tool'
+                content_type: 'product' // Ferramenta de criação como produto
             };
         } else if (url.includes('/view')) {
             return {
                 page: 'view',
                 group: 'card_viewing',
                 funnel_stage: 'engagement',
-                content_type: 'content_view'
+                content_type: 'product' // Cartão como produto digital
             };
         } else if (url === '/' || url.includes('home')) {
             return {
                 page: 'home',
                 group: 'landing',
                 funnel_stage: 'awareness',
-                content_type: 'landing_page'
+                content_type: 'website' // Página inicial como website
             };
         }
         
@@ -1057,25 +1058,28 @@ class TikTokEventsManager {
             page: 'other',
             group: 'general',
             funnel_stage: 'awareness',
-            content_type: 'page_view'
+            content_type: 'website' // Default como website
         };
     }
     
     /**
      * Melhora a categoria do conteúdo baseado no contexto
+     * Usa apenas valores válidos aceitos pelo TikTok Events API
      */
     enhanceContentCategory(originalCategory, pageContext) {
         if (pageContext.page === 'create') {
-            if (originalCategory.includes('step')) return 'creation_step';
-            if (originalCategory.includes('navigation')) return 'creation_navigation';
-            return 'creation_tool';
+            // Página de criação = ferramenta/produto
+            return 'product';
         } else if (pageContext.page === 'view') {
-            return 'digital_card';
+            // Visualização de cartão = produto digital
+            return 'product';
         } else if (pageContext.page === 'home') {
-            return 'marketing_content';
+            // Página inicial = landing page
+            return 'website';
         }
         
-        return originalCategory || 'content';
+        // Default para conteúdo geral
+        return 'website';
     }
     
     /**
@@ -1380,7 +1384,7 @@ window.TikTokEvents = {
             `Etapa ${stepNumber}: ${stepName}`, 
             stepValue, 
             'BRL', 
-            'creation_step'
+            'product' // Ferramenta de criação como produto
         );
     },
     
@@ -1391,7 +1395,7 @@ window.TikTokEvents = {
             'Preview do Cartão', 
             20, 
             'BRL', 
-            'card_preview'
+            'product' // Preview como produto digital
         );
     },
     
@@ -1402,7 +1406,7 @@ window.TikTokEvents = {
             `Template: ${templateName}`, 
             8, 
             'BRL', 
-            'design_template'
+            'product' // Template como produto
         );
     },
     
@@ -1422,7 +1426,7 @@ window.TikTokEvents = {
             `Criação: ${contentDetail}`, 
             value, 
             'BRL', 
-            `creation_${contentType}`
+            'product' // Conteúdo de criação como produto
         );
     },
     
