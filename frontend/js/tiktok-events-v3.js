@@ -985,25 +985,124 @@ class TikTokEventsManager {
     }
     
     /**
-     * ViewContent - Visualização de conteúdo
+     * ViewContent - Visualização de conteúdo OTIMIZADO para EMQ
      */
     async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product') {
+        // Auto-detectar dados se necessário para melhor EMQ
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento ViewContent...');
+            this.autoDetectUserData();
+        }
+        
         const validValue = this.validateValue(value);
+        console.log(`👁️ VIEW CONTENT: ${contentName} - ${contentId} (Valor: R$ ${validValue || 0})`);
+        
+        // Detectar contexto da página para melhor categorização
+        const pageContext = this.detectPageContext();
+        const enhancedCategory = this.enhanceContentCategory(category, pageContext);
         
         return this.sendEvent('ViewContent', {
-            content_id: String(contentId || 'unknown'),
+            content_id: String(contentId || this.generateContentId()),
             content_name: String(contentName || 'Conteúdo'),
-            content_type: String(category),
+            content_type: String(enhancedCategory),
             value: validValue,
             currency: String(currency),
+            // Adicionar dados específicos para melhor segmentação
+            content_category: String(enhancedCategory),
+            content_group_id: String(pageContext.group || 'general'),
+            description: String(this.generateContentDescription(contentName, pageContext)),
             contents: [{
-                id: String(contentId || 'unknown'),
+                id: String(contentId || this.generateContentId()),
                 name: String(contentName || 'Conteúdo'),
-                category: String(category),
+                category: String(enhancedCategory),
                 quantity: 1,
-                price: validValue
+                price: validValue || 0,
+                brand: 'Devotly',
+                item_group_id: String(pageContext.group || 'general')
             }]
         });
+    }
+    
+    /**
+     * Detecta contexto da página atual para melhorar categorização
+     */
+    detectPageContext() {
+        const url = window.location.pathname;
+        const hostname = window.location.hostname;
+        
+        if (url.includes('/create')) {
+            return {
+                page: 'create',
+                group: 'card_creation',
+                funnel_stage: 'consideration',
+                content_type: 'creation_tool'
+            };
+        } else if (url.includes('/view')) {
+            return {
+                page: 'view',
+                group: 'card_viewing',
+                funnel_stage: 'engagement',
+                content_type: 'content_view'
+            };
+        } else if (url === '/' || url.includes('home')) {
+            return {
+                page: 'home',
+                group: 'landing',
+                funnel_stage: 'awareness',
+                content_type: 'landing_page'
+            };
+        }
+        
+        return {
+            page: 'other',
+            group: 'general',
+            funnel_stage: 'awareness',
+            content_type: 'page_view'
+        };
+    }
+    
+    /**
+     * Melhora a categoria do conteúdo baseado no contexto
+     */
+    enhanceContentCategory(originalCategory, pageContext) {
+        if (pageContext.page === 'create') {
+            if (originalCategory.includes('step')) return 'creation_step';
+            if (originalCategory.includes('navigation')) return 'creation_navigation';
+            return 'creation_tool';
+        } else if (pageContext.page === 'view') {
+            return 'digital_card';
+        } else if (pageContext.page === 'home') {
+            return 'marketing_content';
+        }
+        
+        return originalCategory || 'content';
+    }
+    
+    /**
+     * Gera descrição rica do conteúdo
+     */
+    generateContentDescription(contentName, pageContext) {
+        const baseDescription = contentName || 'Conteúdo';
+        
+        if (pageContext.page === 'create') {
+            return `Ferramenta de criação: ${baseDescription} - Devotly`;
+        } else if (pageContext.page === 'view') {
+            return `Cartão digital: ${baseDescription} - Devotly`;
+        } else if (pageContext.page === 'home') {
+            return `Página inicial: ${baseDescription} - Devotly`;
+        }
+        
+        return `${baseDescription} - Devotly`;
+    }
+    
+    /**
+     * Gera ID único para conteúdo quando não fornecido
+     */
+    generateContentId() {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 5);
+        const pageContext = this.detectPageContext();
+        return `${pageContext.page}_${timestamp}_${random}`;
     }
     
     /**
@@ -1271,6 +1370,62 @@ window.TikTokEvents = {
         return window.TikTokManager.trackPageView(25, 'BRL'); // Página de criação - alta intenção
     },
     viewCard: (cardId) => window.TikTokManager.trackViewContent(cardId, 'Visualizar Cartão', 15, 'BRL'),
+    
+    // ✨ NOVOS MÉTODOS VIEWCONTENT OTIMIZADOS PARA PÁGINA CREATE
+    viewCreateStep: (stepNumber, stepName) => {
+        const stepValue = stepNumber * 3; // Valor progressivo por etapa
+        console.log(`📝 CREATE STEP: Visualizando etapa ${stepNumber} - ${stepName} (Valor: R$ ${stepValue})`);
+        return window.TikTokManager.trackViewContent(
+            `create_step_${stepNumber}`, 
+            `Etapa ${stepNumber}: ${stepName}`, 
+            stepValue, 
+            'BRL', 
+            'creation_step'
+        );
+    },
+    
+    viewCreatePreview: (cardId) => {
+        console.log(`👀 CREATE PREVIEW: Visualizando preview do cartão ${cardId} (Valor: R$ 20)`);
+        return window.TikTokManager.trackViewContent(
+            `preview_${cardId}`, 
+            'Preview do Cartão', 
+            20, 
+            'BRL', 
+            'card_preview'
+        );
+    },
+    
+    viewCreateTemplate: (templateId, templateName) => {
+        console.log(`🎨 CREATE TEMPLATE: Visualizando template ${templateName} (Valor: R$ 8)`);
+        return window.TikTokManager.trackViewContent(
+            `template_${templateId}`, 
+            `Template: ${templateName}`, 
+            8, 
+            'BRL', 
+            'design_template'
+        );
+    },
+    
+    viewCreateContent: (contentType, contentDetail) => {
+        const contentValues = {
+            'verse_selection': 12,
+            'image_upload': 10,
+            'music_selection': 8,
+            'text_editing': 6,
+            'color_customization': 5
+        };
+        const value = contentValues[contentType] || 5;
+        
+        console.log(`🎯 CREATE CONTENT: ${contentType} - ${contentDetail} (Valor: R$ ${value})`);
+        return window.TikTokManager.trackViewContent(
+            `create_${contentType}_${Date.now()}`, 
+            `Criação: ${contentDetail}`, 
+            value, 
+            'BRL', 
+            `creation_${contentType}`
+        );
+    },
+    
     selectPlan: (planType, value) => window.TikTokManager.trackAddToCart('plan', `Plano ${planType}`, value),
     startCheckout: (cardId, planType, value) => window.TikTokManager.trackInitiateCheckout(cardId, `Plano ${planType}`, value),
     completePurchase: (cardId, planType, value) => window.TikTokManager.trackPurchase(cardId, `Plano ${planType}`, value),
@@ -1282,14 +1437,35 @@ window.TikTokEvents = {
         return window.TikTokManager.trackAddPaymentInfo(`plan_${planType}`, `Plano ${planType}`, value, 'BRL', 'subscription');
     },
     
-    // Métodos de criação
+    // Métodos de criação OTIMIZADOS
     create: {
         startCreation: () => window.TikTokManager.trackLead('start_creation', 15),
-        fillStep: (step, name) => window.TikTokManager.trackViewContent(`step-${step}`, name, 5),
-        uploadImage: () => window.TikTokManager.trackClickButton('Upload Imagem', 'upload', 5),
-        selectVerse: () => window.TikTokManager.trackClickButton('Selecionar Versículo', 'verse_selection', 5),
-        addMusic: () => window.TikTokManager.trackClickButton('Adicionar Música', 'music', 5),
-        previewCard: () => window.TikTokManager.trackClickButton('Visualizar Cartão', 'preview', 5),
+        fillStep: (step, name) => {
+            // Usar o novo método otimizado de ViewContent para etapas
+            console.log(`📋 FILL STEP: Preenchendo etapa ${step} - ${name}`);
+            return window.TikTokEvents.viewCreateStep(step, name);
+        },
+        navigateSteps: (fromStep, toStep) => {
+            console.log(`🚀 NAVEGAÇÃO: Etapa ${fromStep} → ${toStep}`);
+            return window.TikTokManager.trackViewContent(`navigation-${fromStep}-to-${toStep}`, `Navegação Etapa ${toStep}`, 3);
+        },
+        uploadImage: () => {
+            console.log(`📷 UPLOAD IMAGE: Fazendo upload de imagem`);
+            return window.TikTokEvents.viewCreateContent('image_upload', 'Upload de Imagem');
+        },
+        selectVerse: () => {
+            console.log(`📖 SELECT VERSE: Selecionando versículo`);
+            return window.TikTokEvents.viewCreateContent('verse_selection', 'Seleção de Versículo');
+        },
+        addMusic: () => {
+            console.log(`🎵 ADD MUSIC: Adicionando música`);
+            return window.TikTokEvents.viewCreateContent('music_selection', 'Seleção de Música');
+        },
+        previewCard: () => {
+            console.log(`👁️ PREVIEW CARD: Visualizando preview`);
+            const cardId = window.location.hash?.replace('#', '') || 'current_card';
+            return window.TikTokEvents.viewCreatePreview(cardId);
+        },
         completeCreation: (cardId) => window.TikTokManager.trackLead('complete_creation', 25)
     },
     

@@ -603,22 +603,34 @@ class TikTokEventsServiceV3 {
     }
     
     /**
-     * ViewContent
+     * ViewContent OTIMIZADO para EMQ máximo
      */
     async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product', context = {}, userData = {}) {
         const validValue = this.validateValue(value);
         
+        // Detectar contexto da página para melhor categorização
+        const pageContext = this.detectPageContextServer(context);
+        const enhancedCategory = this.enhanceContentCategoryServer(category, pageContext);
+        
         const eventData = {
-            content_id: String(contentId || 'unknown'),
+            content_id: String(contentId || this.generateContentIdServer(pageContext)),
             content_name: String(contentName || 'Conteúdo'),
-            content_type: String(category),
+            content_type: String(enhancedCategory),
             currency: String(currency),
+            // Dados adicionais para melhor EMQ
+            content_category: String(enhancedCategory),
+            content_group_id: String(pageContext.group || 'general'),
+            description: String(this.generateContentDescriptionServer(contentName, pageContext)),
+            brand: 'Devotly',
+            funnel_stage: String(pageContext.funnel_stage || 'consideration'),
             contents: [{
-                id: String(contentId || 'unknown'),
+                id: String(contentId || this.generateContentIdServer(pageContext)),
                 name: String(contentName || 'Conteúdo'),
-                category: String(category),
+                category: String(enhancedCategory),
                 quantity: 1,
-                price: validValue || 0
+                price: validValue || 0,
+                brand: 'Devotly',
+                item_group_id: String(pageContext.group || 'general')
             }]
         };
         
@@ -626,7 +638,92 @@ class TikTokEventsServiceV3 {
             eventData.value = validValue;
         }
         
+        console.log(`👁️ Backend ViewContent: ${contentName} - EMQ Score estimado: ${this.calculateEMQScore(eventData)}`);
+        
         return this.sendEvent('ViewContent', eventData, context, userData);
+    }
+    
+    /**
+     * Detecta contexto da página no servidor
+     */
+    detectPageContextServer(context) {
+        const url = context.url || '';
+        const referer = context.referer || '';
+        
+        if (url.includes('/create') || referer.includes('/create')) {
+            return {
+                page: 'create',
+                group: 'card_creation',
+                funnel_stage: 'consideration',
+                content_type: 'creation_tool'
+            };
+        } else if (url.includes('/view') || referer.includes('/view')) {
+            return {
+                page: 'view',
+                group: 'card_viewing',
+                funnel_stage: 'engagement',
+                content_type: 'content_view'
+            };
+        } else if (url === '/' || url.includes('home') || referer.includes('devotly.shop')) {
+            return {
+                page: 'home',
+                group: 'landing',
+                funnel_stage: 'awareness',
+                content_type: 'landing_page'
+            };
+        }
+        
+        return {
+            page: 'other',
+            group: 'general',
+            funnel_stage: 'awareness',
+            content_type: 'page_view'
+        };
+    }
+    
+    /**
+     * Melhora categoria no servidor
+     */
+    enhanceContentCategoryServer(originalCategory, pageContext) {
+        if (pageContext.page === 'create') {
+            if (originalCategory.includes('step') || originalCategory.includes('creation')) return 'creation_step';
+            if (originalCategory.includes('navigation')) return 'creation_navigation';
+            if (originalCategory.includes('template')) return 'design_template';
+            if (originalCategory.includes('preview')) return 'card_preview';
+            return 'creation_tool';
+        } else if (pageContext.page === 'view') {
+            return 'digital_card';
+        } else if (pageContext.page === 'home') {
+            return 'marketing_content';
+        }
+        
+        return originalCategory || 'content';
+    }
+    
+    /**
+     * Gera descrição rica no servidor
+     */
+    generateContentDescriptionServer(contentName, pageContext) {
+        const baseDescription = contentName || 'Conteúdo';
+        
+        if (pageContext.page === 'create') {
+            return `Ferramenta de criação: ${baseDescription} - Devotly Cards`;
+        } else if (pageContext.page === 'view') {
+            return `Cartão digital: ${baseDescription} - Devotly Cards`;
+        } else if (pageContext.page === 'home') {
+            return `Página inicial: ${baseDescription} - Devotly Cards`;
+        }
+        
+        return `${baseDescription} - Devotly Cards`;
+    }
+    
+    /**
+     * Gera ID único no servidor
+     */
+    generateContentIdServer(pageContext) {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 5);
+        return `${pageContext.page}_server_${timestamp}_${random}`;
     }
     
     /**

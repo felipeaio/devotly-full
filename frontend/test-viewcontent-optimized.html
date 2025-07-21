@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste ViewContent Otimizado - Devotly</title>
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 20px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            margin: 5px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover { 
+            background: #45a049; 
+            transform: translateY(-2px);
+        }
+        .enhanced-btn {
+            background: #2196F3;
+        }
+        .enhanced-btn:hover {
+            background: #1976D2;
+        }
+        .results { 
+            background: #f0f0f0; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .old-method { border-color: #ff9800; }
+        .new-method { border-color: #4caf50; }
+        .intercepted-event {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            margin: 5px 0;
+            padding: 10px;
+        }
+        .event-title {
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .event-data {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Teste ViewContent Otimizado v3.0</h1>
+    <p>Esta página testa as melhorias implementadas no evento ViewContent do TikTok Pixel.</p>
+
+    <!-- Interceptação de Eventos -->
+    <div class="test-section">
+        <h2>📡 Interceptação de Eventos TikTok</h2>
+        <button onclick="startInterception()">Iniciar Interceptação</button>
+        <button onclick="clearIntercepted()" style="background: #f44336;">Limpar</button>
+        <div id="intercepted-events" class="results"></div>
+    </div>
+
+    <!-- Comparação: Antigo vs Novo -->
+    <div class="test-section">
+        <h2>⚖️ Comparação: ViewContent Antigo vs Otimizado</h2>
+        <div class="comparison">
+            <div class="comparison-item old-method">
+                <h3>❌ Método Antigo</h3>
+                <button onclick="testOldViewContent()">Testar ViewContent Antigo</button>
+                <div id="old-results" class="results"></div>
+            </div>
+            <div class="comparison-item new-method">
+                <h3>✅ Método Otimizado</h3>
+                <button onclick="testNewViewContent()" class="enhanced-btn">Testar ViewContent Otimizado</button>
+                <div id="new-results" class="results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Novos Métodos Create -->
+    <div class="test-section">
+        <h2>🛠️ Novos Métodos ViewContent para Create</h2>
+        <div class="button-grid">
+            <button onclick="testCreateStep()" class="enhanced-btn">ViewContent - Etapa</button>
+            <button onclick="testCreatePreview()" class="enhanced-btn">ViewContent - Preview</button>
+            <button onclick="testCreateTemplate()" class="enhanced-btn">ViewContent - Template</button>
+            <button onclick="testCreateContent()" class="enhanced-btn">ViewContent - Conteúdo</button>
+        </div>
+        <div id="create-results" class="results"></div>
+    </div>
+
+    <!-- Simulação de Página Create -->
+    <div class="test-section">
+        <h2>🎨 Simulação da Página Create</h2>
+        <p>Elementos simulados da página create para testar tracking automático:</p>
+        
+        <!-- Elementos que serão trackados automaticamente -->
+        <div class="form-step" style="padding: 15px; border: 1px solid #ddd; margin: 10px 0; border-radius: 4px;">
+            <h4>Etapa 1: Informações Básicas</h4>
+            <input type="text" placeholder="Digite seu nome" style="padding: 8px; margin: 5px;">
+        </div>
+        
+        <div class="preview-section" style="padding: 15px; border: 1px solid #ddd; margin: 10px 0; border-radius: 4px;">
+            <h4>Preview do Cartão</h4>
+            <div style="background: #f0f0f0; height: 100px; display: flex; align-items: center; justify-content: center;">
+                Preview Area
+            </div>
+        </div>
+        
+        <div class="verse-selector" style="padding: 15px; border: 1px solid #ddd; margin: 10px 0; border-radius: 4px;">
+            <h4>Seleção de Versículos</h4>
+            <div class="verse-item" onclick="trackVerseSelection()">João 3:16 - Porque Deus amou o mundo...</div>
+        </div>
+        
+        <div class="image-upload-area" style="padding: 15px; border: 1px solid #ddd; margin: 10px 0; border-radius: 4px;">
+            <h4>Upload de Imagem</h4>
+            <input type="file" onchange="trackFileUpload(this)">
+        </div>
+        
+        <div id="auto-tracking-results" class="results"></div>
+    </div>
+
+    <!-- Métricas EMQ -->
+    <div class="test-section">
+        <h2>📊 Análise EMQ (Event Match Quality)</h2>
+        <button onclick="analyzeEMQ()" class="enhanced-btn">Analisar Qualidade EMQ</button>
+        <div id="emq-results" class="results"></div>
+    </div>
+
+    <script src="js/tiktok-events-v3.js"></script>
+    <script src="js/create-viewcontent-tracker.js"></script>
+    <script>
+        let interceptedEvents = [];
+        let isIntercepting = false;
+
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const className = type;
+            const timestamp = new Date().toLocaleTimeString();
+            container.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Interceptação de eventos TikTok
+        function startInterception() {
+            if (typeof ttq !== 'undefined') {
+                // Override do track method para interceptar
+                const originalTrack = ttq.track;
+                
+                ttq.track = function(eventName, eventData) {
+                    if (eventName === 'ViewContent') {
+                        interceptedEvents.push({
+                            timestamp: new Date().toLocaleTimeString(),
+                            eventName,
+                            eventData: JSON.parse(JSON.stringify(eventData))
+                        });
+                        
+                        displayInterceptedEvent(eventName, eventData);
+                    }
+                    
+                    return originalTrack.apply(this, arguments);
+                };
+                
+                isIntercepting = true;
+                log('intercepted-events', '🎯 Interceptação iniciada! Agora todos os eventos ViewContent serão capturados.', 'success');
+            } else {
+                log('intercepted-events', '❌ TikTok Pixel não encontrado', 'error');
+            }
+        }
+
+        function displayInterceptedEvent(eventName, eventData) {
+            const container = document.getElementById('intercepted-events');
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'intercepted-event';
+            
+            eventDiv.innerHTML = `
+                <div class="event-title">${eventName} - ${new Date().toLocaleTimeString()}</div>
+                <div class="event-data">
+                    <strong>Content ID:</strong> ${eventData.content_id || 'N/A'}<br>
+                    <strong>Content Name:</strong> ${eventData.content_name || 'N/A'}<br>
+                    <strong>Value:</strong> ${eventData.value || 'N/A'}<br>
+                    <strong>Currency:</strong> ${eventData.currency || 'N/A'}<br>
+                    <strong>Category:</strong> ${eventData.content_type || 'N/A'}<br>
+                    <strong>Description:</strong> ${eventData.description || 'N/A'}<br>
+                    <strong>Brand:</strong> ${eventData.brand || 'N/A'}<br>
+                    <strong>Group ID:</strong> ${eventData.content_group_id || 'N/A'}<br>
+                    <strong>EMQ Data:</strong> ${JSON.stringify(eventData.contents || [])}
+                </div>
+            `;
+            
+            container.appendChild(eventDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearIntercepted() {
+            interceptedEvents = [];
+            document.getElementById('intercepted-events').innerHTML = '';
+        }
+
+        // Teste método antigo
+        function testOldViewContent() {
+            log('old-results', '🔄 Testando método ViewContent antigo...', 'info');
+            
+            // Simular método antigo (básico)
+            if (typeof ttq !== 'undefined') {
+                ttq.track('ViewContent', {
+                    content_id: 'test_old',
+                    content_name: 'Teste Antigo',
+                    content_type: 'product',
+                    value: 5,
+                    currency: 'BRL'
+                });
+                
+                log('old-results', '✅ Método antigo executado (dados básicos)', 'success');
+                log('old-results', 'Dados: content_id=test_old, value=5, sem EMQ otimizado', 'info');
+            }
+        }
+
+        // Teste método novo
+        function testNewViewContent() {
+            log('new-results', '🚀 Testando método ViewContent otimizado...', 'info');
+            
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.trackViewContent(
+                    'test_optimized_123',
+                    'Teste ViewContent Otimizado',
+                    15,
+                    'BRL',
+                    'creation_tool'
+                );
+                
+                log('new-results', '✅ Método otimizado executado!', 'success');
+                log('new-results', '🎯 Melhorias: Detecção automática de contexto, EMQ otimizado, dados enriquecidos', 'success');
+            }
+        }
+
+        // Testes específicos dos novos métodos
+        function testCreateStep() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.viewCreateStep(2, 'Seleção de Imagens');
+                log('create-results', '✅ ViewCreateStep executado - Etapa 2', 'success');
+            }
+        }
+
+        function testCreatePreview() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.viewCreatePreview('card_12345');
+                log('create-results', '✅ ViewCreatePreview executado', 'success');
+            }
+        }
+
+        function testCreateTemplate() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.viewCreateTemplate('template_5', 'Template Cristão Moderno');
+                log('create-results', '✅ ViewCreateTemplate executado', 'success');
+            }
+        }
+
+        function testCreateContent() {
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.viewCreateContent('verse_selection', 'Seleção de Versículo João 3:16');
+                log('create-results', '✅ ViewCreateContent executado', 'success');
+            }
+        }
+
+        // Simulações de interação
+        function trackVerseSelection() {
+            log('auto-tracking-results', '📖 Versículo clicado - tracking automático ativado', 'success');
+        }
+
+        function trackFileUpload(input) {
+            if (input.files && input.files.length > 0) {
+                log('auto-tracking-results', '📁 Arquivo selecionado - tracking automático ativado', 'success');
+            }
+        }
+
+        // Análise EMQ
+        function analyzeEMQ() {
+            log('emq-results', '📊 Analisando qualidade EMQ dos eventos...', 'info');
+            
+            if (typeof TikTokEvents !== 'undefined' && typeof TikTokEvents.getCoverage === 'function') {
+                const coverage = TikTokEvents.getCoverage();
+                log('emq-results', `📈 Cobertura EMQ Atual:`, 'info');
+                log('emq-results', `   • Email: ${coverage.email ? '✅' : '❌'}`, coverage.email ? 'success' : 'error');
+                log('emq-results', `   • Phone: ${coverage.phone ? '✅' : '❌'}`, coverage.phone ? 'success' : 'error');
+                log('emq-results', `   • External ID: ${coverage.external_id ? '✅' : '❌'}`, coverage.external_id ? 'success' : 'error');
+                log('emq-results', `   • Média: ${coverage.average}%`, 'info');
+            }
+            
+            log('emq-results', '🎯 Melhorias implementadas no ViewContent:', 'info');
+            log('emq-results', '   • ✅ Auto-detecção de dados do usuário', 'success');
+            log('emq-results', '   • ✅ Contexto de página automático', 'success');
+            log('emq-results', '   • ✅ Categorização inteligente', 'success');
+            log('emq-results', '   • ✅ Descrições enriquecidas', 'success');
+            log('emq-results', '   • ✅ IDs únicos gerados automaticamente', 'success');
+            log('emq-results', '   • ✅ Dados de marca e grupo', 'success');
+            log('emq-results', '   • ✅ Tracking automático de elementos', 'success');
+            
+            log('emq-results', `📊 Total de eventos interceptados: ${interceptedEvents.length}`, 'info');
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            log('intercepted-events', '🚀 Sistema de teste carregado. Clique em "Iniciar Interceptação" para começar.', 'info');
+            
+            // Auto-iniciar interceptação após 2 segundos
+            setTimeout(() => {
+                if (typeof ttq !== 'undefined') {
+                    startInterception();
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

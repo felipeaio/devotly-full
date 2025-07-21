@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste TikTok Events - Métodos Create</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        button:hover { background: #45a049; }
+        .results { 
+            background: #f0f0f0; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Métodos TikTok Events</h1>
+    <p>Esta página testa se todos os métodos do TikTok Events estão funcionando corretamente.</p>
+
+    <div class="test-section">
+        <h2>📊 Status do Sistema</h2>
+        <button onclick="testSystemStatus()">Verificar Status</button>
+        <div id="status-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Métodos Principais</h2>
+        <button onclick="testBasicMethods()">Testar Métodos Básicos</button>
+        <div id="basic-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🛠️ Métodos Create</h2>
+        <button onclick="testCreateMethods()">Testar Métodos Create</button>
+        <div id="create-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>💳 Métodos de Pagamento</h2>
+        <button onclick="testPaymentMethods()">Testar Métodos Pagamento</button>
+        <div id="payment-results" class="results"></div>
+    </div>
+
+    <script src="js/tiktok-events-v3.js"></script>
+    <script>
+        function log(containerId, message, isError = false) {
+            const container = document.getElementById(containerId);
+            const className = isError ? 'error' : 'success';
+            container.innerHTML += `<span class="${className}">${message}</span>\n`;
+        }
+
+        function testSystemStatus() {
+            const container = document.getElementById('status-results');
+            container.innerHTML = '';
+
+            try {
+                log('status-results', '🔍 Verificando TikTokEvents...');
+                
+                if (typeof TikTokEvents === 'undefined') {
+                    log('status-results', '❌ TikTokEvents não está definido', true);
+                    return;
+                }
+                
+                log('status-results', '✅ TikTokEvents está disponível');
+                
+                if (typeof TikTokEvents.getCoverage === 'function') {
+                    const coverage = TikTokEvents.getCoverage();
+                    log('status-results', `📊 Cobertura EMQ: ${JSON.stringify(coverage, null, 2)}`);
+                } else {
+                    log('status-results', '❌ getCoverage não disponível', true);
+                }
+
+                if (typeof TikTokEvents.getMetrics === 'function') {
+                    const metrics = TikTokEvents.getMetrics();
+                    log('status-results', `📈 Métricas: ${JSON.stringify(metrics, null, 2)}`);
+                } else {
+                    log('status-results', '❌ getMetrics não disponível', true);
+                }
+
+            } catch (error) {
+                log('status-results', `❌ Erro: ${error.message}`, true);
+            }
+        }
+
+        function testBasicMethods() {
+            const container = document.getElementById('basic-results');
+            container.innerHTML = '';
+
+            const basicMethods = [
+                'viewCreatePage',
+                'selectPlan',
+                'startCheckout',
+                'identifyUser',
+                'startCardCreation',
+                'trackClickButton',
+                'forceDataDetection'
+            ];
+
+            basicMethods.forEach(method => {
+                try {
+                    if (typeof TikTokEvents[method] === 'function') {
+                        log('basic-results', `✅ ${method} está disponível`);
+                        
+                        // Teste básico (sem executar de verdade)
+                        if (method === 'selectPlan') {
+                            TikTokEvents.selectPlan('anual', 97);
+                            log('basic-results', `✅ ${method} executado com sucesso`);
+                        } else if (method === 'trackClickButton') {
+                            TikTokEvents.trackClickButton('Teste Button', 'test', 5);
+                            log('basic-results', `✅ ${method} executado com sucesso`);
+                        } else if (method === 'forceDataDetection') {
+                            TikTokEvents.forceDataDetection();
+                            log('basic-results', `✅ ${method} executado com sucesso`);
+                        }
+                    } else {
+                        log('basic-results', `❌ ${method} não está disponível`, true);
+                    }
+                } catch (error) {
+                    log('basic-results', `❌ Erro em ${method}: ${error.message}`, true);
+                }
+            });
+        }
+
+        function testCreateMethods() {
+            const container = document.getElementById('create-results');
+            container.innerHTML = '';
+
+            if (!TikTokEvents.create) {
+                log('create-results', '❌ TikTokEvents.create não está disponível', true);
+                return;
+            }
+
+            const createMethods = [
+                'startCreation',
+                'fillStep',
+                'navigateSteps',
+                'uploadImage',
+                'selectVerse',
+                'addMusic',
+                'previewCard',
+                'completeCreation'
+            ];
+
+            createMethods.forEach(method => {
+                try {
+                    if (typeof TikTokEvents.create[method] === 'function') {
+                        log('create-results', `✅ create.${method} está disponível`);
+                        
+                        // Teste específico para navigateSteps que causou o erro
+                        if (method === 'navigateSteps') {
+                            TikTokEvents.create.navigateSteps(1, 2);
+                            log('create-results', `✅ create.${method} executado com sucesso - ERRO CORRIGIDO!`);
+                        } else if (method === 'fillStep') {
+                            TikTokEvents.create.fillStep(1, 'Teste');
+                            log('create-results', `✅ create.${method} executado com sucesso`);
+                        }
+                    } else {
+                        log('create-results', `❌ create.${method} não está disponível`, true);
+                    }
+                } catch (error) {
+                    log('create-results', `❌ Erro em create.${method}: ${error.message}`, true);
+                }
+            });
+        }
+
+        function testPaymentMethods() {
+            const container = document.getElementById('payment-results');
+            container.innerHTML = '';
+
+            const paymentMethods = [
+                'addPaymentInfo',
+                'startCheckout'
+            ];
+
+            paymentMethods.forEach(method => {
+                try {
+                    if (typeof TikTokEvents[method] === 'function') {
+                        log('payment-results', `✅ ${method} está disponível`);
+                        
+                        if (method === 'addPaymentInfo') {
+                            TikTokEvents.addPaymentInfo('anual', 97);
+                            log('payment-results', `✅ ${method} executado com sucesso`);
+                        }
+                    } else {
+                        log('payment-results', `❌ ${method} não está disponível`, true);
+                    }
+                } catch (error) {
+                    log('payment-results', `❌ Erro em ${method}: ${error.message}`, true);
+                }
+            });
+        }
+
+        // Auto-executar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                log('status-results', '🚀 Página carregada. Clique nos botões para testar...');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
