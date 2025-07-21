@@ -859,14 +859,23 @@ class TikTokEventsManager {
      * Configura listeners para formulários
      */
     setupFormListeners() {
-        // Listener para submissão de formulários
+        // Listener para submissão de formulários (sem captura para não interferir)
         document.addEventListener('submit', (event) => {
+            // Não interferir com botões de navegação
+            if (event.target.closest('.btn-next, .btn-prev, .navigation-button')) {
+                return;
+            }
             console.log('📋 Formulário submetido, detectando dados...');
-            this.autoDetectUserData();
-        }, true);
+            // Usar setTimeout para não interferir com o processamento normal
+            setTimeout(() => this.autoDetectUserData(), 10);
+        }, false); // Mudado para false para não capturar
         
-        // Listener para mudanças em formulários
+        // Listener para mudanças em formulários (sem captura)
         document.addEventListener('change', (event) => {
+            // Não interferir com elementos de navegação
+            if (event.target.closest('.btn-next, .btn-prev, .navigation-button')) {
+                return;
+            }
             if (event.target.matches('input[type="email"], input[name*="email"], input[id*="email"]')) {
                 console.log('📧 Campo de email alterado');
                 setTimeout(() => this.autoDetectUserData(), 100);
@@ -875,14 +884,14 @@ class TikTokEventsManager {
                 console.log('📱 Campo de telefone alterado');
                 setTimeout(() => this.autoDetectUserData(), 100);
             }
-        }, true);
+        }, false); // Mudado para false para não capturar
     }
     
     /**
      * Configura listeners para campos de input
      */
     setupInputListeners() {
-        // Listener para blur (quando usuário sai do campo)
+        // Listener para blur (quando usuário sai do campo) - sem captura
         document.addEventListener('blur', (event) => {
             if (event.target.matches('input[type="email"], input[name*="email"], input[id*="email"]')) {
                 if (event.target.value && event.target.value.includes('@')) {
@@ -896,7 +905,7 @@ class TikTokEventsManager {
                     setTimeout(() => this.autoDetectUserData(), 100);
                 }
             }
-        }, true);
+        }, false); // Mudado para false para não capturar
         
         // Detectar dados a cada 3 segundos (para capturar preenchimento automático)
         setInterval(() => {
@@ -1221,11 +1230,13 @@ window.initTikTokEvents = function() {
     }
 };
 
-// Auto-inicializar
+// Auto-inicializar com delay para permitir que outros scripts configurem primeiro
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.initTikTokEvents);
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(window.initTikTokEvents, 100); // Pequeno delay
+    });
 } else {
-    window.initTikTokEvents();
+    setTimeout(window.initTikTokEvents, 100); // Pequeno delay
 }
 
 console.log('🚀 TikTok Events Manager v3.0 carregado');
