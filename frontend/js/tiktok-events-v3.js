@@ -845,14 +845,10 @@ class TikTokEventsManager {
         this.setupFormListeners();
         this.setupInputListeners();
         
-        // Auto-track PageView
-        if (document.readyState === 'complete') {
-            setTimeout(() => this.trackPageView(), 100);
-        } else {
-            window.addEventListener('load', () => {
-                setTimeout(() => this.trackPageView(), 100);
-            });
-        }
+        // ⚠️ REMOÇÃO DO AUTO-TRACK PAGEVIEW
+        // Cada página deve controlar seu próprio PageView com valor específico
+        // para garantir ROAS correto no TikTok Ads
+        console.log('🎯 TikTok Events v3.0: PageView manual para controle de ROAS');
     }
     
     /**
@@ -920,9 +916,11 @@ class TikTokEventsManager {
     // ============================================================================
     
     /**
-     * PageView - Visualização de página
+     * PageView - Visualização de página com valor para ROAS
+     * @param {number} value - Valor estimado da página (opcional, será calculado automaticamente se não fornecido)
+     * @param {string} currency - Moeda (padrão: BRL)
      */
-    async trackPageView() {
+    async trackPageView(value = null, currency = 'BRL') {
         // Auto-detectar dados se não temos
         if (!this.userCache.validated) {
             const autoData = this.autoDetectUserData();
@@ -931,10 +929,59 @@ class TikTokEventsManager {
             }
         }
         
+        // Calcular valor automaticamente se não fornecido
+        if (value === null) {
+            value = this.calculatePageValue();
+            console.log(`🤖 PageView valor auto-calculado: R$ ${value}`);
+        } else {
+            console.log(`🎯 PageView valor específico: R$ ${value}`);
+        }
+        
+        console.log(`📄 PageView disparado - Valor: R$ ${value}, Moeda: ${currency}`);
+        
         return this.sendEvent('PageView', {
             content_name: document.title,
-            content_category: 'page_view'
+            content_category: 'page_view',
+            value: value,
+            currency: currency
         });
+    }
+    
+    /**
+     * Calcula o valor estimado da página atual para ROAS
+     */
+    calculatePageValue() {
+        const path = window.location.pathname.toLowerCase();
+        const hostname = window.location.hostname;
+        
+        // Valores baseados no funil de conversão e potencial de negócio
+        if (path.includes('success') || path.includes('pagamento-confirmado')) {
+            return 50; // Página de sucesso - alta conversão
+        } else if (path.includes('checkout') || path.includes('pagamento')) {
+            return 30; // Página de checkout - intenção de compra alta
+        } else if (path.includes('create') || path.includes('criar')) {
+            return 25; // Página de criação - engajamento alto
+        } else if (path.includes('view') || path.includes('cartao') || path.includes('card')) {
+            return 15; // Visualização de cartão - engajamento médio
+        } else if (path.includes('pricing') || path.includes('planos') || path.includes('precos')) {
+            return 20; // Página de preços - interesse comercial
+        } else if (path === '/' || path.includes('home') || path.includes('index')) {
+            return 10; // Página inicial - entrada no funil
+        } else if (path.includes('about') || path.includes('sobre')) {
+            return 8; // Página sobre - interesse na marca
+        } else if (path.includes('contact') || path.includes('contato')) {
+            return 12; // Página de contato - lead potential
+        } else if (path.includes('blog') || path.includes('artigo')) {
+            return 5; // Conteúdo - SEO e engajamento
+        } else if (path.includes('termos') || path.includes('privacidade') || path.includes('legal')) {
+            return 2; // Páginas legais - baixo valor comercial
+        } else if (path.includes('pending') || path.includes('aguardando')) {
+            return 25; // Página de pagamento pendente - meio do funil
+        } else if (path.includes('test') || hostname.includes('localhost')) {
+            return 1; // Páginas de teste - valor mínimo
+        } else {
+            return 5; // Valor padrão para outras páginas
+        }
     }
     
     /**
@@ -1087,6 +1134,37 @@ class TikTokEventsManager {
         });
     }
     
+    /**
+     * AddPaymentInfo - Adicionar informações de pagamento - EMQ OTIMIZADO
+     */
+    async trackAddPaymentInfo(contentId, contentName, value, currency = 'BRL', category = 'subscription') {
+        // Detectar dados automaticamente antes do evento
+        if (!this.userCache.validated) {
+            console.log('🔍 Detectando dados antes do evento AddPaymentInfo...');
+            this.autoDetectUserData();
+        }
+        
+        const validValue = this.validateValue(value);
+        
+        console.log(`💳 AddPaymentInfo: ${contentName} - R$ ${validValue}`);
+        
+        return this.sendEvent('AddPaymentInfo', {
+            content_id: String(contentId || 'payment_info'),
+            content_name: String(contentName || 'Informações de Pagamento'),
+            content_type: String(category),
+            value: validValue,
+            currency: String(currency),
+            payment_method: 'mercadopago',
+            contents: [{
+                id: String(contentId || 'payment_info'),
+                name: String(contentName || 'Informações de Pagamento'),
+                category: String(category),
+                quantity: 1,
+                price: validValue
+            }]
+        });
+    }
+
     // ============================================================================
     // MÉTODOS UTILITÁRIOS
     // ============================================================================
@@ -1173,11 +1251,12 @@ window.TikTokManager = new TikTokEventsManager();
 window.TikTokEvents = {
     // Métodos principais
     identifyUser: (email, phone, userId) => window.TikTokManager.identifyUser(email, phone, userId),
-    trackPageView: () => window.TikTokManager.trackPageView(),
+    trackPageView: (value = null, currency = 'BRL') => window.TikTokManager.trackPageView(value, currency),
     trackViewContent: (id, name, value, currency) => window.TikTokManager.trackViewContent(id, name, value, currency),
     trackPurchase: (id, name, value, currency) => window.TikTokManager.trackPurchase(id, name, value, currency),
     trackInitiateCheckout: (id, name, value, currency) => window.TikTokManager.trackInitiateCheckout(id, name, value, currency),
     trackAddToCart: (id, name, value, currency) => window.TikTokManager.trackAddToCart(id, name, value, currency),
+    trackAddPaymentInfo: (id, name, value, currency) => window.TikTokManager.trackAddPaymentInfo(id, name, value, currency),
     trackClickButton: (text, type, value) => window.TikTokManager.trackClickButton(text, type, value),
     trackContact: (type, value) => window.TikTokManager.trackContact(type, value),
     trackLead: (type, value) => window.TikTokManager.trackLead(type, value),
@@ -1185,17 +1264,23 @@ window.TikTokEvents = {
     // Alias para compatibilidade com versão anterior
     trackEngagement: (type, description, value = 1) => window.TikTokManager.trackClickButton(description, type, value),
     
-    // Métodos específicos do Devotly
-    viewHomePage: () => window.TikTokManager.trackViewContent('home', 'Página Inicial', 0, 'BRL'),
-    viewCreatePage: () => window.TikTokManager.trackViewContent('create', 'Página de Criação', 15, 'BRL'),
-    viewCard: (cardId) => window.TikTokManager.trackViewContent(cardId, 'Visualizar Cartão', 10, 'BRL'),
+    // Métodos específicos do Devotly com valores otimizados para ROAS
+    viewHomePage: () => window.TikTokManager.trackPageView(10, 'BRL'), // Página inicial - entrada no funil
+    viewCreatePage: () => {
+        console.log('🎨 CREATE PAGE: Disparando PageView com valor R$ 25,00 para ROAS');
+        return window.TikTokManager.trackPageView(25, 'BRL'); // Página de criação - alta intenção
+    },
+    viewCard: (cardId) => window.TikTokManager.trackViewContent(cardId, 'Visualizar Cartão', 15, 'BRL'),
     selectPlan: (planType, value) => window.TikTokManager.trackAddToCart('plan', `Plano ${planType}`, value),
     startCheckout: (cardId, planType, value) => window.TikTokManager.trackInitiateCheckout(cardId, `Plano ${planType}`, value),
     completePurchase: (cardId, planType, value) => window.TikTokManager.trackPurchase(cardId, `Plano ${planType}`, value),
     
     // Novos métodos EMQ otimizados
     startCardCreation: () => window.TikTokManager.trackLead('start_creation', 15),
-    addPaymentInfo: (planType, value) => window.TikTokManager.trackContact('payment_info', value),
+    addPaymentInfo: (planType, value) => {
+        console.log(`💳 PAYMENT INFO: Disparando AddPaymentInfo para ${planType} - R$ ${value}`);
+        return window.TikTokManager.trackAddPaymentInfo(`plan_${planType}`, `Plano ${planType}`, value, 'BRL', 'subscription');
+    },
     
     // Métodos de criação
     create: {
@@ -1211,6 +1296,7 @@ window.TikTokEvents = {
     // Utilitários EMQ
     getMetrics: () => window.TikTokManager.getQualityMetrics(),
     forceDataDetection: () => window.TikTokManager.autoDetectUserData(),
+    forcePageView: (value = null) => window.TikTokManager.trackPageView(value), // Força disparo do PageView
     getCoverage: () => {
         const metrics = window.TikTokManager.getQualityMetrics();
         return {

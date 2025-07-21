@@ -678,10 +678,15 @@ class DevotlyCreator {
                     
                     // Rastrear seleção de plano
                     if (typeof TikTokEvents !== 'undefined') {
-                        const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+                        // Valores corretos dos planos (em reais)
+                        const planValues = { 'para_sempre': 297, 'anual': 97 };
                         const planValue = planValues[planoPtBr] || 0;
                         TikTokEvents.create.completeCreation(this.state.cardId);
                         TikTokEvents.selectPlan(planoPtBr, planValue);
+                        
+                        // 🎯 INITIATE CHECKOUT - Início do processo de checkout
+                        console.log(`🛒 INITIATE CHECKOUT: Iniciando checkout para ${planoPtBr} - R$ ${planValue}`);
+                        TikTokEvents.startCheckout(this.state.cardId, planoPtBr, planValue);
                     }
                     
                     // Rastrear evento de seleção de plano para TikTok Pixel (AddToCart e InitiateCheckout)
@@ -789,7 +794,8 @@ class DevotlyCreator {
                                 window.TikTokEvents.identifyUser(userEmail, userPhone, userId);
                             }
                             
-                            // Rastrear evento de adição de informações de pagamento
+                            // 🎯 ADD PAYMENT INFO - Adicionar informações de pagamento (antes do redirecionamento)
+                            console.log(`💳 ADD PAYMENT INFO: Usuário pronto para pagamento ${planoPtBr} - R$ ${planValue}`);
                             window.TikTokEvents.addPaymentInfo(planoPtBr, planValue);
                             
                             // Armazenar dados do pagamento para uso na página de sucesso
@@ -798,7 +804,8 @@ class DevotlyCreator {
                                 cardId: checkoutData.cardId,
                                 planType: planoPtBr,
                                 userEmail: userEmail,
-                                userPhone: userPhone
+                                userPhone: userPhone,
+                                timestamp: new Date().toISOString()
                             }));
                             
                             // Log de cobertura antes do checkout

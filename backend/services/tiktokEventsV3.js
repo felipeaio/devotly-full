@@ -551,13 +551,55 @@ class TikTokEventsServiceV3 {
     // ============================================================================
     
     /**
-     * PageView
+     * PageView com valor para ROAS
      */
     async trackPageView(context = {}, userData = {}) {
+        // Calcular valor baseado na URL/referer
+        const url = context.url || context.referer || '';
+        const value = this.calculatePageValueFromUrl(url);
+        
         return this.sendEvent('PageView', {
             content_name: 'Page View',
-            content_category: 'page_view'
+            content_category: 'page_view',
+            value: value,
+            currency: 'BRL'
         }, context, userData);
+    }
+    
+    /**
+     * Calcula valor da página baseado na URL (servidor)
+     */
+    calculatePageValueFromUrl(url) {
+        if (!url || typeof url !== 'string') return 5;
+        
+        const urlLower = url.toLowerCase();
+        
+        // Valores baseados no funil de conversão
+        if (urlLower.includes('success') || urlLower.includes('pagamento-confirmado')) {
+            return 50;
+        } else if (urlLower.includes('checkout') || urlLower.includes('pagamento')) {
+            return 30;
+        } else if (urlLower.includes('create') || urlLower.includes('criar')) {
+            return 25;
+        } else if (urlLower.includes('view') || urlLower.includes('cartao') || urlLower.includes('card')) {
+            return 15;
+        } else if (urlLower.includes('pricing') || urlLower.includes('planos')) {
+            return 20;
+        } else if (urlLower.includes('home') || urlLower.includes('index') || url.endsWith('/')) {
+            return 10;
+        } else if (urlLower.includes('about') || urlLower.includes('sobre')) {
+            return 8;
+        } else if (urlLower.includes('contact') || urlLower.includes('contato')) {
+            return 12;
+        } else if (urlLower.includes('pending') || urlLower.includes('aguardando')) {
+            return 25;
+        } else if (urlLower.includes('termos') || urlLower.includes('privacidade')) {
+            return 2;
+        } else if (urlLower.includes('test') || urlLower.includes('localhost')) {
+            return 1;
+        } else {
+            return 5;
+        }
     }
     
     /**
@@ -676,6 +718,35 @@ class TikTokEventsServiceV3 {
         }
         
         return this.sendEvent('Contact', eventData, context, userData);
+    }
+    
+    /**
+     * AddPaymentInfo - Adicionar informações de pagamento
+     */
+    async trackAddPaymentInfo(contentId, contentName, value, currency = 'BRL', category = 'subscription', context = {}, userData = {}) {
+        const validValue = this.validateValue(value);
+        
+        const eventData = {
+            content_id: String(contentId || 'payment_info'),
+            content_name: String(contentName || 'Informações de Pagamento'),
+            content_type: String(category),
+            currency: String(currency),
+            payment_method: 'mercadopago'
+        };
+        
+        if (validValue !== null && validValue > 0) {
+            eventData.value = validValue;
+            eventData.contents = [{
+                id: String(contentId || 'payment_info'),
+                name: String(contentName || 'Informações de Pagamento'),
+                category: String(category),
+                quantity: 1,
+                price: validValue
+            }];
+        }
+        
+        console.log(`💳 Backend AddPaymentInfo: ${contentName} - R$ ${validValue}`);
+        return this.sendEvent('AddPaymentInfo', eventData, context, userData);
     }
     
     /**

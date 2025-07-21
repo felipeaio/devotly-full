@@ -161,6 +161,18 @@ router.post('/track-event', async (req, res) => {
                 );
                 break;
 
+            case 'AddPaymentInfo':
+                result = await tiktokEvents.trackAddPaymentInfo(
+                    eventData.content_id || 'payment_info',
+                    eventData.content_name || 'Informações de Pagamento',
+                    eventData.value,
+                    eventData.currency || 'BRL',
+                    eventData.content_type || 'subscription',
+                    context,
+                    serverUserData
+                );
+                break;
+
             default:
                 // Evento personalizado
                 result = await tiktokEvents.trackCustomEvent(
