@@ -3,6 +3,20 @@
  * * Controle completo do fluxo de criação de cartões com pré-visualização em tempo real
  */
 
+// Import error handler if available
+if (typeof DevotlyErrorHandler === 'undefined') {
+    // Try to import from separate file
+    try {
+        import('./core/error-handler.js').then(() => {
+            console.log('✅ DevotlyErrorHandler carregado');
+        }).catch(error => {
+            console.warn('⚠️ Não foi possível carregar DevotlyErrorHandler:', error);
+        });
+    } catch (error) {
+        console.warn('⚠️ DevotlyErrorHandler não disponível:', error);
+    }
+}
+
 if (!HTMLCanvasElement.prototype.toBlob) {
     // Polyfill para navegadores antigos
     HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
@@ -103,6 +117,19 @@ class DevotlyCreator {
 
     initialize() {
         console.log('🚀 DevotlyCreator.initialize: Iniciando...');
+        
+        // Initialize submission control properties
+        this.isSubmitting = false;
+        this.lastSubmitTime = 0;
+        this.MIN_SUBMIT_INTERVAL = 2000; // Minimum 2 seconds between submissions
+        
+        // Initialize enhanced error handler
+        if (typeof DevotlyErrorHandler !== 'undefined') {
+            this.errorHandler = new DevotlyErrorHandler();
+        } else {
+            console.warn('⚠️ DevotlyErrorHandler não disponível, usando fallback');
+            this.errorHandler = null;
+        }
         
         // Rastrear visualização da página de criação - EMQ OTIMIZADO
         if (typeof TikTokEvents !== 'undefined') {
@@ -804,20 +831,31 @@ class DevotlyCreator {
                         this.apiConfig = API_CONFIG;
                     }
                     
-                    const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(checkoutData)
+                    // Use retry logic for checkout as well
+                    const mpData = await this.retryWithBackoff(async () => {
+                        const checkoutResponse = await fetch(this.apiConfig.checkout.createPreference, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(checkoutData)
+                        });
+                        
+                        if (checkoutResponse.status === 429) {
+                            throw new Error('Too many requests');
+                        }
+                        
+                        if (!checkoutResponse.ok) {
+                            const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
+                            throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
+                        }
+                        
+                        const mpData = await checkoutResponse.json();
+                        
+                        if (!mpData.success || !mpData.init_point) {
+                            throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
+                        }
+                        
+                        return mpData;
                     });
-                    
-                    if (!checkoutResponse.ok) {
-                        const errorData = await checkoutResponse.json().catch(() => ({ error: 'Erro desconhecido no checkout' }));
-                        throw new Error(errorData.error || 'Erro ao criar preferência de checkout');
-                    }
-                    const mpData = await checkoutResponse.json();
-                      if (!mpData.success || !mpData.init_point) {
-                        throw new Error(mpData.error || 'Erro ao obter link de checkout do Mercado Pago');
-                    }
                     console.log('Checkout criado, redirecionando:', mpData.init_point);
                     
                     // Rastrear evento de início de checkout (AddPaymentInfo) - EMQ OTIMIZADO
@@ -2498,8 +2536,51 @@ scrollToSection(sectionId) {
         document.body.removeChild(textarea);
     }
 
+    // Rate limiting helper
+    async delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Retry with exponential backoff
+    async retryWithBackoff(operation, maxRetries = 3, baseDelay = 1000) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await operation();
+            } catch (error) {
+                if (attempt === maxRetries) {
+                    throw error;
+                }
+                
+                // Check if it's a rate limit error
+                if (error.message.includes('Too many requests') || error.message.includes('429')) {
+                    const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+                    console.log(`Rate limit hit, waiting ${delay}ms before retry ${attempt}...`);
+                    await this.delay(delay);
+                } else {
+                    throw error; // If it's not a rate limit error, don't retry
+                }
+            }
+        }
+    }
+
     async submitFormData() { // Called by selectPlan
         try {
+            // Prevent multiple submissions
+            const now = Date.now();
+            if (this.isSubmitting) {
+                console.log('⚠️ Submissão já em andamento, ignorando...');
+                throw new Error('Submissão já em andamento. Aguarde...');
+            }
+            
+            if (now - this.lastSubmitTime < this.MIN_SUBMIT_INTERVAL) {
+                const remainingTime = this.MIN_SUBMIT_INTERVAL - (now - this.lastSubmitTime);
+                console.log(`⚠️ Aguarde ${remainingTime}ms antes de tentar novamente`);
+                throw new Error(`Aguarde ${Math.ceil(remainingTime / 1000)} segundos antes de tentar novamente`);
+            }
+            
+            this.isSubmitting = true;
+            this.lastSubmitTime = now;
+            
             const email = document.getElementById('userEmail')?.value.trim();
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { // Basic email validation
                 throw new Error('Email é obrigatório e deve ser válido');
@@ -2508,73 +2589,130 @@ scrollToSection(sectionId) {
             const uploadedImageUrls = [];
             for (const imageObj of this.state.formData.images) {
                 if (imageObj.isTemp && imageObj.blob) {
-                    const imageFormData = new FormData();
-                    imageFormData.append('image', imageObj.blob, imageObj.fileName); // Use blob and fileName
-
-                    // Ensure API config is loaded
-                    if (!this.apiConfig) {
-                        const { API_CONFIG } = await import('./core/api-config.js');
-                        this.apiConfig = API_CONFIG;
-                    }                    console.log('Attempting upload to:', this.apiConfig.upload);
+                    // Use enhanced error handler if available, otherwise fallback to retry logic
+                    let uploadUrl;
                     
-                    const uploadResponse = await fetch(this.apiConfig.upload, {
-                        method: 'POST',
-                        body: imageFormData,
-                        redirect: 'follow', // Explicitly follow redirects
-                        mode: 'cors', // Use CORS mode
-                        credentials: 'same-origin',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Origin': window.location.origin
-                        }
-                    }).catch(err => {
-                        console.error('Network error during upload:', err);
-                        throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
-                    });
-
-                    console.log('Upload response status:', uploadResponse.status);
-                    
-                    let responseData;
-                    let responseText;
-                    try {
-                        // First get the raw text to see what's happening
-                        responseText = await uploadResponse.text();
-                        console.log('Response text:', responseText.substring(0, 100) + (responseText.length > 100 ? '...' : ''));
-                        
-                        // Try to parse as JSON
+                    if (this.errorHandler) {
                         try {
-                            responseData = JSON.parse(responseText);
-                        } catch (jsonErr) {
-                            console.error('Invalid JSON response:', jsonErr);
-                            console.error('Response starts with:', responseText.substring(0, 100));
-                            throw new Error('Resposta do servidor não é um JSON válido');
+                            const imageFormData = new FormData();
+                            imageFormData.append('image', imageObj.blob, imageObj.fileName);
+
+                            // Ensure API config is loaded
+                            if (!this.apiConfig) {
+                                const { API_CONFIG } = await import('./core/api-config.js');
+                                this.apiConfig = API_CONFIG;
+                            }
+
+                            const uploadOptions = {
+                                method: 'POST',
+                                body: imageFormData,
+                                mode: 'cors',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Origin': window.location.origin
+                                }
+                            };
+
+                            const result = await this.errorHandler.enhancedFetch(
+                                this.apiConfig.upload, 
+                                uploadOptions, 
+                                'upload de imagem'
+                            );
+
+                            if (!result.data.success || !result.data.url) {
+                                throw new Error('URL da imagem não recebida do servidor');
+                            }
+
+                            uploadUrl = result.data.url;
+                            
+                        } catch (error) {
+                            const userMessage = this.errorHandler.formatErrorMessage(error);
+                            console.error('Erro no upload com error handler:', error);
+                            throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${userMessage}`);
                         }
-                    } catch (err) {
-                        console.error('Error processing response:', err);
-                        throw new Error('Erro ao processar resposta do servidor: ' + err.message);
-                    }
-                    
-                    if (!uploadResponse.ok || !responseData.success) {
-                        console.error('Upload failed:', responseData);
-                        const errorMessage = responseData.error || 'Erro desconhecido no upload';
-                        throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorMessage}`);
+                    } else {
+                        // Fallback to original retry logic
+                        uploadUrl = await this.retryWithBackoff(async () => {
+                            const imageFormData = new FormData();
+                            imageFormData.append('image', imageObj.blob, imageObj.fileName);
+
+                            // Ensure API config is loaded
+                            if (!this.apiConfig) {
+                                const { API_CONFIG } = await import('./core/api-config.js');
+                                this.apiConfig = API_CONFIG;
+                            }
+
+                            console.log('Attempting upload to:', this.apiConfig.upload);
+                            
+                            const uploadResponse = await fetch(this.apiConfig.upload, {
+                                method: 'POST',
+                                body: imageFormData,
+                                redirect: 'follow',
+                                mode: 'cors',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Origin': window.location.origin
+                                }
+                            }).catch(err => {
+                                console.error('Network error during upload:', err);
+                                throw new Error(`Erro de conexão ao fazer upload: ${err.message}`);
+                            });
+
+                            console.log('Upload response status:', uploadResponse.status);
+                            
+                            let responseData;
+                            let responseText;
+                            try {
+                                // First get the raw text to see what's happening
+                                responseText = await uploadResponse.text();
+                                console.log('Response text:', responseText.substring(0, 100) + (responseText.length > 100 ? '...' : ''));
+                                
+                                // Check for rate limiting before trying to parse JSON
+                                if (uploadResponse.status === 429 || responseText.includes('Too many requests')) {
+                                    throw new Error('Too many requests');
+                                }
+                                
+                                // Try to parse as JSON
+                                try {
+                                    responseData = JSON.parse(responseText);
+                                } catch (jsonErr) {
+                                    console.error('Invalid JSON response:', jsonErr);
+                                    console.error('Response starts with:', responseText.substring(0, 100));
+                                    throw new Error('Resposta do servidor não é um JSON válido');
+                                }
+                            } catch (err) {
+                                console.error('Error processing response:', err);
+                                if (err.message.includes('Too many requests')) {
+                                    throw err; // Re-throw for retry logic
+                                }
+                                throw new Error('Erro ao processar resposta do servidor: ' + err.message);
+                            }
+                            
+                            if (!uploadResponse.ok || !responseData.success) {
+                                console.error('Upload failed:', responseData);
+                                const errorMessage = responseData.error || 'Erro desconhecido no upload';
+                                throw new Error(`Erro no upload da imagem ${imageObj.fileName}: ${errorMessage}`);
+                            }
+
+                            if (!responseData.url) {
+                                console.error('Missing URL in response:', responseData);
+                                throw new Error('URL da imagem não recebida do servidor');
+                            }
+
+                            return responseData.url;
+                        });
                     }
 
-                    if (!responseData.url) {
-                        console.error('Missing URL in response:', responseData);
-                        throw new Error('URL da imagem não recebida do servidor');
-                    }
-
-                    uploadedImageUrls.push(responseData.url);
+                    uploadedImageUrls.push(uploadUrl);
                 } else if (typeof imageObj === 'string' && imageObj.startsWith('http')) { // Already an URL
                     uploadedImageUrls.push(imageObj);
                 } else if (imageObj.url) { // If imageObj has a URL property from previous uploads
                     uploadedImageUrls.push(imageObj.url);
                 }
                 // If it's an object without blob and not a string URL, it's an issue.
-            }
-
-            const dataToSubmit = {
+            }            const dataToSubmit = {
                 email: email,
                 plano: this.state.formData.selectedPlan,
                 conteudo: {
@@ -2594,40 +2732,53 @@ scrollToSection(sectionId) {
                 this.apiConfig = API_CONFIG;
             }
             
-            const response = await fetch(this.apiConfig.cards.create, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSubmit)
-            });
-            
-            console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-            
-            let responseData;
-            try {
-                const responseText = await response.text();
-                console.log('Raw response text:', responseText.substring(0, 200));
+            // Use retry logic for card creation
+            const responseData = await this.retryWithBackoff(async () => {
+                const response = await fetch(this.apiConfig.cards.create, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSubmit)
+                });
                 
-                if (!responseText.trim()) {
-                    throw new Error('Resposta vazia do servidor');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                let responseData;
+                try {
+                    const responseText = await response.text();
+                    console.log('Raw response text:', responseText.substring(0, 200));
+                    
+                    if (!responseText.trim()) {
+                        throw new Error('Resposta vazia do servidor');
+                    }
+                    
+                    // Check for rate limiting before trying to parse JSON
+                    if (response.status === 429 || responseText.includes('Too many requests')) {
+                        throw new Error('Too many requests');
+                    }
+                    
+                    responseData = JSON.parse(responseText);
+                    console.log('Parsed response data:', responseData);
+                } catch (jsonError) {
+                    console.error('Erro ao processar resposta JSON:', jsonError);
+                    if (jsonError.message.includes('Too many requests')) {
+                        throw jsonError; // Re-throw for retry logic
+                    }
+                    throw new Error('Resposta do servidor não é um JSON válido');
+                }
+
+                if (!response.ok) {
+                    throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
                 }
                 
-                responseData = JSON.parse(responseText);
-                console.log('Parsed response data:', responseData);
-            } catch (jsonError) {
-                console.error('Erro ao processar resposta JSON:', jsonError);
-                throw new Error('Resposta do servidor não é um JSON válido');
-            }
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
-            }
-            
-            // Tratar tanto o formato antigo (success: true) quanto o novo (status: 'success')
-            const isSuccess = responseData.success === true || responseData.status === 'success';
-            if (!isSuccess) {
-                throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
-            }
+                // Tratar tanto o formato antigo (success: true) quanto o novo (status: 'success')
+                const isSuccess = responseData.success === true || responseData.status === 'success';
+                if (!isSuccess) {
+                    throw new Error(responseData.message || 'Erro ao criar cartão no servidor');
+                }
+                
+                return responseData;
+            });
               // Clear localStorage after successful submission
             this.clearLocalStorage();
             
@@ -2637,8 +2788,12 @@ scrollToSection(sectionId) {
             // Retornar os dados no formato esperado
             return { success: true, data: responseData.data || responseData };
 
-        } catch (error) {        console.error('Erro ao enviar dados do formulário:', error);
+        } catch (error) {
+            console.error('Erro ao enviar dados do formulário:', error);
             return { success: false, message: error.message };
+        } finally {
+            // Always reset the submission flag
+            this.isSubmitting = false;
         }
     }
 

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Funções TikTok Events - Create Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.error {
+            background: #f44336;
+        }
+        .test-button.success {
+            background: #4CAF50;
+        }
+        .log {
+            background: #f9f9f9;
+            border-left: 5px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        .function-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+    </style>
+    <!-- TikTok Pixel Code Start -->
+    <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+    var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+    ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+      ttq.load('D1QFD0RC77UF6MBM48MG');
+    }(window, document, 'ttq');
+    </script>
+    <!-- TikTok Pixel Code End -->
+</head>
+<body>
+    <h1>🔧 Teste de Funções TikTok Events - Create Page</h1>
+    <p>Esta página testa todas as funções do TikTokEvents que são usadas na página create.html:</p>
+
+    <div class="test-section">
+        <h2>1. Verificação de Disponibilidade das Funções</h2>
+        <p>Verifica se todas as funções necessárias estão disponíveis no objeto TikTokEvents:</p>
+        <button class="test-button" id="checkFunctionsButton">Verificar Funções</button>
+        <div id="functionsResult" class="log">Clique no botão para verificar</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste de Funções Básicas</h2>
+        <p>Testa as funções que estavam causando erros no create.js:</p>
+        <div class="function-list">
+            <button class="test-button" onclick="testFunction('trackClickButton')">trackClickButton</button>
+            <button class="test-button" onclick="testFunction('trackViewContent')">trackViewContent</button>
+            <button class="test-button" onclick="testFunction('viewCreateContent')">viewCreateContent</button>
+            <button class="test-button" onclick="testFunction('selectPlan')">selectPlan</button>
+            <button class="test-button" onclick="testFunction('startCheckout')">startCheckout</button>
+            <button class="test-button" onclick="testFunction('addPaymentInfo')">addPaymentInfo</button>
+            <button class="test-button" onclick="testFunction('startCardCreation')">startCardCreation</button>
+            <button class="test-button" onclick="testFunction('identifyUser')">identifyUser</button>
+        </div>
+        <div id="functionTestResult" class="log">Clique em uma função para testá-la</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste do Sistema de Criação</h2>
+        <p>Simula o fluxo de eventos da página create.html:</p>
+        <div class="function-list">
+            <button class="test-button" onclick="simulateCreateFlow()">Simular Fluxo de Criação</button>
+            <button class="test-button" onclick="simulateVerseSelection()">Simular Seleção de Versículo</button>
+            <button class="test-button" onclick="simulateMusicSelection()">Simular Seleção de Música</button>
+            <button class="test-button" onclick="simulateCheckoutFlow()">Simular Fluxo de Checkout</button>
+        </div>
+        <div id="createFlowResult" class="log">Clique em um botão para simular o fluxo</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Teste de Validação de Content Type</h2>
+        <p>Testa se os content_types estão sendo validados corretamente:</p>
+        <div class="function-list">
+            <button class="test-button" onclick="testContentType('product')">product (válido)</button>
+            <button class="test-button" onclick="testContentType('invalid_type')">invalid_type (inválido)</button>
+            <button class="test-button" onclick="testContentType('form_step')">form_step (inválido)</button>
+            <button class="test-button" onclick="testContentType('page')">page (inválido)</button>
+        </div>
+        <div id="contentTypeResult" class="log">Clique em um content_type para testar</div>
+    </div>
+
+    <script src="js/tiktok-events-optimized.js"></script>
+    <script>
+        let logDiv = null;
+
+        function log(message, type = 'info') {
+            if (logDiv) {
+                const timestamp = new Date().toLocaleTimeString();
+                logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+                
+                if (type === 'error') {
+                    logDiv.className = 'log error';
+                } else if (type === 'success') {
+                    logDiv.className = 'log success';
+                } else if (type === 'warning') {
+                    logDiv.className = 'log warning';
+                } else {
+                    logDiv.className = 'log';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar um pouco para garantir que TikTokEvents esteja carregado
+            setTimeout(() => {
+                document.getElementById('checkFunctionsButton').addEventListener('click', checkFunctions);
+            }, 1000);
+        });
+
+        function checkFunctions() {
+            logDiv = document.getElementById('functionsResult');
+            logDiv.innerHTML = 'Verificando funções disponíveis...\n';
+
+            const requiredFunctions = [
+                'trackClickButton',
+                'trackViewContent', 
+                'viewCreateContent',
+                'selectPlan',
+                'startCheckout',
+                'addPaymentInfo',
+                'startCardCreation',
+                'identifyUser',
+                'forceDataDetection',
+                'getCoverage',
+                'viewCreatePage',
+                'viewHomePage',
+                'viewCard'
+            ];
+
+            let allAvailable = true;
+            let availableCount = 0;
+
+            log('=== VERIFICAÇÃO DE FUNÇÕES ===');
+            log(`TikTokEvents existe: ${typeof TikTokEvents !== 'undefined' ? '✅' : '❌'}`);
+            log(`window.TikTokEvents existe: ${typeof window.TikTokEvents !== 'undefined' ? '✅' : '❌'}`);
+
+            if (typeof TikTokEvents !== 'undefined' || typeof window.TikTokEvents !== 'undefined') {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log('\n=== FUNÇÕES PRINCIPAIS ===');
+                requiredFunctions.forEach(funcName => {
+                    const exists = typeof tikTokObj[funcName] === 'function';
+                    log(`${funcName}: ${exists ? '✅' : '❌'}`);
+                    if (exists) availableCount++;
+                    else allAvailable = false;
+                });
+
+                log('\n=== OBJETO CREATE ===');
+                if (tikTokObj.create) {
+                    const createFunctions = ['startCreation', 'fillStep', 'uploadImage', 'selectVerse', 'addMusic', 'previewCard', 'editCard', 'completeCreation', 'navigateSteps'];
+                    createFunctions.forEach(funcName => {
+                        const exists = typeof tikTokObj.create[funcName] === 'function';
+                        log(`create.${funcName}: ${exists ? '✅' : '❌'}`);
+                        if (exists) availableCount++;
+                        else allAvailable = false;
+                    });
+                } else {
+                    log('create object: ❌ NÃO ENCONTRADO');
+                    allAvailable = false;
+                }
+
+                log(`\n=== RESUMO ===`);
+                log(`Funções disponíveis: ${availableCount}/${requiredFunctions.length + 9}`);
+                log(`Status: ${allAvailable ? '✅ TODAS DISPONÍVEIS' : '⚠️ ALGUMAS FALTANDO'}`, allAvailable ? 'success' : 'warning');
+            } else {
+                log('❌ TikTokEvents não encontrado!', 'error');
+                allAvailable = false;
+            }
+        }
+
+        function testFunction(funcName) {
+            logDiv = document.getElementById('functionTestResult');
+            logDiv.innerHTML = `Testando ${funcName}...\n`;
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                if (!tikTokObj) {
+                    log('❌ TikTokEvents não encontrado!', 'error');
+                    return;
+                }
+
+                if (typeof tikTokObj[funcName] !== 'function') {
+                    log(`❌ Função ${funcName} não encontrada!`, 'error');
+                    return;
+                }
+
+                log(`✅ Função ${funcName} encontrada, executando teste...`);
+
+                // Executar teste específico para cada função
+                switch(funcName) {
+                    case 'trackClickButton':
+                        tikTokObj.trackClickButton('Botão Teste', 'test_button', 5);
+                        log('✅ trackClickButton executado com sucesso!', 'success');
+                        break;
+                    
+                    case 'trackViewContent':
+                        tikTokObj.trackViewContent('test_content', 'Conteúdo Teste', 10, 'BRL', 'product', 'test_category');
+                        log('✅ trackViewContent executado com sucesso!', 'success');
+                        break;
+
+                    case 'viewCreateContent':
+                        tikTokObj.viewCreateContent('test_type', 'Teste ViewCreateContent');
+                        log('✅ viewCreateContent executado com sucesso!', 'success');
+                        break;
+
+                    case 'selectPlan':
+                        tikTokObj.selectPlan('plano_teste', 29.90);
+                        log('✅ selectPlan executado com sucesso!', 'success');
+                        break;
+
+                    case 'startCheckout':
+                        tikTokObj.startCheckout('card_123', 'plano_teste', 29.90);
+                        log('✅ startCheckout executado com sucesso!', 'success');
+                        break;
+
+                    case 'addPaymentInfo':
+                        tikTokObj.addPaymentInfo('plano_teste', 29.90);
+                        log('✅ addPaymentInfo executado com sucesso!', 'success');
+                        break;
+
+                    case 'startCardCreation':
+                        tikTokObj.startCardCreation();
+                        log('✅ startCardCreation executado com sucesso!', 'success');
+                        break;
+
+                    case 'identifyUser':
+                        tikTokObj.identifyUser('teste@example.com', '+5511999999999', 'user_123');
+                        log('✅ identifyUser executado com sucesso!', 'success');
+                        break;
+
+                    default:
+                        const result = tikTokObj[funcName]();
+                        log(`✅ ${funcName} executado! Resultado: ${result}`, 'success');
+                }
+
+            } catch (error) {
+                log(`❌ Erro ao testar ${funcName}: ${error.message}`, 'error');
+                console.error(`Erro no teste de ${funcName}:`, error);
+            }
+        }
+
+        function simulateCreateFlow() {
+            logDiv = document.getElementById('createFlowResult');
+            logDiv.innerHTML = 'Simulando fluxo de criação...\n';
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log('=== SIMULAÇÃO DO FLUXO DE CRIAÇÃO ===');
+                
+                // 1. Iniciar página de criação
+                log('1. Iniciando página de criação...');
+                tikTokObj.viewCreatePage();
+                tikTokObj.create.startCreation();
+                
+                // 2. Forçar detecção de dados
+                log('2. Forçando detecção de dados...');
+                tikTokObj.forceDataDetection();
+                
+                // 3. Simular preenchimento de etapas
+                log('3. Simulando preenchimento de etapas...');
+                tikTokObj.create.fillStep(1, 'Título do Cartão');
+                tikTokObj.create.fillStep(2, 'Mensagem de Fé');
+                tikTokObj.create.fillStep(3, 'Seleção de Imagens');
+                
+                // 4. Simular upload de imagem
+                log('4. Simulando upload de imagem...');
+                tikTokObj.create.uploadImage();
+                
+                // 5. Simular preview
+                log('5. Simulando preview do cartão...');
+                tikTokObj.create.previewCard();
+                
+                // 6. Simular finalização
+                log('6. Simulando finalização da criação...');
+                tikTokObj.create.completeCreation('card_test_123');
+                
+                log('\n✅ Fluxo de criação simulado com sucesso!', 'success');
+                
+                // Mostrar cobertura EMQ
+                const coverage = tikTokObj.getCoverage();
+                log(`\n📊 Cobertura EMQ: ${coverage.score}/100 pontos`);
+                log(`Email: ${coverage.email ? '✅' : '❌'} | Phone: ${coverage.phone ? '✅' : '❌'} | TTCLID: ${coverage.ttclid ? '✅' : '❌'}`);
+
+            } catch (error) {
+                log(`❌ Erro na simulação: ${error.message}`, 'error');
+                console.error('Erro na simulação do fluxo:', error);
+            }
+        }
+
+        function simulateVerseSelection() {
+            logDiv = document.getElementById('createFlowResult');
+            logDiv.innerHTML = 'Simulando seleção de versículo...\n';
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log('=== SIMULAÇÃO DE SELEÇÃO DE VERSÍCULO ===');
+                
+                // Simular o que acontece no create.js linha 1000-1001
+                log('Executando: TikTokEvents.create.selectVerse()');
+                tikTokObj.create.selectVerse();
+                
+                log('Executando: TikTokEvents.trackClickButton()');
+                tikTokObj.trackClickButton('Versículo João 3:16', 'verse_selection', 5);
+                
+                log('✅ Seleção de versículo simulada com sucesso!', 'success');
+
+            } catch (error) {
+                log(`❌ Erro na simulação de versículo: ${error.message}`, 'error');
+                console.error('Erro na simulação de versículo:', error);
+            }
+        }
+
+        function simulateMusicSelection() {
+            logDiv = document.getElementById('createFlowResult');
+            logDiv.innerHTML = 'Simulando seleção de música...\n';
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log('=== SIMULAÇÃO DE SELEÇÃO DE MÚSICA ===');
+                
+                // Simular o que acontece no create.js linha 981-982
+                log('Executando: TikTokEvents.create.addMusic()');
+                tikTokObj.create.addMusic();
+                
+                log('Executando: TikTokEvents.trackClickButton()');
+                tikTokObj.trackClickButton('Música Selecionada', 'music_selection', 5);
+                
+                log('✅ Seleção de música simulada com sucesso!', 'success');
+
+            } catch (error) {
+                log(`❌ Erro na simulação de música: ${error.message}`, 'error');
+                console.error('Erro na simulação de música:', error);
+            }
+        }
+
+        function simulateCheckoutFlow() {
+            logDiv = document.getElementById('createFlowResult');
+            logDiv.innerHTML = 'Simulando fluxo de checkout...\n';
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log('=== SIMULAÇÃO DO FLUXO DE CHECKOUT ===');
+                
+                // Simular identificação de usuário
+                log('1. Identificando usuário...');
+                tikTokObj.identifyUser('teste@devotly.com', '+5511999887766', 'user_test_123');
+                
+                // Simular seleção de plano
+                log('2. Selecionando plano...');
+                tikTokObj.selectPlan('Plano Anual', 59.90);
+                
+                // Simular início do checkout
+                log('3. Iniciando checkout...');
+                tikTokObj.startCheckout('card_test_456', 'Plano Anual', 59.90);
+                
+                // Simular adição de informações de pagamento
+                log('4. Adicionando informações de pagamento...');
+                tikTokObj.addPaymentInfo('Plano Anual', 59.90);
+                
+                log('✅ Fluxo de checkout simulado com sucesso!', 'success');
+
+            } catch (error) {
+                log(`❌ Erro na simulação de checkout: ${error.message}`, 'error');
+                console.error('Erro na simulação de checkout:', error);
+            }
+        }
+
+        function testContentType(contentType) {
+            logDiv = document.getElementById('contentTypeResult');
+            logDiv.innerHTML = `Testando content_type: ${contentType}...\n`;
+
+            try {
+                const tikTokObj = window.TikTokEvents || TikTokEvents;
+                
+                log(`=== TESTE DE CONTENT_TYPE: ${contentType} ===`);
+                
+                // Testar com trackViewContent
+                log(`Executando trackViewContent com content_type: ${contentType}`);
+                const result = tikTokObj.trackViewContent('test_content_' + Date.now(), 'Teste Content Type', 5, 'BRL', contentType, 'test_category');
+                
+                log(`Resultado: ${result ? '✅ Sucesso' : '⚠️ Com avisos'}`, result ? 'success' : 'warning');
+                log('Verifique o console do navegador para avisos de content_type inválido.');
+
+            } catch (error) {
+                log(`❌ Erro no teste de content_type: ${error.message}`, 'error');
+                console.error('Erro no teste de content_type:', error);
+            }
+        }
+
+        // Interceptar console.warn para capturar avisos de content_type
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && args[0].includes('content_type inválido')) {
+                if (logDiv && logDiv.id === 'contentTypeResult') {
+                    log(`⚠️ ${args[0]}`, 'warning');
+                }
+            }
+            originalWarn.apply(console, args);
+        };
+    </script>
+</body>
+</html>

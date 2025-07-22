@@ -58,6 +58,16 @@ function generateEventId() {
     return `devotly_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 }
 
+// Função para validar content_type
+function validateContentType(contentType) {
+    const validTypes = ['product', 'product_group', 'destination', 'hotel', 'flight', 'vehicle'];
+    if (!contentType || !validTypes.includes(contentType)) {
+        console.warn('TikTok: content_type inválido, usando "product" como padrão:', contentType);
+        return 'product';
+    }
+    return contentType;
+}
+
 // Gera content_id baseado no contexto da página
 function generateContentId(fallbackId = null) {
     // Tentar extrair ID da URL
@@ -896,10 +906,13 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
         const smartContentId = contentId || generateContentId();
         const smartContentName = contentName || generateContentName();
         
+        // Validar content_type
+        const validContentType = validateContentType(contentType);
+        
         // Estrutura obrigatória do contents array conforme TikTok API
         const contents = [{
             content_id: String(smartContentId),
-            content_type: contentType,
+            content_type: validContentType,
             content_name: String(smartContentName),
             content_category: contentCategory,
             quantity: 1,
@@ -975,7 +988,7 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
                 event_id: generateEventId(),
                 contents: [{
                     content_id: String(fallbackContentId),
-                    content_type: contentType || 'product',
+                    content_type: validateContentType(contentType),
                     content_name: String(fallbackContentName)
                 }],
                 value: 0.00,
@@ -1487,6 +1500,36 @@ const TikTokEvents = {
             'product',
             'creation_process'
         );
+    },
+    
+    // Função para rastrear cliques em botões
+    trackClickButton(buttonText, buttonType = 'cta', value = null, currency = 'BRL') {
+        console.log(`🖱️ TikTok: TrackClickButton - ${buttonText} (${buttonType})`);
+        return trackClickButton(buttonText, buttonType, value, currency);
+    },
+    
+    // Função para rastrear visualizações de conteúdo
+    trackViewContent(contentId, contentName, value = null, currency = 'BRL', contentType = 'product', contentCategory = 'digital_product') {
+        console.log(`👁️ TikTok: TrackViewContent - ${contentName} (${contentId})`);
+        return trackViewContent(contentId, contentName, value, currency, contentType, contentCategory);
+    },
+    
+    // Função para rastrear leads
+    trackLead(leadType, value = null) {
+        console.log(`🎯 TikTok: TrackLead - ${leadType}`);
+        return trackLead(leadType, value);
+    },
+    
+    // Função para rastrear checkout iniciado
+    trackInitiateCheckout(contentId, contentName, value = null, currency = 'BRL') {
+        console.log(`🛒 TikTok: TrackInitiateCheckout - ${contentName}`);
+        return trackInitiateCheckout(contentId, contentName, value, currency);
+    },
+    
+    // Função para rastrear compra finalizada
+    trackPurchase(contentId, contentName, value, currency = 'BRL') {
+        console.log(`💰 TikTok: TrackPurchase - ${contentName}`);
+        return trackPurchase(contentId, contentName, value, currency);
     }
 };
 
@@ -1498,6 +1541,7 @@ window.initTikTokEvents = initTikTokEvents;
 // Auto-inicializar apenas se não foi inicializado manualmente
 document.addEventListener('DOMContentLoaded', function() {
     if (!window.tiktokEventsInitialized) {
+        console.log('TikTok: Inicializando sistema na DOMContentLoaded...');
         initTikTokEvents();
         window.tiktokEventsInitialized = true;
     }
@@ -1508,9 +1552,39 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     if (!window.tiktokEventsInitialized) {
         setTimeout(() => {
             if (!window.tiktokEventsInitialized) {
+                console.log('TikTok: Inicializando sistema via fallback...');
                 initTikTokEvents();
                 window.tiktokEventsInitialized = true;
             }
         }, 100);
     }
 }
+
+// Verificação adicional para garantir que TikTokEvents esteja sempre disponível
+setTimeout(() => {
+    if (typeof window.TikTokEvents === 'undefined') {
+        console.warn('TikTok: TikTokEvents não encontrado, criando objeto básico...');
+        window.TikTokEvents = TikTokEvents;
+    }
+    
+    // Adicionar métodos que podem estar faltando
+    if (!window.TikTokEvents.trackClickButton) {
+        window.TikTokEvents.trackClickButton = function(buttonText, buttonType = 'cta', value = null, currency = 'BRL') {
+            console.log(`🖱️ TikTok: TrackClickButton - ${buttonText} (${buttonType})`);
+            if (typeof trackClickButton === 'function') {
+                return trackClickButton(buttonText, buttonType, value, currency);
+            }
+            return false;
+        };
+    }
+    
+    if (!window.TikTokEvents.trackViewContent) {
+        window.TikTokEvents.trackViewContent = function(contentId, contentName, value = null, currency = 'BRL', contentType = 'product', contentCategory = 'digital_product') {
+            console.log(`👁️ TikTok: TrackViewContent - ${contentName} (${contentId})`);
+            if (typeof trackViewContent === 'function') {
+                return trackViewContent(contentId, contentName, value, currency, contentType, contentCategory);
+            }
+            return false;
+        };
+    }
+}, 500);

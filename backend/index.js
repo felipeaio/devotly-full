@@ -127,12 +127,42 @@ app.use((req, res, next) => {
     next();
 });
 app.use(helmet());
+
+// General rate limiter
 app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
     standardHeaders: true,
     legacyHeaders: false,
+    message: {
+        error: 'Too many requests, please try again later.',
+        status: 429
+    }
 }));
+
+// Stricter rate limiter for creation endpoints
+const createLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5, // limit each IP to 5 creation requests per minute
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many creation requests, please wait before trying again.',
+        status: 429
+    }
+});
+
+// Stricter rate limiter for upload endpoints
+const uploadLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // limit each IP to 10 upload requests per minute
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many upload requests, please wait before trying again.',
+        status: 429
+    }
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -252,12 +282,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Rotas
 app.use('/cards', supabaseMiddleware);
-app.use('/cards', cardsRouter);
+app.use('/cards', createLimiter, cardsRouter);
 app.use('/api/cards', supabaseMiddleware);
-app.use('/api/cards', cardsRouter);
-app.use('/api/upload-image', supabaseMiddleware, uploadRouter);
-app.use('/api/upload', supabaseMiddleware, uploadRouter); // Alias para compatibilidade
-app.use('/api/checkout', supabaseMiddleware, checkoutRouter);
+app.use('/api/cards', createLimiter, cardsRouter);
+app.use('/api/upload-image', uploadLimiter, supabaseMiddleware, uploadRouter);
+app.use('/api/upload', uploadLimiter, supabaseMiddleware, uploadRouter); // Alias para compatibilidade
+app.use('/api/checkout', createLimiter, supabaseMiddleware, checkoutRouter);
 app.use('/api/tiktok', tiktokRouter);
 app.use('/api/tiktok-v3', tiktokV3Router);
 app.use('/webhook', supabaseMiddleware);

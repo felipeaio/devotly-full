@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Rate Limiting - Devotly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            min-width: 150px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .test-button.error {
+            background: #f44336;
+        }
+        .test-button.success {
+            background: #4CAF50;
+        }
+        .test-button.loading {
+            background: #ff9800;
+            position: relative;
+        }
+        .log {
+            background: #f9f9f9;
+            border-left: 5px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow: auto;
+            font-size: 12px;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 2px solid #ddd;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚦 Teste de Rate Limiting - Devotly</h1>
+    <p>Esta página testa o comportamento da aplicação com múltiplas requisições simultâneas:</p>
+
+    <div class="test-section">
+        <h2>📊 Estatísticas de Teste</h2>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalRequests">0</div>
+                <div class="stat-label">Total Requisições</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="successRequests">0</div>
+                <div class="stat-label">Sucessos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="errorRequests">0</div>
+                <div class="stat-label">Erros</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="rateLimitErrors">0</div>
+                <div class="stat-label">Rate Limit (429)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgResponseTime">0ms</div>
+                <div class="stat-label">Tempo Médio</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Teste de Submissão de Plano</h2>
+        <p>Simula seleção de plano com múltiplas requisições:</p>
+        <button class="test-button" onclick="testSingleSubmission()">Submissão Única</button>
+        <button class="test-button" onclick="testMultipleSubmissions(3)">3 Requisições Simultâneas</button>
+        <button class="test-button" onclick="testMultipleSubmissions(5)">5 Requisições Simultâneas</button>
+        <button class="test-button" onclick="testMultipleSubmissions(10)">10 Requisições Simultâneas</button>
+        <button class="test-button" onclick="testRapidFire()">Teste Rápido (20x)</button>
+        <div id="submissionResult" class="log">Clique em um botão para testar</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste de Upload de Imagem</h2>
+        <p>Testa upload com rate limiting:</p>
+        <button class="test-button" onclick="testImageUpload(1)">Upload Único</button>
+        <button class="test-button" onclick="testImageUpload(3)">3 Uploads Simultâneos</button>
+        <button class="test-button" onclick="testImageUpload(5)">5 Uploads Simultâneos</button>
+        <button class="test-button" onclick="testImageUpload(10)">10 Uploads Simultâneos</button>
+        <div id="uploadResult" class="log">Clique em um botão para testar</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste de Comportamento com Retry</h2>
+        <p>Testa a lógica de retry implementada:</p>
+        <button class="test-button" onclick="testRetryLogic()">Teste de Retry</button>
+        <button class="test-button" onclick="testBackoffBehavior()">Teste de Backoff</button>
+        <button class="test-button" onclick="testConcurrencyControl()">Controle de Concorrência</button>
+        <div id="retryResult" class="log">Clique em um botão para testar</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Monitoramento em Tempo Real</h2>
+        <p>Monitora requisições em tempo real:</p>
+        <button class="test-button" onclick="startMonitoring()" id="monitorBtn">Iniciar Monitoramento</button>
+        <button class="test-button" onclick="clearLogs()">Limpar Logs</button>
+        <div id="monitoringResult" class="log">Clique em "Iniciar Monitoramento"</div>
+    </div>
+
+    <script src="js/core/api-config.js"></script>
+    <script>
+        let apiConfig;
+        let stats = {
+            total: 0,
+            success: 0,
+            errors: 0,
+            rateLimits: 0,
+            responseTimes: []
+        };
+        let logDiv = null;
+        let isMonitoring = false;
+
+        // Initialize API config
+        async function initializeApiConfig() {
+            try {
+                const { API_CONFIG } = await import('./js/core/api-config.js');
+                apiConfig = API_CONFIG;
+                console.log('✅ API Config loaded:', apiConfig);
+            } catch (error) {
+                console.error('❌ Error loading API config:', error);
+                // Fallback configuration
+                apiConfig = {
+                    cards: {
+                        create: 'https://devotly-full-production.up.railway.app/api/cards'
+                    },
+                    upload: 'https://devotly-full-production.up.railway.app/api/upload',
+                    checkout: {
+                        createPreference: 'https://devotly-full-production.up.railway.app/api/checkout/create-preference'
+                    }
+                };
+            }
+        }
+
+        function log(message, type = 'info') {
+            if (logDiv) {
+                const timestamp = new Date().toLocaleTimeString();
+                logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+                
+                logDiv.className = `log ${type}`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalRequests').textContent = stats.total;
+            document.getElementById('successRequests').textContent = stats.success;
+            document.getElementById('errorRequests').textContent = stats.errors;
+            document.getElementById('rateLimitErrors').textContent = stats.rateLimits;
+            
+            const avgTime = stats.responseTimes.length > 0 
+                ? Math.round(stats.responseTimes.reduce((a, b) => a + b, 0) / stats.responseTimes.length)
+                : 0;
+            document.getElementById('avgResponseTime').textContent = avgTime + 'ms';
+        }
+
+        function createTestData() {
+            return {
+                email: `test-${Date.now()}@devotly.com`,
+                plano: 'anual',
+                conteudo: {
+                    cardName: `Teste Card ${Date.now()}`,
+                    cardTitle: 'Título de Teste',
+                    cardMessage: 'Mensagem de teste para verificar rate limiting',
+                    finalMessage: '',
+                    bibleVerse: 'João 3:16 - Porque Deus amou o mundo...',
+                    images: ['https://via.placeholder.com/300x200.png'],
+                    musicLink: '',
+                    userName: 'Usuário Teste',
+                    userPhone: '+5511999999999'
+                }
+            };
+        }
+
+        function createTestImageBlob() {
+            // Create a small test image (1x1 pixel PNG)
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(0, 0, 1, 1);
+            
+            return new Promise(resolve => {
+                canvas.toBlob(resolve, 'image/png');
+            });
+        }
+
+        async function makeRequest(url, data, isFormData = false) {
+            const startTime = Date.now();
+            stats.total++;
+            
+            try {
+                const options = {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'same-origin'
+                };
+
+                if (isFormData) {
+                    options.body = data;
+                    options.headers = {
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    };
+                } else {
+                    options.headers = {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    };
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(url, options);
+                const responseTime = Date.now() - startTime;
+                stats.responseTimes.push(responseTime);
+
+                if (response.status === 429) {
+                    stats.rateLimits++;
+                    stats.errors++;
+                    const text = await response.text();
+                    throw new Error(`Rate limited (429): ${text}`);
+                }
+
+                if (!response.ok) {
+                    stats.errors++;
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
+
+                const result = await response.json();
+                stats.success++;
+                return { success: true, data: result, responseTime };
+
+            } catch (error) {
+                const responseTime = Date.now() - startTime;
+                stats.responseTimes.push(responseTime);
+                
+                if (!error.message.includes('Rate limited')) {
+                    stats.errors++;
+                }
+                
+                return { success: false, error: error.message, responseTime };
+            } finally {
+                updateStats();
+            }
+        }
+
+        async function testSingleSubmission() {
+            logDiv = document.getElementById('submissionResult');
+            logDiv.innerHTML = 'Testando submissão única...\n';
+
+            const testData = createTestData();
+            log(`Enviando requisição única para: ${apiConfig.cards.create}`);
+            
+            const result = await makeRequest(apiConfig.cards.create, testData);
+            
+            if (result.success) {
+                log(`✅ Sucesso! Tempo: ${result.responseTime}ms`, 'success');
+                log(`Data: ${JSON.stringify(result.data, null, 2)}`);
+            } else {
+                log(`❌ Erro: ${result.error}`, 'error');
+                log(`Tempo: ${result.responseTime}ms`);
+            }
+        }
+
+        async function testMultipleSubmissions(count) {
+            logDiv = document.getElementById('submissionResult');
+            logDiv.innerHTML = `Testando ${count} submissões simultâneas...\n`;
+
+            log(`=== TESTE DE ${count} REQUISIÇÕES SIMULTÂNEAS ===`);
+            
+            const promises = [];
+            for (let i = 0; i < count; i++) {
+                const testData = createTestData();
+                promises.push(makeRequest(apiConfig.cards.create, testData));
+            }
+
+            log(`Enviando ${count} requisições simultâneas...`);
+            const startTime = Date.now();
+            const results = await Promise.allSettled(promises);
+            const totalTime = Date.now() - startTime;
+
+            log(`\n=== RESULTADOS APÓS ${totalTime}ms ===`);
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    if (result.value.success) {
+                        log(`${index + 1}. ✅ Sucesso (${result.value.responseTime}ms)`);
+                    } else {
+                        log(`${index + 1}. ❌ Erro: ${result.value.error} (${result.value.responseTime}ms)`);
+                    }
+                } else {
+                    log(`${index + 1}. ❌ Falha: ${result.reason.message}`);
+                }
+            });
+
+            const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+            const rateLimited = results.filter(r => 
+                r.status === 'fulfilled' && 
+                r.value.error && 
+                r.value.error.includes('429')
+            ).length;
+
+            log(`\nResumo: ${successful}/${count} sucessos, ${rateLimited} rate limited`, 
+                 successful === count ? 'success' : 'warning');
+        }
+
+        async function testRapidFire() {
+            logDiv = document.getElementById('submissionResult');
+            logDiv.innerHTML = 'Testando requisições rápidas (20x)...\n';
+
+            log('=== TESTE RAPID FIRE (20 REQUISIÇÕES) ===');
+            
+            const promises = [];
+            for (let i = 0; i < 20; i++) {
+                // Small delay between each request to simulate rapid clicks
+                setTimeout(() => {
+                    const testData = createTestData();
+                    promises.push(makeRequest(apiConfig.cards.create, testData));
+                }, i * 100); // 100ms between each request
+            }
+
+            // Wait for all promises to be created
+            await new Promise(resolve => setTimeout(resolve, 2100));
+            
+            log('Aguardando resultados...');
+            const results = await Promise.allSettled(promises);
+
+            let successful = 0;
+            let rateLimited = 0;
+            let errors = 0;
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    if (result.value.success) {
+                        successful++;
+                    } else if (result.value.error && result.value.error.includes('429')) {
+                        rateLimited++;
+                    } else {
+                        errors++;
+                    }
+                }
+            });
+
+            log(`\nResumo Rapid Fire:`);
+            log(`✅ Sucessos: ${successful}/20`);
+            log(`🚦 Rate Limited: ${rateLimited}/20`);
+            log(`❌ Outros Erros: ${errors}/20`);
+            
+            if (rateLimited > 0) {
+                log('⚠️ Rate limiting está funcionando corretamente!', 'success');
+            } else {
+                log('⚠️ Rate limiting pode não estar funcionando adequadamente', 'warning');
+            }
+        }
+
+        async function testImageUpload(count) {
+            logDiv = document.getElementById('uploadResult');
+            logDiv.innerHTML = `Testando ${count} uploads simultâneos...\n`;
+
+            log(`=== TESTE DE ${count} UPLOADS SIMULTÂNEOS ===`);
+            
+            const promises = [];
+            for (let i = 0; i < count; i++) {
+                (async () => {
+                    const blob = await createTestImageBlob();
+                    const formData = new FormData();
+                    formData.append('image', blob, `test-image-${i}.png`);
+                    
+                    promises.push(makeRequest(apiConfig.upload, formData, true));
+                })();
+            }
+
+            log(`Enviando ${count} uploads...`);
+            const results = await Promise.allSettled(promises);
+
+            let successful = 0;
+            let rateLimited = 0;
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    if (result.value.success) {
+                        successful++;
+                        log(`${index + 1}. ✅ Upload sucesso (${result.value.responseTime}ms)`);
+                    } else if (result.value.error && result.value.error.includes('429')) {
+                        rateLimited++;
+                        log(`${index + 1}. 🚦 Rate limited (${result.value.responseTime}ms)`);
+                    } else {
+                        log(`${index + 1}. ❌ Erro: ${result.value.error}`);
+                    }
+                }
+            });
+
+            log(`\nResumo Upload: ${successful}/${count} sucessos, ${rateLimited} rate limited`, 
+                 successful > 0 ? 'success' : 'warning');
+        }
+
+        async function testRetryLogic() {
+            logDiv = document.getElementById('retryResult');
+            logDiv.innerHTML = 'Testando lógica de retry...\n';
+
+            log('=== TESTE DE LÓGICA DE RETRY ===');
+            
+            // Simulate retry logic
+            async function retryRequest(maxRetries = 3, baseDelay = 1000) {
+                for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                    log(`Tentativa ${attempt}/${maxRetries}...`);
+                    
+                    const testData = createTestData();
+                    const result = await makeRequest(apiConfig.cards.create, testData);
+                    
+                    if (result.success) {
+                        log(`✅ Sucesso na tentativa ${attempt}!`, 'success');
+                        return result;
+                    }
+                    
+                    if (result.error && result.error.includes('429') && attempt < maxRetries) {
+                        const delay = baseDelay * Math.pow(2, attempt - 1);
+                        log(`🚦 Rate limited, aguardando ${delay}ms...`, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        log(`❌ Falha na tentativa ${attempt}: ${result.error}`, 'error');
+                        if (attempt === maxRetries) {
+                            log(`❌ Todas as tentativas falharam`, 'error');
+                            return result;
+                        }
+                    }
+                }
+            }
+
+            await retryRequest();
+        }
+
+        async function testBackoffBehavior() {
+            logDiv = document.getElementById('retryResult');
+            logDiv.innerHTML = 'Testando comportamento de backoff...\n';
+
+            log('=== TESTE DE EXPONENTIAL BACKOFF ===');
+            
+            const delays = [1000, 2000, 4000]; // 1s, 2s, 4s
+            
+            for (let i = 0; i < delays.length; i++) {
+                const delay = delays[i];
+                log(`Aguardando ${delay}ms antes da próxima requisição...`);
+                
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                const testData = createTestData();
+                const result = await makeRequest(apiConfig.cards.create, testData);
+                
+                if (result.success) {
+                    log(`✅ Requisição ${i + 1} bem-sucedida após ${delay}ms de delay`, 'success');
+                } else {
+                    log(`❌ Requisição ${i + 1} falhou: ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testConcurrencyControl() {
+            logDiv = document.getElementById('retryResult');
+            logDiv.innerHTML = 'Testando controle de concorrência...\n';
+
+            log('=== TESTE DE CONTROLE DE CONCORRÊNCIA ===');
+            
+            // Simulate the DevotlyCreator concurrency control
+            let isSubmitting = false;
+            let lastSubmitTime = 0;
+            const MIN_SUBMIT_INTERVAL = 2000;
+
+            async function controlledSubmit(attemptNumber) {
+                const now = Date.now();
+                
+                if (isSubmitting) {
+                    log(`${attemptNumber}. ⚠️ Submissão já em andamento, bloqueado`, 'warning');
+                    return { blocked: 'already_submitting' };
+                }
+                
+                if (now - lastSubmitTime < MIN_SUBMIT_INTERVAL) {
+                    const remaining = MIN_SUBMIT_INTERVAL - (now - lastSubmitTime);
+                    log(`${attemptNumber}. ⚠️ Muito rápido, aguarde ${remaining}ms`, 'warning');
+                    return { blocked: 'too_fast', remaining };
+                }
+                
+                isSubmitting = true;
+                lastSubmitTime = now;
+                
+                log(`${attemptNumber}. 🚀 Iniciando submissão...`);
+                
+                try {
+                    const testData = createTestData();
+                    const result = await makeRequest(apiConfig.cards.create, testData);
+                    
+                    if (result.success) {
+                        log(`${attemptNumber}. ✅ Submissão bem-sucedida`, 'success');
+                    } else {
+                        log(`${attemptNumber}. ❌ Submissão falhou: ${result.error}`, 'error');
+                    }
+                    
+                    return result;
+                } finally {
+                    isSubmitting = false;
+                }
+            }
+
+            // Test rapid submissions
+            const promises = [];
+            for (let i = 1; i <= 5; i++) {
+                promises.push(controlledSubmit(i));
+                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms between attempts
+            }
+
+            await Promise.all(promises);
+            log('✅ Teste de controle de concorrência concluído', 'success');
+        }
+
+        function startMonitoring() {
+            const btn = document.getElementById('monitorBtn');
+            logDiv = document.getElementById('monitoringResult');
+            
+            if (isMonitoring) {
+                isMonitoring = false;
+                btn.textContent = 'Iniciar Monitoramento';
+                btn.style.background = '#4CAF50';
+                log('🔴 Monitoramento parado', 'warning');
+                return;
+            }
+
+            isMonitoring = true;
+            btn.textContent = 'Parar Monitoramento';
+            btn.style.background = '#f44336';
+            
+            logDiv.innerHTML = 'Iniciando monitoramento em tempo real...\n';
+            log('🟢 Monitoramento iniciado', 'success');
+            
+            const monitorInterval = setInterval(() => {
+                if (!isMonitoring) {
+                    clearInterval(monitorInterval);
+                    return;
+                }
+                
+                // Send a lightweight request every 5 seconds
+                const testData = { ping: Date.now() };
+                makeRequest(apiConfig.cards.create + '/ping', testData)
+                    .then(result => {
+                        if (result.success) {
+                            log(`📡 Ping OK (${result.responseTime}ms)`);
+                        } else {
+                            log(`📡 Ping falhou: ${result.error}`, 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        log(`📡 Ping error: ${error.message}`, 'error');
+                    });
+                    
+            }, 5000);
+        }
+
+        function clearLogs() {
+            // Reset stats
+            stats = {
+                total: 0,
+                success: 0,
+                errors: 0,
+                rateLimits: 0,
+                responseTimes: []
+            };
+            
+            updateStats();
+            
+            // Clear all log divs
+            const logDivs = document.querySelectorAll('.log');
+            logDivs.forEach(div => {
+                div.innerHTML = 'Logs limpos. Clique em um botão para testar.\n';
+                div.className = 'log';
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApiConfig();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Rápido - Rate Limiting Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            min-width: 200px;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .success { border-left: 5px solid #4CAF50; }
+        .error { border-left: 5px solid #f44336; }
+        .warning { border-left: 5px solid #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Teste Rápido - Correção Rate Limiting</h1>
+    
+    <div>
+        <h2>Teste de Submissão de Plano</h2>
+        <button class="test-button" onclick="testPlanSubmission()" id="planBtn">
+            Testar Seleção de Plano
+        </button>
+        <button class="test-button" onclick="testMultipleClicks()" id="multiBtn">
+            Testar Cliques Múltiplos
+        </button>
+        <button class="test-button" onclick="clearLog()">
+            Limpar Log
+        </button>
+    </div>
+
+    <div id="log" class="log">Clique em um botão para testar...</div>
+
+    <script src="js/core/api-config.js"></script>
+    <script src="js/core/error-handler.js"></script>
+    <script>
+        const logDiv = document.getElementById('log');
+        let apiConfig;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            logDiv.className = `log ${type}`;
+        }
+
+        async function loadApiConfig() {
+            try {
+                const { API_CONFIG } = await import('./js/core/api-config.js');
+                apiConfig = API_CONFIG;
+                log('✅ API Config carregado: ' + JSON.stringify(apiConfig, null, 2));
+            } catch (error) {
+                log('❌ Erro ao carregar API config: ' + error.message, 'error');
+                // Fallback
+                apiConfig = {
+                    cards: {
+                        create: 'https://devotly-full-production.up.railway.app/api/cards'
+                    }
+                };
+            }
+        }
+
+        async function testPlanSubmission() {
+            const btn = document.getElementById('planBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testando...';
+
+            try {
+                log('=== TESTE DE SUBMISSÃO DE PLANO ===');
+                
+                // Simular dados de um cartão
+                const testData = {
+                    email: `test-${Date.now()}@devotly.com`,
+                    plano: 'anual',
+                    conteudo: {
+                        cardName: `Teste ${Date.now()}`,
+                        cardTitle: 'Título de Teste',
+                        cardMessage: 'Mensagem de teste para rate limiting',
+                        finalMessage: '',
+                        bibleVerse: 'João 3:16',
+                        images: [],
+                        musicLink: '',
+                        userName: 'Usuário Teste',
+                        userPhone: '+5511999999999'
+                    }
+                };
+
+                log('Enviando dados para: ' + apiConfig.cards.create);
+                log('Dados: ' + JSON.stringify(testData, null, 2));
+
+                const startTime = Date.now();
+                const response = await fetch(apiConfig.cards.create, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const responseTime = Date.now() - startTime;
+                log(`Resposta recebida em ${responseTime}ms`);
+                log(`Status: ${response.status} ${response.statusText}`);
+
+                const responseText = await response.text();
+                log(`Resposta raw: ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`);
+
+                if (response.status === 429) {
+                    log('🚦 RATE LIMITED (429) - Teste bem-sucedido!', 'warning');
+                } else if (response.ok) {
+                    try {
+                        const data = JSON.parse(responseText);
+                        log('✅ Sucesso! Dados: ' + JSON.stringify(data, null, 2), 'success');
+                    } catch (jsonErr) {
+                        log('⚠️ Resposta não é JSON válido: ' + jsonErr.message, 'warning');
+                    }
+                } else {
+                    log(`❌ Erro HTTP ${response.status}: ${responseText}`, 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Erro na requisição: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Testar Seleção de Plano';
+            }
+        }
+
+        async function testMultipleClicks() {
+            const btn = document.getElementById('multiBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testando Múltiplos...';
+
+            try {
+                log('=== TESTE DE CLIQUES MÚLTIPLOS ===');
+                
+                const promises = [];
+                for (let i = 1; i <= 5; i++) {
+                    const testData = {
+                        email: `test-${Date.now()}-${i}@devotly.com`,
+                        plano: 'anual',
+                        conteudo: {
+                            cardName: `Teste Múltiplo ${i}`,
+                            cardTitle: 'Título de Teste',
+                            cardMessage: `Mensagem ${i}`,
+                            finalMessage: '',
+                            bibleVerse: 'João 3:16',
+                            images: [],
+                            musicLink: '',
+                            userName: 'Usuário Teste',
+                            userPhone: '+5511999999999'
+                        }
+                    };
+
+                    const promise = fetch(apiConfig.cards.create, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    }).then(async response => {
+                        const responseText = await response.text();
+                        return {
+                            id: i,
+                            status: response.status,
+                            statusText: response.statusText,
+                            response: responseText.substring(0, 100)
+                        };
+                    }).catch(error => {
+                        return {
+                            id: i,
+                            error: error.message
+                        };
+                    });
+
+                    promises.push(promise);
+                }
+
+                log('Enviando 5 requisições simultâneas...');
+                const results = await Promise.all(promises);
+
+                log('\n=== RESULTADOS ===');
+                results.forEach(result => {
+                    if (result.error) {
+                        log(`${result.id}. ❌ Erro: ${result.error}`, 'error');
+                    } else if (result.status === 429) {
+                        log(`${result.id}. 🚦 Rate Limited (${result.status})`, 'warning');
+                    } else if (result.status < 300) {
+                        log(`${result.id}. ✅ Sucesso (${result.status})`, 'success');
+                    } else {
+                        log(`${result.id}. ⚠️ Status ${result.status}: ${result.response}`, 'warning');
+                    }
+                });
+
+                const rateLimited = results.filter(r => r.status === 429).length;
+                const successful = results.filter(r => r.status && r.status < 300).length;
+                
+                log(`\nResumo: ${successful} sucessos, ${rateLimited} rate limited de 5 total`);
+                
+                if (rateLimited > 0) {
+                    log('✅ Rate limiting está funcionando!', 'success');
+                } else {
+                    log('⚠️ Nenhum rate limit detectado', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Erro no teste múltiplo: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Testar Cliques Múltiplos';
+            }
+        }
+
+        function clearLog() {
+            logDiv.textContent = 'Log limpo. Clique em um botão para testar...\n';
+            logDiv.className = 'log';
+        }
+
+        // Carregar configuração quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApiConfig();
+        });
+    </script>
+</body>
+</html>
