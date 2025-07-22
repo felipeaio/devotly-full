@@ -41,6 +41,19 @@ router.post('/track-event', async (req, res) => {
         } = req.body;
 
         console.log(`🎯 Processando evento: ${eventName}`);
+        
+        // Validar configuração do TikTok antes de processar
+        try {
+            tiktokEventsV3.validateConfig();
+        } catch (configError) {
+            console.error('❌ Erro de configuração TikTok:', configError.message);
+            return res.status(500).json({
+                success: false,
+                error: 'Configuração TikTok inválida',
+                message: configError.message,
+                code: 'CONFIG_ERROR'
+            });
+        }
 
         // Validação de dados obrigatórios
         if (!eventName) {

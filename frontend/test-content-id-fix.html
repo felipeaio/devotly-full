@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Content ID Fix - TikTok Events</title>
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        .results {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Correção Content ID - TikTok Events</h1>
+    <p>Esta página testa se a correção do parâmetro <code>content_id</code> está funcionando corretamente.</p>
+
+    <div class="test-section">
+        <h2>📊 Status do Sistema</h2>
+        <button onclick="checkSystemStatus()">Verificar Status</button>
+        <div id="status-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Teste Content ID Válido</h2>
+        <button onclick="testValidContentId()">Testar com Content ID Válido</button>
+        <div id="valid-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚠️ Teste Content ID Vazio/Inválido</h2>
+        <button onclick="testInvalidContentId()">Testar com Content ID Vazio</button>
+        <button onclick="testNullContentId()">Testar com Content ID Null</button>
+        <button onclick="testUndefinedContentId()">Testar com Content ID Undefined</button>
+        <div id="invalid-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Teste Navegação Steps (Cenário Original)</h2>
+        <button onclick="testNavigationSteps()">Testar Navegação Entre Etapas</button>
+        <div id="navigation-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Teste Métodos Create</h2>
+        <button onclick="testCreateMethods()">Testar Métodos de Criação</button>
+        <div id="create-results" class="results"></div>
+    </div>
+
+    <script src="js/tiktok-events-v3.js"></script>
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function checkSystemStatus() {
+            const results = document.getElementById('status-results');
+            results.innerHTML = '';
+            
+            log('status-results', '🔍 Verificando status do sistema...');
+            
+            if (typeof window.TikTokManager !== 'undefined') {
+                log('status-results', '✅ TikTokManager está disponível', 'success');
+                
+                if (typeof window.TikTokManager.trackViewContent === 'function') {
+                    log('status-results', '✅ Método trackViewContent está disponível', 'success');
+                } else {
+                    log('status-results', '❌ Método trackViewContent não encontrado', 'error');
+                }
+                
+                if (typeof window.TikTokEvents !== 'undefined') {
+                    log('status-results', '✅ TikTokEvents está disponível', 'success');
+                } else {
+                    log('status-results', '⚠️ TikTokEvents não está disponível', 'warning');
+                }
+            } else {
+                log('status-results', '❌ TikTokManager não está disponível', 'error');
+            }
+            
+            if (typeof ttq !== 'undefined') {
+                log('status-results', '✅ TikTok Pixel está carregado', 'success');
+            } else {
+                log('status-results', '❌ TikTok Pixel não está carregado', 'error');
+            }
+        }
+
+        async function testValidContentId() {
+            const results = document.getElementById('valid-results');
+            results.innerHTML = '';
+            
+            log('valid-results', '🧪 Testando com content_id válido...');
+            
+            try {
+                const result = await window.TikTokManager.trackViewContent(
+                    'test_valid_content_123', 
+                    'Teste Content ID Válido', 
+                    10, 
+                    'BRL', 
+                    'product'
+                );
+                log('valid-results', `✅ Evento enviado com sucesso: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log('valid-results', `❌ Erro ao enviar evento: ${error.message}`, 'error');
+            }
+        }
+
+        async function testInvalidContentId() {
+            const results = document.getElementById('invalid-results');
+            results.innerHTML = '';
+            
+            log('invalid-results', '⚠️ Testando com content_id vazio...');
+            
+            try {
+                const result = await window.TikTokManager.trackViewContent(
+                    '', // Content ID vazio
+                    'Teste Content ID Vazio', 
+                    5, 
+                    'BRL', 
+                    'product'
+                );
+                log('invalid-results', `✅ Evento enviado (ID gerado automaticamente): ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log('invalid-results', `❌ Erro ao enviar evento: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNullContentId() {
+            const results = document.getElementById('invalid-results');
+            
+            log('invalid-results', '⚠️ Testando com content_id null...');
+            
+            try {
+                const result = await window.TikTokManager.trackViewContent(
+                    null, // Content ID null
+                    'Teste Content ID Null', 
+                    5, 
+                    'BRL', 
+                    'product'
+                );
+                log('invalid-results', `✅ Evento enviado (ID gerado automaticamente): ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log('invalid-results', `❌ Erro ao enviar evento: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUndefinedContentId() {
+            const results = document.getElementById('invalid-results');
+            
+            log('invalid-results', '⚠️ Testando com content_id undefined...');
+            
+            try {
+                const result = await window.TikTokManager.trackViewContent(
+                    undefined, // Content ID undefined
+                    'Teste Content ID Undefined', 
+                    5, 
+                    'BRL', 
+                    'product'
+                );
+                log('invalid-results', `✅ Evento enviado (ID gerado automaticamente): ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log('invalid-results', `❌ Erro ao enviar evento: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNavigationSteps() {
+            const results = document.getElementById('navigation-results');
+            results.innerHTML = '';
+            
+            log('navigation-results', '🚀 Testando navegação entre etapas (cenário original)...');
+            
+            try {
+                if (typeof window.TikTokEvents !== 'undefined' && window.TikTokEvents.create) {
+                    const result = await window.TikTokEvents.create.navigateSteps(1, 2);
+                    log('navigation-results', `✅ Navegação testada com sucesso: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    log('navigation-results', '❌ TikTokEvents.create não está disponível', 'error');
+                }
+            } catch (error) {
+                log('navigation-results', `❌ Erro ao testar navegação: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateMethods() {
+            const results = document.getElementById('create-results');
+            results.innerHTML = '';
+            
+            log('create-results', '🎯 Testando métodos de criação...');
+            
+            const tests = [
+                { method: 'viewCreateStep', args: [1, 'Etapa Teste'] },
+                { method: 'viewCreateContent', args: ['test_content', 'Conteúdo Teste'] },
+                { method: 'viewCreatePreview', args: ['test_card_123'] }
+            ];
+
+            for (const test of tests) {
+                try {
+                    if (window.TikTokEvents && window.TikTokEvents[test.method]) {
+                        const result = await window.TikTokEvents[test.method](...test.args);
+                        log('create-results', `✅ ${test.method}: ${JSON.stringify(result)}`, 'success');
+                    } else {
+                        log('create-results', `❌ Método ${test.method} não encontrado`, 'error');
+                    }
+                } catch (error) {
+                    log('create-results', `❌ Erro em ${test.method}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Verificar status automaticamente ao carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkSystemStatus, 1000);
+        });
+    </script>
+</body>
+</html>

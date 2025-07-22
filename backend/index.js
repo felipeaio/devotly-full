@@ -21,6 +21,8 @@ console.log(`[${new Date().toISOString()}] Variáveis de ambiente carregadas:`);
 console.log(`SUPABASE_URL: ${process.env.SUPABASE_URL ? 'Definida' : 'Indefinida'}`);
 console.log(`SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? 'Definida' : 'Indefinida'}`);
 console.log(`MERCADO_PAGO_ACCESS_TOKEN: ${process.env.MERCADO_PAGO_ACCESS_TOKEN ? 'Definida' : 'Indefinida'}`);
+console.log(`TIKTOK_ACCESS_TOKEN: ${process.env.TIKTOK_ACCESS_TOKEN ? 'Definida' : 'Indefinida'}`);
+console.log(`TIKTOK_PIXEL_CODE: ${process.env.TIKTOK_PIXEL_CODE ? 'Definida' : 'Indefinida'}`);
 console.log(`BACKEND_URL: ${process.env.BACKEND_URL}`);
 console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);

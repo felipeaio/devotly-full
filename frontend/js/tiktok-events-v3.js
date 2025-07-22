@@ -148,7 +148,8 @@ class TikTokEventsManager {
     }
     
     /**
-     * Normaliza telefone para formato E.164 internacional
+     * Normaliza telefone para formato E.164 internacional - EMQ OTIMIZADO v2.0
+     * Implementa validação rigorosa e formatação precisa para máxima qualidade
      */
     normalizePhone(phone) {
         if (!phone || typeof phone !== 'string') {
@@ -158,36 +159,125 @@ class TikTokEventsManager {
         // Remove tudo exceto números
         const digitsOnly = phone.replace(/\D/g, '');
         
-        // Validação mínima
+        // Validação mínima de comprimento
         if (digitsOnly.length < 8) {
+            console.warn('⚠️ Telefone muito curto:', phone);
             return '';
         }
         
-        // Lógica para números brasileiros
-        if (digitsOnly.length === 11 && digitsOnly.startsWith('11') && digitsOnly[2] === '9') {
-            return `+55${digitsOnly}`;
+        // BRASIL - Lógica otimizada para números brasileiros
+        
+        // Celular com 11 dígitos (formato padrão brasileiro)
+        if (digitsOnly.length === 11) {
+            // Verificar se é celular válido (9 no início do número)
+            const ddd = digitsOnly.substring(0, 2);
+            const nono = digitsOnly[2];
+            
+            // Lista de DDDs válidos do Brasil
+            const validDDDs = [
+                '11', '12', '13', '14', '15', '16', '17', '18', '19', // SP
+                '21', '22', '24', // RJ
+                '27', '28', // ES
+                '31', '32', '33', '34', '35', '37', '38', // MG
+                '41', '42', '43', '44', '45', '46', // PR
+                '47', '48', '49', // SC
+                '51', '53', '54', '55', // RS
+                '61', // DF
+                '62', '64', // GO
+                '63', // TO
+                '65', '66', // MT
+                '67', // MS
+                '68', // AC
+                '69', // RO
+                '71', '73', '74', '75', '77', // BA
+                '79', // SE
+                '81', '87', // PE
+                '82', // AL
+                '83', // PB
+                '84', // RN
+                '85', '88', // CE
+                '86', '89', // PI
+                '91', '93', '94', // PA
+                '92', '97', // AM
+                '95', // RR
+                '96', // AP
+                '98', '99'  // MA
+            ];
+            
+            if (validDDDs.includes(ddd) && nono === '9') {
+                const formatted = `+55${digitsOnly}`;
+                console.log('✅ Celular brasileiro normalizado:', formatted);
+                return formatted;
+            }
         }
-        if (digitsOnly.length === 11 && digitsOnly[2] === '9') {
-            return `+55${digitsOnly}`;
-        }
+        
+        // Fixo com 10 dígitos (Brasil)
         if (digitsOnly.length === 10) {
-            return `+55${digitsOnly}`;
+            const ddd = digitsOnly.substring(0, 2);
+            const validDDDs = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '21', '22', '24', '27', '28', '31', '32', '33', '34', '35', '37', '38', '41', '42', '43', '44', '45', '46', '47', '48', '49', '51', '53', '54', '55', '61', '62', '64', '63', '65', '66', '67', '68', '69', '71', '73', '74', '75', '77', '79', '81', '87', '82', '83', '84', '85', '88', '86', '89', '91', '93', '94', '92', '97', '95', '96', '98', '99'];
+            
+            if (validDDDs.includes(ddd)) {
+                const formatted = `+55${digitsOnly}`;
+                console.log('✅ Telefone fixo brasileiro normalizado:', formatted);
+                return formatted;
+            }
         }
+        
+        // Número com 9 dígitos (assumir SP e adicionar 11)
         if (digitsOnly.length === 9 && digitsOnly[0] === '9') {
-            return `+5511${digitsOnly}`;
+            const formatted = `+5511${digitsOnly}`;
+            console.log('✅ Celular SP (9 dígitos) normalizado:', formatted);
+            return formatted;
         }
+        
+        // Número com 8 dígitos (assumir SP fixo)
         if (digitsOnly.length === 8) {
-            return `+5511${digitsOnly}`;
+            const formatted = `+5511${digitsOnly}`;
+            console.log('✅ Fixo SP (8 dígitos) normalizado:', formatted);
+            return formatted;
         }
+        
+        // Número com 13 dígitos já com código do país (55)
         if (digitsOnly.length === 13 && digitsOnly.startsWith('55')) {
-            return `+${digitsOnly}`;
+            const formatted = `+${digitsOnly}`;
+            console.log('✅ Número com código país normalizado:', formatted);
+            return formatted;
         }
         
-        // Se já tem +, validar formato
-        if (phone.startsWith('+') && digitsOnly.length >= 10) {
-            return phone;
+        // Número com 12 dígitos (sem código do país)
+        if (digitsOnly.length === 12) {
+            const formatted = `+55${digitsOnly.substring(2)}`; // Remove possível código duplicado
+            console.log('✅ Número 12 dígitos normalizado:', formatted);
+            return formatted;
         }
         
+        // Se já começa com +, validar formato
+        if (phone.startsWith('+')) {
+            // Verificar se tem pelo menos 10 dígitos após o +
+            if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
+                const formatted = `+${digitsOnly}`;
+                console.log('✅ Número internacional validado:', formatted);
+                return formatted;
+            }
+        }
+        
+        // INTERNACIONAIS - Formatos comuns
+        
+        // Estados Unidos/Canadá (10 dígitos)
+        if (digitsOnly.length === 10 && (digitsOnly[0] >= '2' && digitsOnly[0] <= '9')) {
+            const formatted = `+1${digitsOnly}`;
+            console.log('✅ Número US/CA normalizado:', formatted);
+            return formatted;
+        }
+        
+        // Reino Unido (10-11 dígitos)
+        if (digitsOnly.length >= 10 && digitsOnly.length <= 11) {
+            const formatted = `+44${digitsOnly}`;
+            console.log('✅ Número UK normalizado (tentativa):', formatted);
+            return formatted;
+        }
+        
+        console.warn('⚠️ Formato de telefone não reconhecido:', phone, '- Dígitos:', digitsOnly.length);
         return '';
     }
     
@@ -326,6 +416,369 @@ class TikTokEventsManager {
     /**
      * Busca dados em formulários da página - EMQ OTIMIZADO
      */
+    /**
+     * Performar coleta dinâmica de dados - EMQ OTIMIZADO v2.0
+     * Coleta ativa e inteligente de dados do usuário em tempo real
+     */
+    async performDynamicDataCollection() {
+        console.log('🎯 Iniciando coleta dinâmica EMQ otimizada...');
+        
+        try {
+            let dataCollected = false;
+            
+            // 1. COLETA DE EMAIL - Meta: 95%+ cobertura
+            const emailData = await this.collectEmailData();
+            if (emailData.found) {
+                await this.identifyUser(emailData.email, this.userCache.phone, this.userCache.userId);
+                dataCollected = true;
+                console.log('✅ Email coletado dinamicamente:', emailData.email);
+            }
+            
+            // 2. COLETA DE TELEFONE - Meta: 90%+ cobertura  
+            const phoneData = await this.collectPhoneData();
+            if (phoneData.found) {
+                await this.identifyUser(this.userCache.email, phoneData.phone, this.userCache.userId);
+                dataCollected = true;
+                console.log('✅ Telefone coletado dinamicamente:', phoneData.phone);
+            }
+            
+            // 3. COLETA DE DADOS PESSOAIS - Para external_id melhorado
+            const personalData = await this.collectPersonalData();
+            if (personalData.found) {
+                // Criar external_id mais rico
+                const enhancedUserId = this.generateEnhancedUserId(personalData);
+                await this.identifyUser(this.userCache.email, this.userCache.phone, enhancedUserId);
+                dataCollected = true;
+                console.log('✅ Dados pessoais coletados:', personalData.fields);
+            }
+            
+            // 4. FALLBACK - Garantir external_id sempre presente
+            if (!this.userCache.userId) {
+                const fallbackId = this.generateUserId();
+                await this.identifyUser(this.userCache.email, this.userCache.phone, fallbackId);
+                console.log('✅ External_id fallback gerado:', fallbackId);
+            }
+            
+            // 5. VALIDAÇÃO FINAL
+            this.userCache.validated = true;
+            
+            const finalCoverage = {
+                email: this.userCache.email ? '✅' : '❌',
+                phone: this.userCache.phone ? '✅' : '❌',
+                external_id: this.userCache.userId ? '✅' : '❌',
+                ttclid: this.userCache.ttclid ? '✅' : '⚪'
+            };
+            
+            console.log('📊 Resultado da coleta dinâmica:', finalCoverage);
+            return dataCollected;
+            
+        } catch (error) {
+            console.error('❌ Erro na coleta dinâmica:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Coleta inteligente de dados de email
+     */
+    async collectEmailData() {
+        const emailSelectors = [
+            // Página Create específica
+            '#userEmail',
+            'input[name="userEmail"]',
+            // Seletores genéricos otimizados
+            'input[type="email"]:not([value=""])',
+            'input[name*="email"]:not([value=""])',
+            'input[id*="email"]:not([value=""])',
+            'input[placeholder*="email"]:not([value=""])',
+            'input[placeholder*="@"]:not([value=""])',
+            // Campos preenchidos recentemente
+            'input[type="email"]:focus',
+            'input[name*="email"]:focus'
+        ];
+        
+        for (const selector of emailSelectors) {
+            try {
+                const input = document.querySelector(selector);
+                if (input && input.value && input.value.includes('@')) {
+                    const email = input.value.trim().toLowerCase();
+                    if (this.validateEmail(email)) {
+                        // Armazenar para uso futuro
+                        localStorage.setItem('devotly_auto_email', email);
+                        return { found: true, email: email, source: selector };
+                    }
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+        
+        // Verificar localStorage como fallback
+        const storedEmail = localStorage.getItem('devotly_auto_email');
+        if (storedEmail && this.validateEmail(storedEmail)) {
+            return { found: true, email: storedEmail, source: 'localStorage' };
+        }
+        
+        return { found: false };
+    }
+    
+    /**
+     * Coleta inteligente de dados de telefone
+     */
+    async collectPhoneData() {
+        const phoneSelectors = [
+            // Página Create específica
+            '#userPhone',
+            'input[name="userPhone"]',
+            // Seletores genéricos otimizados
+            'input[type="tel"]:not([value=""])',
+            'input[name*="phone"]:not([value=""])',
+            'input[name*="Phone"]:not([value=""])',
+            'input[id*="phone"]:not([value=""])',
+            'input[id*="Phone"]:not([value=""])',
+            'input[name*="telefone"]:not([value=""])',
+            'input[id*="telefone"]:not([value=""])',
+            'input[placeholder*="telefone"]:not([value=""])',
+            'input[placeholder*="WhatsApp"]:not([value=""])',
+            'input[placeholder*="(99)"]:not([value=""])',
+            // Campos preenchidos recentemente
+            'input[type="tel"]:focus',
+            'input[name*="phone"]:focus'
+        ];
+        
+        for (const selector of phoneSelectors) {
+            try {
+                const input = document.querySelector(selector);
+                if (input && input.value) {
+                    const rawPhone = input.value.trim();
+                    const normalizedPhone = this.normalizePhone(rawPhone);
+                    if (normalizedPhone) {
+                        // Armazenar para uso futuro
+                        localStorage.setItem('devotly_auto_phone', normalizedPhone);
+                        return { found: true, phone: normalizedPhone, source: selector };
+                    }
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+        
+        // Verificar localStorage como fallback
+        const storedPhone = localStorage.getItem('devotly_auto_phone');
+        if (storedPhone && this.normalizePhone(storedPhone)) {
+            return { found: true, phone: storedPhone, source: 'localStorage' };
+        }
+        
+        return { found: false };
+    }
+    
+    /**
+     * Coleta dados pessoais adicionais para external_id aprimorado
+     */
+    async collectPersonalData() {
+        const personalSelectors = {
+            name: [
+                '#cardTitle', '#userName', 'input[name*="name"]', 'input[id*="name"]',
+                'input[name*="Name"]', 'input[id*="Name"]', 'input[placeholder*="nome"]'
+            ],
+            title: ['#cardTitle', 'input[name*="title"]', 'input[id*="title"]'],
+            message: ['#cardMessage', 'textarea[name*="message"]', 'textarea[id*="message"]']
+        };
+        
+        const collectedData = { found: false, fields: {} };
+        
+        for (const [fieldType, selectors] of Object.entries(personalSelectors)) {
+            for (const selector of selectors) {
+                try {
+                    const input = document.querySelector(selector);
+                    if (input && input.value && input.value.trim().length > 2) {
+                        collectedData.fields[fieldType] = input.value.trim();
+                        collectedData.found = true;
+                        
+                        // Armazenar para uso futuro
+                        localStorage.setItem(`devotly_auto_${fieldType}`, input.value.trim());
+                        break;
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+        }
+        
+        // Verificar localStorage para dados persistidos
+        const storedFields = ['name', 'title', 'message'];
+        for (const field of storedFields) {
+            const stored = localStorage.getItem(`devotly_auto_${field}`);
+            if (stored && !collectedData.fields[field]) {
+                collectedData.fields[field] = stored;
+                collectedData.found = true;
+            }
+        }
+        
+        return collectedData;
+    }
+    
+    /**
+     * Gera external_id enriquecido com dados pessoais
+     */
+    generateEnhancedUserId(personalData = {}) {
+        const timestamp = Date.now();
+        const components = [`timestamp_${timestamp}`];
+        
+        // 1. Dados pessoais se disponíveis
+        if (personalData.fields) {
+            Object.entries(personalData.fields).forEach(([key, value]) => {
+                if (value && value.length > 2) {
+                    const encoded = btoa(value.slice(0, 10)).replace(/[^a-zA-Z0-9]/g, '').substr(0, 6);
+                    components.push(`${key}_${encoded}`);
+                }
+            });
+        }
+        
+        // 2. Dados de contato se disponíveis
+        if (this.userCache.email) {
+            const emailHash = btoa(this.userCache.email.split('@')[0]).replace(/[^a-zA-Z0-9]/g, '').substr(0, 8);
+            components.push(`email_${emailHash}`);
+        }
+        
+        if (this.userCache.phone) {
+            const phoneHash = btoa(this.userCache.phone.slice(-4)).replace(/[^a-zA-Z0-9]/g, '').substr(0, 6);
+            components.push(`phone_${phoneHash}`);
+        }
+        
+        // 3. Fingerprint do dispositivo
+        const deviceComponents = [
+            navigator.userAgent.slice(0, 20),
+            screen.width + 'x' + screen.height,
+            navigator.language,
+            new Date().getTimezoneOffset().toString()
+        ];
+        
+        const deviceHash = btoa(deviceComponents.join('|')).replace(/[^a-zA-Z0-9]/g, '').substr(0, 10);
+        components.push(`device_${deviceHash}`);
+        
+        // 4. Parâmetros de tracking se disponíveis
+        if (this.userCache.ttclid) {
+            components.push(`ttclid_${this.userCache.ttclid.substr(0, 8)}`);
+        }
+        
+        // 5. Componente aleatório para unicidade
+        const randomComponent = Math.random().toString(36).substr(2, 6);
+        components.push(`rnd_${randomComponent}`);
+        
+        const finalId = `devotly_enhanced_${components.join('_')}`;
+        console.log('🆔 External_id enriquecido gerado:', finalId.length, 'caracteres');
+        
+        return finalId;
+    }
+    
+    /**
+     * Executa ttq.identify() no TikTok Pixel com dados atuais
+     */
+    async executePixelIdentify() {
+        if (typeof ttq === 'undefined') {
+            console.warn('⚠️ TikTok Pixel não disponível para identify()');
+            return false;
+        }
+        
+        try {
+            // Preparar dados para identify
+            const identifyData = {};
+            
+            // Email SHA256 (obrigatório para EMQ)
+            if (this.userCache.email) {
+                identifyData.sha256_email = await this.hashData(this.userCache.email);
+                console.log('✅ SHA256 email preparado para identify');
+            } else {
+                identifyData.sha256_email = ''; // String vazia em vez de undefined
+                console.log('⚠️ Email não disponível - enviando string vazia');
+            }
+            
+            // Telefone SHA256 (crítico para EMQ)
+            if (this.userCache.phone) {
+                identifyData.sha256_phone_number = await this.hashData(this.userCache.phone);
+                console.log('✅ SHA256 telefone preparado para identify');
+            } else {
+                identifyData.sha256_phone_number = ''; // String vazia em vez de undefined
+                console.log('⚠️ Telefone não disponível - enviando string vazia');
+            }
+            
+            // External ID (sempre presente)
+            if (this.userCache.userId) {
+                identifyData.external_id = this.userCache.userId;
+                console.log('✅ External_id preparado para identify');
+            }
+            
+            // Parâmetros de tracking adicionais
+            if (this.userCache.ttclid) {
+                identifyData.ttclid = this.userCache.ttclid;
+            }
+            if (this.userCache.ttp) {
+                identifyData.ttp = this.userCache.ttp;
+            }
+            if (this.userCache.fbp) {
+                identifyData.fbp = this.userCache.fbp;
+            }
+            if (this.userCache.fbc) {
+                identifyData.fbc = this.userCache.fbc;
+            }
+            
+            // Executar ttq.identify
+            ttq.identify(identifyData);
+            
+            console.log('✅ ttq.identify() executado com sucesso');
+            console.log('📊 Dados enviados:', {
+                sha256_email: identifyData.sha256_email ? '✓ Hash' : '✗ Vazio',
+                sha256_phone_number: identifyData.sha256_phone_number ? '✓ Hash' : '✗ Vazio',
+                external_id: identifyData.external_id ? '✓ Presente' : '✗ Ausente',
+                ttclid: identifyData.ttclid ? '✓ Presente' : '✗ Ausente'
+            });
+            
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erro ao executar ttq.identify():', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Calcula métricas de cobertura EMQ em tempo real
+     */
+    calculateCoverageMetrics() {
+        const metrics = {
+            email_coverage: this.userCache.email ? 100 : 0,
+            phone_coverage: this.userCache.phone ? 100 : 0,
+            external_id_coverage: this.userCache.userId ? 100 : 0,
+            ttclid_coverage: this.userCache.ttclid ? 100 : 0,
+            overall_score: 0
+        };
+        
+        // Cálculo do score geral EMQ
+        let totalScore = 0;
+        let maxScore = 0;
+        
+        // Email: 40% do score EMQ
+        if (metrics.email_coverage > 0) totalScore += 40;
+        maxScore += 40;
+        
+        // Telefone: 35% do score EMQ
+        if (metrics.phone_coverage > 0) totalScore += 35;
+        maxScore += 35;
+        
+        // External ID: 15% do score EMQ
+        if (metrics.external_id_coverage > 0) totalScore += 15;
+        maxScore += 15;
+        
+        // TTCLID: 10% do score EMQ (bonus)
+        if (metrics.ttclid_coverage > 0) totalScore += 10;
+        maxScore += 10;
+        
+        metrics.overall_score = Math.round((totalScore / maxScore) * 100);
+        
+        return metrics;
+    }
+    
     autoDetectUserData() {
         const detectedData = {
             email: null,
@@ -724,7 +1177,7 @@ class TikTokEventsManager {
                 referrer: document.referrer
             };
             
-            const response = await fetch(`${this.apiUrl}/api/tiktok/track-event`, {
+            const response = await fetch(`${this.apiUrl}/api/tiktok-v3/track-event`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -831,6 +1284,9 @@ class TikTokEventsManager {
             }
             // Detectar dados automaticamente no carregamento
             setTimeout(() => this.autoDetectUserData(), 500);
+            
+            // Configurar listeners específicos da página Create
+            this.setupCreatePageListeners();
         });
         
         // Processar quando página ficar visível
@@ -849,6 +1305,179 @@ class TikTokEventsManager {
         // Cada página deve controlar seu próprio PageView com valor específico
         // para garantir ROAS correto no TikTok Ads
         console.log('🎯 TikTok Events v3.0: PageView manual para controle de ROAS');
+    }
+    
+    /**
+     * Configurar listeners específicos para página Create - EMQ OTIMIZADO
+     */
+    setupCreatePageListeners() {
+        // Verificar se estamos na página create
+        if (!window.location.pathname.includes('/create')) {
+            return;
+        }
+        
+        console.log('🎯 Configurando listeners específicos da página Create...');
+        
+        // 1. LISTENER PARA EMAIL (CAMPO CRÍTICO EMQ)
+        const setupEmailListener = () => {
+            const emailInput = document.querySelector('#userEmail');
+            if (emailInput) {
+                // Listener para coleta em tempo real
+                emailInput.addEventListener('input', async (event) => {
+                    const email = event.target.value.trim().toLowerCase();
+                    if (email.includes('@') && this.validateEmail(email)) {
+                        console.log('✅ Email válido detectado em tempo real:', email);
+                        await this.identifyUser(email, this.userCache.phone, this.userCache.userId);
+                        
+                        // Executar ttq.identify imediatamente
+                        await this.executePixelIdentify();
+                    }
+                });
+                
+                // Listener para quando campo perde foco
+                emailInput.addEventListener('blur', async (event) => {
+                    const email = event.target.value.trim().toLowerCase();
+                    if (email.includes('@') && this.validateEmail(email)) {
+                        console.log('✅ Email confirmado no blur:', email);
+                        await this.identifyUser(email, this.userCache.phone, this.userCache.userId);
+                        await this.executePixelIdentify();
+                        
+                        // Calcular e mostrar cobertura EMQ
+                        const coverage = this.calculateCoverageMetrics();
+                        console.log('📊 EMQ Score atualizado:', coverage.overall_score + '/100');
+                    }
+                });
+                
+                console.log('✅ Listener de email configurado');
+            }
+        };
+        
+        // 2. LISTENER PARA TELEFONE (CAMPO CRÍTICO EMQ)
+        const setupPhoneListener = () => {
+            const phoneInput = document.querySelector('#userPhone');
+            if (phoneInput) {
+                // Listener para coleta em tempo real
+                phoneInput.addEventListener('input', async (event) => {
+                    const phone = event.target.value.trim();
+                    const normalizedPhone = this.normalizePhone(phone);
+                    if (normalizedPhone) {
+                        console.log('✅ Telefone válido detectado em tempo real:', normalizedPhone);
+                        await this.identifyUser(this.userCache.email, normalizedPhone, this.userCache.userId);
+                        
+                        // Executar ttq.identify imediatamente
+                        await this.executePixelIdentify();
+                    }
+                });
+                
+                // Listener para quando campo perde foco
+                phoneInput.addEventListener('blur', async (event) => {
+                    const phone = event.target.value.trim();
+                    const normalizedPhone = this.normalizePhone(phone);
+                    if (normalizedPhone) {
+                        console.log('✅ Telefone confirmado no blur:', normalizedPhone);
+                        await this.identifyUser(this.userCache.email, normalizedPhone, this.userCache.userId);
+                        await this.executePixelIdentify();
+                        
+                        // Calcular e mostrar cobertura EMQ
+                        const coverage = this.calculateCoverageMetrics();
+                        console.log('📊 EMQ Score atualizado:', coverage.overall_score + '/100');
+                    }
+                });
+                
+                console.log('✅ Listener de telefone configurado');
+            }
+        };
+        
+        // 3. LISTENER PARA DADOS PESSOAIS (EXTERNAL_ID ENRIQUECIDO)
+        const setupPersonalDataListeners = () => {
+            const personalFields = ['#cardTitle', '#cardMessage', '#cardName'];
+            
+            personalFields.forEach(selector => {
+                const input = document.querySelector(selector);
+                if (input) {
+                    input.addEventListener('blur', async (event) => {
+                        if (event.target.value && event.target.value.trim().length > 2) {
+                            console.log('✅ Dados pessoais detectados:', selector);
+                            
+                            // Gerar external_id enriquecido
+                            const personalData = await this.collectPersonalData();
+                            if (personalData.found) {
+                                const enhancedId = this.generateEnhancedUserId(personalData);
+                                await this.identifyUser(this.userCache.email, this.userCache.phone, enhancedId);
+                                await this.executePixelIdentify();
+                            }
+                        }
+                    });
+                }
+            });
+            
+            console.log('✅ Listeners de dados pessoais configurados');
+        };
+        
+        // 4. LISTENER PARA BOTÕES (TRACKING EMQ OTIMIZADO)
+        const setupButtonListeners = () => {
+            // Interceptar todos os cliques em botões na página create
+            document.addEventListener('click', async (event) => {
+                const button = event.target.closest('button, .btn, .cta-button, [role="button"]');
+                if (button && button.offsetParent !== null) { // Elemento visível
+                    const buttonText = button.textContent?.trim() || button.getAttribute('aria-label') || 'Botão';
+                    
+                    // Classificar tipo de botão
+                    let buttonType = 'general';
+                    if (button.classList.contains('btn-next') || buttonText.includes('Próximo') || buttonText.includes('Continuar')) {
+                        buttonType = 'navigation_next';
+                    } else if (button.classList.contains('btn-prev') || buttonText.includes('Anterior') || buttonText.includes('Voltar')) {
+                        buttonType = 'navigation_prev';
+                    } else if (buttonText.includes('Finalizar') || buttonText.includes('Criar') || buttonText.includes('Concluir')) {
+                        buttonType = 'completion';
+                    } else if (buttonText.includes('Plano') || buttonText.includes('Escolher')) {
+                        buttonType = 'plan_selection';
+                    }
+                    
+                    // Executar coleta dinâmica e tracking
+                    console.log(`🎯 Botão clicado: "${buttonText}" (${buttonType})`);
+                    
+                    // Aguardar um pouco para não bloquear o clique
+                    setTimeout(async () => {
+                        try {
+                            await this.performDynamicDataCollection();
+                            await this.executePixelIdentify();
+                            await this.trackClickButton(buttonText, buttonType);
+                        } catch (error) {
+                            console.error('❌ Erro no tracking do botão:', error);
+                        }
+                    }, 50);
+                }
+            }, { passive: true }); // Não bloquear o evento
+            
+            console.log('✅ Listeners de botões configurados');
+        };
+        
+        // Executar configurações com retry para elementos que podem não estar prontos
+        const executeWithRetry = (fn, maxRetries = 5) => {
+            let retries = 0;
+            const tryExecute = () => {
+                try {
+                    fn();
+                } catch (error) {
+                    if (retries < maxRetries) {
+                        retries++;
+                        setTimeout(tryExecute, 500 * retries);
+                    } else {
+                        console.warn('⚠️ Falha ao configurar listener após', maxRetries, 'tentativas');
+                    }
+                }
+            };
+            tryExecute();
+        };
+        
+        // Configurar todos os listeners
+        executeWithRetry(setupEmailListener);
+        executeWithRetry(setupPhoneListener);
+        executeWithRetry(setupPersonalDataListeners);
+        executeWithRetry(setupButtonListeners);
+        
+        console.log('🎯 Listeners da página Create configurados com sucesso!');
     }
     
     /**
@@ -994,26 +1623,30 @@ class TikTokEventsManager {
             this.autoDetectUserData();
         }
         
+        // Validar e garantir que content_id não está vazio
+        const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
+        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Conteúdo';
+        
         const validValue = this.validateValue(value);
-        console.log(`👁️ VIEW CONTENT: ${contentName} - ${contentId} (Valor: R$ ${validValue || 0})`);
+        console.log(`👁️ VIEW CONTENT: ${validContentName} - ${validContentId} (Valor: R$ ${validValue || 0})`);
         
         // Detectar contexto da página para melhor categorização
         const pageContext = this.detectPageContext();
         const enhancedCategory = this.enhanceContentCategory(category, pageContext);
         
         return this.sendEvent('ViewContent', {
-            content_id: String(contentId || this.generateContentId()),
-            content_name: String(contentName || 'Conteúdo'),
+            content_id: validContentId,
+            content_name: validContentName,
             content_type: String(enhancedCategory),
             value: validValue,
             currency: String(currency),
             // Adicionar dados específicos para melhor segmentação
             content_category: String(enhancedCategory),
             content_group_id: String(pageContext.group || 'general'),
-            description: String(this.generateContentDescription(contentName, pageContext)),
+            description: String(this.generateContentDescription(validContentName, pageContext)),
             contents: [{
-                id: String(contentId || this.generateContentId()),
-                name: String(contentName || 'Conteúdo'),
+                id: validContentId,
+                name: validContentName,
                 category: String(enhancedCategory),
                 quantity: 1,
                 price: validValue || 0,
@@ -1120,15 +1753,19 @@ class TikTokEventsManager {
             return { success: false, error: 'Value must be > 0' };
         }
         
+        // Validar content_id e content_name
+        const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
+        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Produto';
+        
         return this.sendEvent('Purchase', {
-            content_id: String(contentId || 'unknown'),
-            content_name: String(contentName || 'Produto'),
+            content_id: validContentId,
+            content_name: validContentName,
             content_type: String(category),
             value: validValue,
             currency: String(currency),
             contents: [{
-                id: String(contentId || 'unknown'),
-                name: String(contentName || 'Produto'),
+                id: validContentId,
+                name: validContentName,
                 category: String(category),
                 quantity: 1,
                 price: validValue
@@ -1142,15 +1779,19 @@ class TikTokEventsManager {
     async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL', category = 'product') {
         const validValue = this.validateValue(value);
         
+        // Validar content_id e content_name
+        const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
+        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Produto';
+        
         return this.sendEvent('InitiateCheckout', {
-            content_id: String(contentId || 'unknown'),
-            content_name: String(contentName || 'Produto'),
+            content_id: validContentId,
+            content_name: validContentName,
             content_type: String(category),
             value: validValue,
             currency: String(currency),
             contents: [{
-                id: String(contentId || 'unknown'),
-                name: String(contentName || 'Produto'),
+                id: validContentId,
+                name: validContentName,
                 category: String(category),
                 quantity: 1,
                 price: validValue
@@ -1159,15 +1800,22 @@ class TikTokEventsManager {
     }
     
     /**
-     * ClickButton - Clique em botão - EMQ OTIMIZADO
+     * ClickButton - Clique em botão - EMQ OTIMIZADO v2.0
+     * Implementa coleta dinâmica e ttq.identify() antes do envio
      */
     async trackClickButton(buttonText, buttonType = 'cta', value = null) {
-        // Detectar dados automaticamente antes do evento
-        if (!this.userCache.validated) {
-            console.log('🔍 Detectando dados antes do evento ClickButton...');
-            this.autoDetectUserData();
-        }
+        // 1. COLETA DINÂMICA OBRIGATÓRIA - Sempre antes de eventos de botão
+        console.log('🔍 Iniciando coleta dinâmica para evento ClickButton...');
+        await this.performDynamicDataCollection();
         
+        // 2. TTQ.IDENTIFY OBRIGATÓRIO - Enviar dados para TikTok Pixel antes do evento
+        await this.executePixelIdentify();
+        
+        // 3. VALIDAÇÃO DE COBERTURA EMQ
+        const coverage = this.calculateCoverageMetrics();
+        console.log('� Cobertura EMQ antes do evento ClickButton:', coverage);
+        
+        // 4. ENVIAR EVENTO COM DADOS OTIMIZADOS
         return this.sendEvent('ClickButton', {
             button_text: String(buttonText || 'Botão'),
             button_type: String(buttonType),
@@ -1341,6 +1989,187 @@ class TikTokEventsManager {
         
         return recommendations;
     }
+    
+    /**
+     * Monitora e reporta EMQ score em tempo real - DASHBOARD EMQ
+     */
+    startEMQMonitoring() {
+        if (this.emqMonitoringActive) {
+            return; // Já está ativo
+        }
+        
+        this.emqMonitoringActive = true;
+        console.log('📊 EMQ Monitoring iniciado...');
+        
+        // Monitor de cobertura a cada 10 segundos
+        this.emqMonitorInterval = setInterval(() => {
+            const coverage = this.calculateCoverageMetrics();
+            const quality = this.getQualityMetrics();
+            
+            // Log apenas se houve mudança significativa
+            if (Math.abs(coverage.overall_score - (this.lastEMQScore || 0)) >= 5) {
+                console.log('📊 EMQ Status Update:', {
+                    score: `${coverage.overall_score}/100`,
+                    email: coverage.email_coverage > 0 ? '✅' : '❌',
+                    phone: coverage.phone_coverage > 0 ? '✅' : '❌',
+                    external_id: coverage.external_id_coverage > 0 ? '✅' : '❌',
+                    ttclid: coverage.ttclid_coverage > 0 ? '✅' : '⚪',
+                    events_sent: quality.eventsSent,
+                    avg_emq: Math.round(quality.averageEMQ)
+                });
+                
+                this.lastEMQScore = coverage.overall_score;
+                
+                // Alert se EMQ estiver abaixo do target
+                if (coverage.overall_score < 70 && quality.eventsSent > 0) {
+                    console.warn('⚠️ EMQ Score abaixo do target de 70 pontos!');
+                    this.suggestEMQImprovements(coverage);
+                }
+            }
+        }, 10000);
+        
+        // Monitor de página Create específico
+        if (window.location.pathname.includes('/create')) {
+            this.startCreatePageEMQMonitoring();
+        }
+    }
+    
+    /**
+     * Monitor específico para página Create
+     */
+    startCreatePageEMQMonitoring() {
+        console.log('🎯 EMQ Monitor da página Create ativo');
+        
+        // Verificar campos críticos a cada 5 segundos
+        this.createEMQInterval = setInterval(() => {
+            const emailField = document.querySelector('#userEmail');
+            const phoneField = document.querySelector('#userPhone');
+            
+            let alerts = [];
+            
+            // Verificar se email está preenchido
+            if (emailField && emailField.value && !this.userCache.email) {
+                alerts.push('Email detectado no campo mas não processado');
+                this.performDynamicDataCollection();
+            }
+            
+            // Verificar se telefone está preenchido
+            if (phoneField && phoneField.value && !this.userCache.phone) {
+                alerts.push('Telefone detectado no campo mas não processado');
+                this.performDynamicDataCollection();
+            }
+            
+            // Log alertas se houver
+            if (alerts.length > 0) {
+                console.log('🔄 EMQ Auto-correção:', alerts);
+            }
+        }, 5000);
+    }
+    
+    /**
+     * Sugestões para melhorar EMQ
+     */
+    suggestEMQImprovements(coverage) {
+        const suggestions = [];
+        
+        if (coverage.email_coverage === 0) {
+            suggestions.push('• Adicionar coleta de email obrigatória');
+        }
+        
+        if (coverage.phone_coverage === 0) {
+            suggestions.push('• Implementar coleta de telefone (meta: 90%+)');
+        }
+        
+        if (coverage.external_id_coverage === 0) {
+            suggestions.push('• Garantir external_id sempre presente');
+        }
+        
+        if (coverage.ttclid_coverage === 0) {
+            suggestions.push('• Verificar parâmetros de tracking TikTok na URL');
+        }
+        
+        if (suggestions.length > 0) {
+            console.group('💡 Sugestões para melhorar EMQ:');
+            suggestions.forEach(suggestion => console.log(suggestion));
+            console.groupEnd();
+        }
+    }
+    
+    /**
+     * Parar monitoramento EMQ
+     */
+    stopEMQMonitoring() {
+        if (this.emqMonitorInterval) {
+            clearInterval(this.emqMonitorInterval);
+            this.emqMonitorInterval = null;
+        }
+        
+        if (this.createEMQInterval) {
+            clearInterval(this.createEMQInterval);
+            this.createEMQInterval = null;
+        }
+        
+        this.emqMonitoringActive = false;
+        console.log('📊 EMQ Monitoring pausado');
+    }
+    
+    /**
+     * Relatório EMQ detalhado
+     */
+    generateEMQReport() {
+        const coverage = this.calculateCoverageMetrics();
+        const quality = this.getQualityMetrics();
+        
+        const report = {
+            timestamp: new Date().toISOString(),
+            overall_score: coverage.overall_score,
+            target_score: 70,
+            performance: coverage.overall_score >= 70 ? 'EXCELENTE' : coverage.overall_score >= 50 ? 'BOM' : 'PRECISA MELHORAR',
+            coverage_details: {
+                email: {
+                    present: coverage.email_coverage > 0,
+                    value: this.userCache.email ? 'Hash SHA256' : 'Ausente',
+                    impact: '40% do EMQ Score'
+                },
+                phone: {
+                    present: coverage.phone_coverage > 0,
+                    value: this.userCache.phone ? `E.164: ${this.userCache.phone}` : 'Ausente',
+                    impact: '35% do EMQ Score'
+                },
+                external_id: {
+                    present: coverage.external_id_coverage > 0,
+                    value: this.userCache.userId ? 'Presente' : 'Ausente',
+                    impact: '15% do EMQ Score'
+                },
+                ttclid: {
+                    present: coverage.ttclid_coverage > 0,
+                    value: this.userCache.ttclid ? 'Presente' : 'Ausente',
+                    impact: '10% do EMQ Score (bonus)'
+                }
+            },
+            events_statistics: {
+                total_sent: quality.eventsSent,
+                success_rate: quality.eventsSuccess / Math.max(quality.eventsSent, 1) * 100,
+                average_emq: quality.averageEMQ,
+                email_hash_success: quality.emailHashSuccess,
+                phone_hash_success: quality.phoneHashSuccess
+            },
+            recommendations: []
+        };
+        
+        // Adicionar recomendações
+        if (coverage.email_coverage === 0) {
+            report.recommendations.push('Implementar coleta obrigatória de email');
+        }
+        if (coverage.phone_coverage === 0) {
+            report.recommendations.push('Adicionar campo de telefone obrigatório');
+        }
+        if (coverage.overall_score < 70) {
+            report.recommendations.push('Melhorar coleta de dados para atingir target EMQ 70+');
+        }
+        
+        return report;
+    }
 }
 
 // ============================================================================
@@ -1374,6 +2203,36 @@ window.TikTokEvents = {
         return window.TikTokManager.trackPageView(25, 'BRL'); // Página de criação - alta intenção
     },
     viewCard: (cardId) => window.TikTokManager.trackViewContent(cardId, 'Visualizar Cartão', 15, 'BRL'),
+    
+    // ✨ MÉTODOS ESPECÍFICOS DA PÁGINA HOME
+    home: {
+        viewHero: () => {
+            console.log('🏠 HOME HERO: Visualizando seção principal');
+            return window.TikTokManager.trackViewContent('home_hero', 'Seção Principal', 8, 'BRL', 'website');
+        },
+        viewHowItWorks: () => {
+            console.log('❓ HOME HOW IT WORKS: Visualizando seção Como Funciona');
+            return window.TikTokManager.trackViewContent('home_how_it_works', 'Como Funciona', 5, 'BRL', 'website');
+        },
+        viewPricing: () => {
+            console.log('💰 HOME PRICING: Visualizando seção de Preços');
+            return window.TikTokManager.trackViewContent('home_pricing', 'Seção de Preços', 12, 'BRL', 'website');
+        },
+        viewTestimonials: () => {
+            console.log('💬 HOME TESTIMONIALS: Visualizando depoimentos');
+            return window.TikTokManager.trackViewContent('home_testimonials', 'Depoimentos', 6, 'BRL', 'website');
+        },
+        viewFeatures: () => {
+            console.log('⭐ HOME FEATURES: Visualizando recursos');
+            return window.TikTokManager.trackViewContent('home_features', 'Recursos', 7, 'BRL', 'website');
+        }
+    },
+    
+    // Método para tracking de seções gerais
+    trackSectionView: (sectionId, sectionName, value = 5) => {
+        console.log(`📊 SECTION VIEW: ${sectionName} (${sectionId})`);
+        return window.TikTokManager.trackViewContent(`section_${sectionId}`, sectionName, value, 'BRL', 'website');
+    },
     
     // ✨ NOVOS MÉTODOS VIEWCONTENT OTIMIZADOS PARA PÁGINA CREATE
     viewCreateStep: (stepNumber, stepName) => {
@@ -1451,7 +2310,8 @@ window.TikTokEvents = {
         },
         navigateSteps: (fromStep, toStep) => {
             console.log(`🚀 NAVEGAÇÃO: Etapa ${fromStep} → ${toStep}`);
-            return window.TikTokManager.trackViewContent(`navigation-${fromStep}-to-${toStep}`, `Navegação Etapa ${toStep}`, 3);
+            const contentId = `navigation_${fromStep}_to_${toStep}_${Date.now()}`;
+            return window.TikTokManager.trackViewContent(contentId, `Navegação Etapa ${toStep}`, 3, 'BRL', 'product');
         },
         uploadImage: () => {
             console.log(`📷 UPLOAD IMAGE: Fazendo upload de imagem`);
@@ -1475,16 +2335,39 @@ window.TikTokEvents = {
     
     // Utilitários EMQ
     getMetrics: () => window.TikTokManager.getQualityMetrics(),
-    forceDataDetection: () => window.TikTokManager.autoDetectUserData(),
+    forceDataDetection: () => window.TikTokManager.performDynamicDataCollection(),
     forcePageView: (value = null) => window.TikTokManager.trackPageView(value), // Força disparo do PageView
     getCoverage: () => {
-        const metrics = window.TikTokManager.getQualityMetrics();
+        const coverage = window.TikTokManager.calculateCoverageMetrics();
         return {
-            email: metrics.emqCoverage.email,
-            phone: metrics.emqCoverage.phone,
-            external_id: metrics.emqCoverage.external_id,
-            average: metrics.emqCoverage.average
+            email: coverage.email_coverage > 0,
+            phone: coverage.phone_coverage > 0,
+            external_id: coverage.external_id_coverage > 0,
+            overall_score: coverage.overall_score
         };
+    },
+    
+    // NOVOS: Funções EMQ Avançadas v2.0
+    startEMQMonitoring: () => window.TikTokManager.startEMQMonitoring(),
+    stopEMQMonitoring: () => window.TikTokManager.stopEMQMonitoring(),
+    generateEMQReport: () => window.TikTokManager.generateEMQReport(),
+    executePixelIdentify: () => window.TikTokManager.executePixelIdentify(),
+    getEMQScore: () => {
+        const coverage = window.TikTokManager.calculateCoverageMetrics();
+        return coverage.overall_score;
+    },
+    
+    // Funções específicas para debug EMQ
+    debugEMQ: () => {
+        const report = window.TikTokManager.generateEMQReport();
+        console.group('🎯 EMQ Debug Report');
+        console.log('Score Geral:', report.overall_score + '/100');
+        console.log('Performance:', report.performance);
+        console.table(report.coverage_details);
+        console.log('Estatísticas:', report.events_statistics);
+        console.log('Recomendações:', report.recommendations);
+        console.groupEnd();
+        return report;
     }
 };
 
@@ -1496,6 +2379,23 @@ window.initTikTokEvents = function() {
     // Auto-processar fila se TikTok já carregou
     if (typeof ttq !== 'undefined') {
         window.TikTokManager.processQueue();
+    }
+    
+    // Ativar monitoramento EMQ automaticamente na página Create
+    if (window.location.pathname.includes('/create')) {
+        setTimeout(() => {
+            window.TikTokManager.startEMQMonitoring();
+            console.log('🎯 EMQ Monitoring ativado para página Create');
+            
+            // Log inicial do status EMQ
+            setTimeout(() => {
+                const coverage = window.TikTokManager.calculateCoverageMetrics();
+                console.log('📊 EMQ Score inicial:', coverage.overall_score + '/100');
+                if (coverage.overall_score < 70) {
+                    console.log('💡 Dica: Preencha email e telefone para melhorar o EMQ Score');
+                }
+            }, 2000);
+        }, 1000);
     }
 };
 

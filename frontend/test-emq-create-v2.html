@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste EMQ Create v2.0 - TikTok Events</title>
+    <!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+  ttq.load('D1QFD0RC77UF6MBM48MG');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .field-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn-secondary {
+            background: #2196F3;
+        }
+        .btn-secondary:hover {
+            background: #1976D2;
+        }
+        .emq-dashboard {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #4CAF50;
+        }
+        .emq-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .emq-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .emq-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+        }
+        .status-icon {
+            font-size: 18px;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Teste EMQ Create v2.0 - TikTok Events</h1>
+        <p><strong>Objetivo:</strong> Testar as melhorias de EMQ para eventos de botão na página Create</p>
+        
+        <!-- EMQ Dashboard -->
+        <div class="emq-dashboard">
+            <div class="emq-score" id="emqScore">EMQ Score: --/100</div>
+            <div class="emq-details">
+                <div class="emq-item">
+                    <span>Email SHA256:</span>
+                    <span class="status-icon" id="emailStatus">❌</span>
+                </div>
+                <div class="emq-item">
+                    <span>Phone E.164:</span>
+                    <span class="status-icon" id="phoneStatus">❌</span>
+                </div>
+                <div class="emq-item">
+                    <span>External ID:</span>
+                    <span class="status-icon" id="externalIdStatus">❌</span>
+                </div>
+                <div class="emq-item">
+                    <span>TTCLID:</span>
+                    <span class="status-icon" id="ttclidStatus">⚪</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulação da página Create -->
+        <div class="field-group">
+            <label for="userEmail">Email (Campo Crítico EMQ)</label>
+            <input type="email" id="userEmail" name="userEmail" placeholder="test@exemplo.com" 
+                   title="Este campo será monitorado em tempo real para EMQ">
+        </div>
+
+        <div class="field-group">
+            <label for="userPhone">Telefone WhatsApp (Campo Crítico EMQ)</label>
+            <input type="tel" id="userPhone" name="userPhone" placeholder="(11) 99999-9999" 
+                   title="Será normalizado para formato E.164 automaticamente">
+        </div>
+
+        <div class="field-group">
+            <label for="cardTitle">Título do Cartão (External ID Enriquecido)</label>
+            <input type="text" id="cardTitle" name="cardTitle" placeholder="Minha mensagem de fé" 
+                   title="Usado para enriquecer o external_id">
+        </div>
+
+        <div class="field-group">
+            <label for="cardMessage">Mensagem (External ID Enriquecido)</label>
+            <input type="text" id="cardMessage" name="cardMessage" placeholder="Deus abençoe..." 
+                   title="Usado para enriquecer o external_id">
+        </div>
+
+        <!-- Botões de Teste -->
+        <div style="margin: 30px 0;">
+            <h3>Teste de Eventos de Botão (EMQ Otimizado)</h3>
+            <button class="btn" onclick="testButtonClick('Próximo Passo', 'navigation_next', 2)">
+                📍 Próximo Passo
+            </button>
+            <button class="btn btn-secondary" onclick="testButtonClick('Escolher Plano', 'plan_selection', 17.99)">
+                💎 Escolher Plano
+            </button>
+            <button class="btn" onclick="testButtonClick('Finalizar Criação', 'completion', 25)">
+                ✅ Finalizar Criação
+            </button>
+            <button class="btn btn-secondary" onclick="testButtonClick('Upload Imagem', 'upload', 5)">
+                📸 Upload Imagem
+            </button>
+        </div>
+
+        <!-- Controles EMQ -->
+        <div style="margin: 30px 0;">
+            <h3>Controles EMQ</h3>
+            <button class="btn" onclick="forceDataCollection()">🔍 Forçar Coleta Dados</button>
+            <button class="btn btn-secondary" onclick="executeIdentify()">🎯 Executar ttq.identify()</button>
+            <button class="btn" onclick="generateReport()">📊 Gerar Relatório EMQ</button>
+            <button class="btn btn-secondary" onclick="debugEMQ()">🐛 Debug EMQ</button>
+        </div>
+
+        <!-- Avisos -->
+        <div id="warnings"></div>
+
+        <!-- Console Output -->
+        <div class="console-output" id="consoleOutput">
+            <div style="color: #00ff00;">🎯 EMQ Monitor v2.0 - Aguardando eventos...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/tiktok-events-v3.js"></script>
+    <script>
+        let updateInterval;
+        
+        // Interceptar console.log para mostrar na tela
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        function addToConsole(message, type = 'log') {
+            const output = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff4444' : type === 'warn' ? '#ffaa00' : '#00ff00';
+            
+            const div = document.createElement('div');
+            div.style.color = color;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('⚠️ ' + args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('❌ ' + args.join(' '), 'error');
+        };
+
+        // Atualizar dashboard EMQ
+        function updateEMQDashboard() {
+            if (typeof TikTokEvents === 'undefined') return;
+            
+            try {
+                const coverage = TikTokEvents.getCoverage();
+                const score = TikTokEvents.getEMQScore();
+                
+                // Atualizar score
+                document.getElementById('emqScore').textContent = `EMQ Score: ${score}/100`;
+                document.getElementById('emqScore').style.color = score >= 70 ? '#2e7d32' : score >= 50 ? '#f57c00' : '#d32f2f';
+                
+                // Atualizar status individual
+                document.getElementById('emailStatus').textContent = coverage.email ? '✅' : '❌';
+                document.getElementById('phoneStatus').textContent = coverage.phone ? '✅' : '❌';
+                document.getElementById('externalIdStatus').textContent = coverage.external_id ? '✅' : '❌';
+                
+                // Avisos baseados no score
+                const warningsDiv = document.getElementById('warnings');
+                warningsDiv.innerHTML = '';
+                
+                if (score < 70) {
+                    warningsDiv.innerHTML = `
+                        <div class="warning">
+                            <strong>⚠️ EMQ Score abaixo do target (70+)</strong><br>
+                            Preencha os campos de email e telefone para melhorar a qualidade dos eventos.
+                        </div>
+                    `;
+                } else {
+                    warningsDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ EMQ Score excelente! (${score}/100)</strong><br>
+                            Os eventos TikTok estão sendo enviados com alta qualidade.
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar dashboard EMQ:', error);
+            }
+        }
+
+        // Teste de clique em botão
+        async function testButtonClick(buttonText, buttonType, value) {
+            try {
+                console.log(`🎯 Testando clique: "${buttonText}" (${buttonType}, valor: ${value})`);
+                
+                if (typeof TikTokEvents !== 'undefined') {
+                    await TikTokEvents.trackClickButton(buttonText, buttonType, value);
+                    console.log('✅ Evento de botão enviado com sucesso');
+                    
+                    // Atualizar dashboard após 1 segundo
+                    setTimeout(updateEMQDashboard, 1000);
+                } else {
+                    console.error('❌ TikTokEvents não está disponível');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao testar clique:', error);
+            }
+        }
+
+        // Forçar coleta de dados
+        async function forceDataCollection() {
+            try {
+                console.log('🔍 Forçando coleta dinâmica de dados...');
+                if (typeof TikTokEvents !== 'undefined') {
+                    await TikTokEvents.forceDataDetection();
+                    console.log('✅ Coleta de dados executada');
+                    setTimeout(updateEMQDashboard, 500);
+                } else {
+                    console.error('❌ TikTokEvents não está disponível');
+                }
+            } catch (error) {
+                console.error('❌ Erro na coleta de dados:', error);
+            }
+        }
+
+        // Executar ttq.identify
+        async function executeIdentify() {
+            try {
+                console.log('🎯 Executando ttq.identify()...');
+                if (typeof TikTokEvents !== 'undefined') {
+                    await TikTokEvents.executePixelIdentify();
+                    console.log('✅ ttq.identify() executado');
+                    setTimeout(updateEMQDashboard, 500);
+                } else {
+                    console.error('❌ TikTokEvents não está disponível');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao executar identify:', error);
+            }
+        }
+
+        // Gerar relatório EMQ
+        function generateReport() {
+            try {
+                console.log('📊 Gerando relatório EMQ...');
+                if (typeof TikTokEvents !== 'undefined') {
+                    const report = TikTokEvents.generateEMQReport();
+                    console.log('📊 Relatório EMQ gerado:');
+                    console.log(JSON.stringify(report, null, 2));
+                } else {
+                    console.error('❌ TikTokEvents não está disponível');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao gerar relatório:', error);
+            }
+        }
+
+        // Debug EMQ
+        function debugEMQ() {
+            try {
+                console.log('🐛 Executando debug EMQ...');
+                if (typeof TikTokEvents !== 'undefined') {
+                    TikTokEvents.debugEMQ();
+                } else {
+                    console.error('❌ TikTokEvents não está disponível');
+                }
+            } catch (error) {
+                console.error('❌ Erro no debug EMQ:', error);
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página de teste EMQ carregada');
+            
+            // Simular URL da página create
+            if (!window.location.pathname.includes('/create')) {
+                console.log('🎯 Simulando página create para ativação de listeners específicos');
+                // Modificar pathname temporariamente para ativar listeners
+                Object.defineProperty(window.location, 'pathname', {
+                    writable: true,
+                    value: '/create/create.html'
+                });
+            }
+            
+            // Aguardar TikTok Events carregar
+            let retries = 0;
+            const waitForTikTok = () => {
+                if (typeof TikTokEvents !== 'undefined') {
+                    console.log('✅ TikTok Events carregado');
+                    
+                    // Ativar monitoramento EMQ
+                    setTimeout(() => {
+                        TikTokEvents.startEMQMonitoring();
+                        console.log('📊 Monitoramento EMQ ativado');
+                    }, 1000);
+                    
+                    // Iniciar atualizações do dashboard
+                    updateEMQDashboard();
+                    updateInterval = setInterval(updateEMQDashboard, 2000);
+                    
+                } else if (retries < 10) {
+                    retries++;
+                    setTimeout(waitForTikTok, 500);
+                } else {
+                    console.error('❌ TikTok Events não carregou após 10 tentativas');
+                }
+            };
+            
+            waitForTikTok();
+        });
+
+        // Cleanup ao sair da página
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            if (typeof TikTokEvents !== 'undefined') {
+                TikTokEvents.stopEMQMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>
