@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Correções TikTok EMQ v3.0</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.3);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px 0 rgba(31, 38, 135, 0.4);
+        }
+        
+        .test-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #FF9800; }
+        .info { color: #2196F3; }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        
+        .validation-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+        }
+        
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Teste de Correções TikTok EMQ v3.0</h1>
+            <p>Validação de fixes para HTTP 500, content_id undefined e content_type inválido</p>
+        </div>
+
+        <div class="status-panel">
+            <h3>📊 Status do Sistema</h3>
+            <div id="systemStatus">Carregando...</div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div>Eventos Enviados</div>
+                <div class="metric-value" id="eventsSent">0</div>
+            </div>
+            <div class="metric-card">
+                <div>Taxa de Sucesso</div>
+                <div class="metric-value" id="successRate">0%</div>
+            </div>
+            <div class="metric-card">
+                <div>EMQ Score Médio</div>
+                <div class="metric-value" id="avgEmq">0</div>
+            </div>
+            <div class="metric-card">
+                <div>Erros HTTP 500</div>
+                <div class="metric-value" id="http500Errors">0</div>
+            </div>
+        </div>
+
+        <!-- Seção 1: Testes de Validação de Dados -->
+        <div class="test-section">
+            <h3>🔍 Teste 1: Validação de Dados Críticos</h3>
+            <p>Testa os novos métodos de validação rigorosa para prevenir HTTP 500</p>
+            
+            <div class="validation-tests">
+                <div>
+                    <h4>ViewContent com dados válidos:</h4>
+                    <button class="test-button" onclick="testValidViewContent()">
+                        Testar ViewContent Válido
+                    </button>
+                </div>
+                
+                <div>
+                    <h4>ViewContent com dados undefined/null:</h4>
+                    <button class="test-button" onclick="testInvalidViewContent()">
+                        Testar ViewContent Inválido
+                    </button>
+                </div>
+                
+                <div>
+                    <h4>ClickButton com dados inválidos:</h4>
+                    <button class="test-button" onclick="testInvalidClickButton()">
+                        Testar ClickButton Inválido
+                    </button>
+                </div>
+                
+                <div>
+                    <h4>ViewContent com content_type inválido:</h4>
+                    <button class="test-button" onclick="testInvalidContentType()">
+                        Testar content_type Inválido
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results" id="validationResults"></div>
+        </div>
+
+        <!-- Seção 2: Testes de Cenários da Página Create -->
+        <div class="test-section">
+            <h3>🎨 Teste 2: Cenários da Página Create</h3>
+            <p>Simula os cenários específicos da página de criação onde ocorriam os erros</p>
+            
+            <button class="test-button" onclick="testCreatePageScenarios()">
+                Testar Cenários Create Page
+            </button>
+            
+            <div class="results" id="createResults"></div>
+        </div>
+
+        <!-- Seção 3: Teste de Stress do Sistema -->
+        <div class="test-section">
+            <h3>⚡ Teste 3: Stress Test</h3>
+            <p>Envia múltiplos eventos simultaneamente para verificar estabilidade</p>
+            
+            <div class="input-group">
+                <label for="stressCount">Número de eventos para enviar:</label>
+                <input type="number" id="stressCount" value="10" min="1" max="50" placeholder="10">
+            </div>
+            
+            <button class="test-button" onclick="runStressTest()">
+                Executar Stress Test
+            </button>
+            
+            <div class="results" id="stressResults"></div>
+        </div>
+
+        <!-- Seção 4: Teste Personalizado -->
+        <div class="test-section">
+            <h3>🛠️ Teste 4: Teste Personalizado</h3>
+            <p>Configure seus próprios dados para teste</p>
+            
+            <div class="input-group">
+                <label for="customContentId">Content ID:</label>
+                <input type="text" id="customContentId" placeholder="Deixe vazio para testar undefined">
+            </div>
+            
+            <div class="input-group">
+                <label for="customContentName">Content Name:</label>
+                <input type="text" id="customContentName" placeholder="Deixe vazio para testar undefined">
+            </div>
+            
+            <div class="input-group">
+                <label for="customContentType">Content Type:</label>
+                <input type="text" id="customContentType" placeholder="Ex: invalid_type">
+            </div>
+            
+            <button class="test-button" onclick="runCustomTest()">
+                Executar Teste Personalizado
+            </button>
+            
+            <div class="results" id="customResults"></div>
+        </div>
+
+        <!-- Log Geral -->
+        <div class="test-section">
+            <h3>📋 Log Geral do Sistema</h3>
+            <div class="results" id="systemLog"></div>
+        </div>
+    </div>
+
+    <!-- TikTok Pixel -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+            ttq.load('D1QFD0RC77UF6MBM48MG');
+            ttq.page();
+        }(window, document, 'ttq');
+    </script>
+
+    <!-- TikTok Events Script -->
+    <script src="./js/tiktok-events-v3.js"></script>
+
+    <script>
+        let testMetrics = {
+            eventsSent: 0,
+            eventsSuccess: 0,
+            http500Errors: 0,
+            emqScores: []
+        };
+
+        function updateMetrics() {
+            document.getElementById('eventsSent').textContent = testMetrics.eventsSent;
+            
+            const successRate = testMetrics.eventsSent > 0 
+                ? Math.round((testMetrics.eventsSuccess / testMetrics.eventsSent) * 100)
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            const avgEmq = testMetrics.emqScores.length > 0
+                ? Math.round(testMetrics.emqScores.reduce((a, b) => a + b, 0) / testMetrics.emqScores.length)
+                : 0;
+            document.getElementById('avgEmq').textContent = avgEmq;
+            
+            document.getElementById('http500Errors').textContent = testMetrics.http500Errors;
+        }
+
+        function logResult(section, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            
+            const resultDiv = document.getElementById(section);
+            const logDiv = document.getElementById('systemLog');
+            
+            const logClass = type === 'success' ? 'success' : 
+                            type === 'error' ? 'error' : 
+                            type === 'warning' ? 'warning' : 'info';
+            
+            const logHtml = `<div class="${logClass}">${logEntry}</div>`;
+            
+            if (resultDiv) {
+                resultDiv.innerHTML += logHtml;
+                resultDiv.scrollTop = resultDiv.scrollHeight;
+            }
+            
+            if (logDiv) {
+                logDiv.innerHTML += logHtml;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+        }
+
+        async function sendTestEvent(eventType, eventData, testName) {
+            testMetrics.eventsSent++;
+            logResult('systemLog', `🎯 Enviando ${eventType} para ${testName}...`, 'info');
+            
+            try {
+                let result;
+                
+                if (eventType === 'ViewContent') {
+                    result = await window.TikTokManager.trackViewContent(
+                        eventData.content_id,
+                        eventData.content_name,
+                        eventData.value,
+                        eventData.currency,
+                        eventData.content_type
+                    );
+                } else if (eventType === 'ClickButton') {
+                    result = await window.TikTokManager.trackClickButton(
+                        eventData.button_text,
+                        eventData.button_type,
+                        eventData.value
+                    );
+                }
+                
+                if (result && result.success) {
+                    testMetrics.eventsSuccess++;
+                    if (result.emqScore) {
+                        testMetrics.emqScores.push(result.emqScore);
+                    }
+                    logResult('systemLog', `✅ ${eventType} enviado com sucesso - EMQ: ${result.emqScore || 'N/A'}`, 'success');
+                    return { success: true, result };
+                } else {
+                    if (result && result.error && result.error.includes('500')) {
+                        testMetrics.http500Errors++;
+                    }
+                    logResult('systemLog', `❌ Erro no ${eventType}: ${result ? result.error : 'Erro desconhecido'}`, 'error');
+                    return { success: false, error: result ? result.error : 'Erro desconhecido' };
+                }
+            } catch (error) {
+                if (error.message && error.message.includes('500')) {
+                    testMetrics.http500Errors++;
+                }
+                logResult('systemLog', `❌ Exceção no ${eventType}: ${error.message}`, 'error');
+                return { success: false, error: error.message };
+            } finally {
+                updateMetrics();
+            }
+        }
+
+        // Teste 1: ViewContent com dados válidos
+        async function testValidViewContent() {
+            logResult('validationResults', '🔍 Testando ViewContent com dados válidos...', 'info');
+            
+            const result = await sendTestEvent('ViewContent', {
+                content_id: 'test_valid_content_123',
+                content_name: 'Teste Conteúdo Válido',
+                value: 15.50,
+                currency: 'BRL',
+                content_type: 'product'
+            }, 'Dados Válidos');
+            
+            if (result.success) {
+                logResult('validationResults', '✅ ViewContent válido funcionou corretamente', 'success');
+            } else {
+                logResult('validationResults', `❌ ViewContent válido falhou: ${result.error}`, 'error');
+            }
+        }
+
+        // Teste 2: ViewContent com dados undefined/null
+        async function testInvalidViewContent() {
+            logResult('validationResults', '🔍 Testando ViewContent com dados undefined/null...', 'info');
+            
+            const result = await sendTestEvent('ViewContent', {
+                content_id: undefined,
+                content_name: null,
+                value: undefined,
+                currency: undefined,
+                content_type: 'invalid_category'
+            }, 'Dados Inválidos');
+            
+            if (result.success) {
+                logResult('validationResults', '✅ ViewContent inválido foi corrigido automaticamente', 'success');
+            } else {
+                logResult('validationResults', `❌ ViewContent inválido ainda falha: ${result.error}`, 'error');
+            }
+        }
+
+        // Teste 3: ClickButton com dados inválidos
+        async function testInvalidClickButton() {
+            logResult('validationResults', '🔍 Testando ClickButton com dados inválidos...', 'info');
+            
+            const result = await sendTestEvent('ClickButton', {
+                button_text: null,
+                button_type: undefined,
+                value: 'invalid_value'
+            }, 'ClickButton Inválido');
+            
+            if (result.success) {
+                logResult('validationResults', '✅ ClickButton inválido foi corrigido automaticamente', 'success');
+            } else {
+                logResult('validationResults', `❌ ClickButton inválido ainda falha: ${result.error}`, 'error');
+            }
+        }
+
+        // Teste 4: ViewContent com content_type inválido
+        async function testInvalidContentType() {
+            logResult('validationResults', '🔍 Testando ViewContent com content_type inválido...', 'info');
+            
+            const result = await sendTestEvent('ViewContent', {
+                content_id: 'test_invalid_type',
+                content_name: 'Teste Content Type Inválido',
+                value: 10,
+                currency: 'BRL',
+                content_type: 'invalid_type_xyz'
+            }, 'Content Type Inválido');
+            
+            if (result.success) {
+                logResult('validationResults', '✅ Content type inválido foi corrigido automaticamente', 'success');
+            } else {
+                logResult('validationResults', `❌ Content type inválido ainda falha: ${result.error}`, 'error');
+            }
+        }
+
+        // Teste 5: Cenários da página Create
+        async function testCreatePageScenarios() {
+            logResult('createResults', '🎨 Iniciando testes dos cenários da página Create...', 'info');
+            
+            // Simular URL da página create
+            const originalUrl = window.location.href;
+            history.pushState({}, '', '/create');
+            
+            const scenarios = [
+                {
+                    name: 'Create Tool Access',
+                    data: {
+                        content_id: undefined,
+                        content_name: undefined,
+                        value: null,
+                        currency: 'BRL',
+                        content_type: undefined
+                    }
+                },
+                {
+                    name: 'Create Button Click',
+                    type: 'ClickButton',
+                    data: {
+                        button_text: '',
+                        button_type: null,
+                        value: undefined
+                    }
+                },
+                {
+                    name: 'Create Step Navigation',
+                    data: {
+                        content_id: 'create_step_',
+                        content_name: '',
+                        value: 0,
+                        currency: '',
+                        content_type: 'creation_tool'
+                    }
+                }
+            ];
+            
+            for (const scenario of scenarios) {
+                logResult('createResults', `🧪 Testando cenário: ${scenario.name}`, 'info');
+                
+                const eventType = scenario.type || 'ViewContent';
+                const result = await sendTestEvent(eventType, scenario.data, scenario.name);
+                
+                if (result.success) {
+                    logResult('createResults', `✅ Cenário ${scenario.name} passou`, 'success');
+                } else {
+                    logResult('createResults', `❌ Cenário ${scenario.name} falhou: ${result.error}`, 'error');
+                }
+                
+                // Pequena pausa entre os testes
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Restaurar URL original
+            history.pushState({}, '', originalUrl);
+            
+            logResult('createResults', '🎨 Testes da página Create concluídos', 'info');
+        }
+
+        // Teste 6: Stress Test
+        async function runStressTest() {
+            const count = parseInt(document.getElementById('stressCount').value) || 10;
+            logResult('stressResults', `⚡ Iniciando stress test com ${count} eventos...`, 'info');
+            
+            const promises = [];
+            
+            for (let i = 0; i < count; i++) {
+                const eventData = {
+                    content_id: i % 3 === 0 ? undefined : `stress_test_${i}`,
+                    content_name: i % 2 === 0 ? null : `Stress Test ${i}`,
+                    value: i % 4 === 0 ? undefined : Math.random() * 100,
+                    currency: i % 5 === 0 ? undefined : 'BRL',
+                    content_type: i % 6 === 0 ? 'invalid_type' : 'product'
+                };
+                
+                promises.push(sendTestEvent('ViewContent', eventData, `Stress ${i}`));
+            }
+            
+            try {
+                const results = await Promise.all(promises);
+                const successful = results.filter(r => r.success).length;
+                const failed = results.filter(r => !r.success).length;
+                
+                logResult('stressResults', `✅ Stress test concluído: ${successful} sucessos, ${failed} falhas`, 
+                    failed === 0 ? 'success' : 'warning');
+                
+            } catch (error) {
+                logResult('stressResults', `❌ Erro no stress test: ${error.message}`, 'error');
+            }
+        }
+
+        // Teste 7: Teste Personalizado
+        async function runCustomTest() {
+            const contentId = document.getElementById('customContentId').value || undefined;
+            const contentName = document.getElementById('customContentName').value || undefined;
+            const contentType = document.getElementById('customContentType').value || undefined;
+            
+            logResult('customResults', '🛠️ Executando teste personalizado...', 'info');
+            
+            const result = await sendTestEvent('ViewContent', {
+                content_id: contentId,
+                content_name: contentName,
+                value: 25,
+                currency: 'BRL',
+                content_type: contentType
+            }, 'Teste Personalizado');
+            
+            if (result.success) {
+                logResult('customResults', '✅ Teste personalizado passou', 'success');
+            } else {
+                logResult('customResults', `❌ Teste personalizado falhou: ${result.error}`, 'error');
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            logResult('systemLog', '🚀 Sistema de testes TikTok EMQ v3.0 inicializado', 'success');
+            
+            // Verificar se o TikTokManager está disponível
+            if (typeof window.TikTokManager !== 'undefined') {
+                logResult('systemLog', '✅ TikTokManager carregado com sucesso', 'success');
+                document.getElementById('systemStatus').innerHTML = '<span class="success">✅ Sistema Operacional</span>';
+            } else {
+                logResult('systemLog', '❌ TikTokManager não encontrado', 'error');
+                document.getElementById('systemStatus').innerHTML = '<span class="error">❌ Erro no Sistema</span>';
+            }
+            
+            updateMetrics();
+        });
+    </script>
+</body>
+</html>

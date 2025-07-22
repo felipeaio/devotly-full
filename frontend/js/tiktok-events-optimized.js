@@ -1122,7 +1122,12 @@ document.addEventListener('click', function(e) {
         const buttonType = button.className.includes('cta') ? 'cta' : 
                           button.className.includes('primary') ? 'primary' : 'secondary';
         
-        trackClickButton(buttonText, buttonType);
+        // Determinar valor baseado no tipo de botão
+        let buttonValue = 2; // Valor padrão
+        if (buttonType === 'cta') buttonValue = 10;
+        else if (buttonType === 'primary') buttonValue = 5;
+        
+        trackClickButton(buttonText, buttonType, buttonValue);
     }
 });
 

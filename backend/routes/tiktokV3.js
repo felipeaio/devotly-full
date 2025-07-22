@@ -89,12 +89,27 @@ router.post('/track-event', async (req, res) => {
                 break;
 
             case 'ViewContent':
+                // VALIDAÇÃO RIGOROSA PARA PREVENIR HTTP 500
+                const contentId = eventData.content_id || eventData.contentId || `content_${Date.now()}`;
+                const contentName = eventData.content_name || eventData.contentName || 'Conteúdo';
+                const contentType = eventData.content_type || eventData.category || 'product';
+                
+                // Garantir que content_type é válido
+                const validContentTypes = ['product', 'website'];
+                const validatedContentType = validContentTypes.includes(contentType) ? contentType : 'product';
+                
+                console.log('🔍 ViewContent validado no backend:', {
+                    content_id: contentId,
+                    content_name: contentName,
+                    content_type: validatedContentType
+                });
+                
                 result = await tiktokEventsV3.trackViewContent(
-                    eventData.content_id || eventData.contentId,
-                    eventData.content_name || eventData.contentName || 'Conteúdo',
+                    contentId,
+                    contentName,
                     eventData.value,
                     eventData.currency || 'BRL',
-                    eventData.category || 'product',
+                    validatedContentType,
                     context,
                     enhancedUserData
                 );

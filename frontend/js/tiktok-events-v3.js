@@ -1049,6 +1049,207 @@ class TikTokEventsManager {
     }
     
     /**
+     * CORREÇÃO HTTP 500: Validação rigorosa de content_id
+     * Garante que sempre retorna um valor válido, nunca undefined/null
+     */
+    validateAndGenerateContentId(contentId) {
+        try {
+            // 1. Se contentId é válido, usar ele
+            if (contentId && typeof contentId === 'string' && contentId.trim() !== '') {
+                return String(contentId).trim();
+            }
+            
+            // 2. Se contentId é um número válido, converter para string
+            if (typeof contentId === 'number' && !isNaN(contentId)) {
+                return String(contentId);
+            }
+            
+            // 3. Gerar contentId baseado no contexto da página
+            return this.generateContentIdWithContext();
+            
+        } catch (error) {
+            console.error('Erro na validação de content_id:', error);
+            return this.generateFallbackContentId();
+        }
+    }
+    
+    /**
+     * CORREÇÃO HTTP 500: Validação rigorosa de content_name
+     * Garante que sempre retorna um valor válido e descritivo
+     */
+    validateAndGenerateContentName(contentName) {
+        try {
+            // 1. Se contentName é válido, usar ele
+            if (contentName && typeof contentName === 'string' && contentName.trim() !== '') {
+                return String(contentName).trim();
+            }
+            
+            // 2. Gerar nome baseado no contexto da página
+            return this.generateContentNameWithContext();
+            
+        } catch (error) {
+            console.error('Erro na validação de content_name:', error);
+            return 'Conteúdo Devotly';
+        }
+    }
+    
+    /**
+     * CORREÇÃO HTTP 500: Validação rigorosa de content_type
+     * Garante que sempre retorna um valor aceito pelo TikTok Events API
+     */
+    validateAndGenerateContentType(category) {
+        try {
+            // Lista de content_type válidos aceitos pelo TikTok
+            const validTypes = ['product', 'website'];
+            
+            // 1. Se category é válido e aceito, usar ele
+            if (category && typeof category === 'string') {
+                const normalizedCategory = category.toLowerCase().trim();
+                if (validTypes.includes(normalizedCategory)) {
+                    return normalizedCategory;
+                }
+            }
+            
+            // 2. Determinar baseado no contexto da página
+            const pageContext = this.detectPageContext();
+            if (pageContext.page === 'create' || pageContext.page === 'view') {
+                return 'product'; // Ferramentas e cartões como produtos digitais
+            }
+            
+            return 'website'; // Default seguro
+            
+        } catch (error) {
+            console.error('Erro na validação de content_type:', error);
+            return 'website'; // Fallback seguro sempre aceito
+        }
+    }
+    
+    /**
+     * CORREÇÃO HTTP 500: Validação rigorosa de currency
+     * Garante que sempre retorna um código de moeda válido
+     */
+    validateCurrency(currency) {
+        try {
+            // Lista de moedas válidas comuns
+            const validCurrencies = ['BRL', 'USD', 'EUR', 'GBP'];
+            
+            if (currency && typeof currency === 'string') {
+                const normalizedCurrency = currency.toUpperCase().trim();
+                if (validCurrencies.includes(normalizedCurrency)) {
+                    return normalizedCurrency;
+                }
+            }
+            
+            return 'BRL'; // Default para o Brasil
+            
+        } catch (error) {
+            console.error('Erro na validação de currency:', error);
+            return 'BRL';
+        }
+    }
+    
+    /**
+     * Gera content_id baseado no contexto da página atual
+     */
+    generateContentIdWithContext() {
+        const url = window.location.pathname;
+        const timestamp = Date.now();
+        
+        if (url.includes('/create')) {
+            return `create_tool_${timestamp}`;
+        } else if (url.includes('/view')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cardId = urlParams.get('id') || urlParams.get('cardId');
+            return cardId ? `card_${cardId}` : `card_view_${timestamp}`;
+        } else if (url === '/' || url.includes('home')) {
+            return `home_page_${timestamp}`;
+        }
+        
+        return `content_${timestamp}`;
+    }
+    
+    /**
+     * Gera content_name baseado no contexto da página atual
+     */
+    generateContentNameWithContext() {
+        const url = window.location.pathname;
+        const title = document.title || 'Devotly';
+        
+        if (url.includes('/create')) {
+            return 'Ferramenta de Criação - Devotly';
+        } else if (url.includes('/view')) {
+            return title.includes('Devotly') ? title : `${title} - Devotly`;
+        } else if (url === '/' || url.includes('home')) {
+            return 'Página Inicial - Devotly';
+        }
+        
+        return title.includes('Devotly') ? title : `${title} - Devotly`;
+    }
+    
+    /**
+     * Fallback seguro para content_id em caso de erro crítico
+     */
+    generateFallbackContentId() {
+        return `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
+    /**
+     * Gera content_group_id baseado no content_id
+     */
+    generateContentGroupId(contentId) {
+        if (!contentId || typeof contentId !== 'string') {
+            return 'general';
+        }
+        
+        if (contentId.includes('create')) {
+            return 'card_creation';
+        } else if (contentId.includes('view') || contentId.includes('card')) {
+            return 'card_viewing';
+        } else if (contentId.includes('home')) {
+            return 'landing';
+        }
+        
+        return 'general';
+    }
+    
+    /**
+     * Gera descrição do conteúdo baseada no nome e contexto
+     */
+    generateContentDescription(contentName, contextOrContentId) {
+        if (!contentName || typeof contentName !== 'string') {
+            return 'Conteúdo Devotly';
+        }
+        
+        const name = contentName.trim();
+        
+        // Se já tem uma descrição completa, usar ela
+        if (name.includes('Devotly') || name.length > 30) {
+            return name;
+        }
+        
+        // Adicionar contexto baseado no tipo de conteúdo
+        if (typeof contextOrContentId === 'string') {
+            if (contextOrContentId.includes('create')) {
+                return `${name} - Ferramenta de Criação Devotly`;
+            } else if (contextOrContentId.includes('view') || contextOrContentId.includes('card')) {
+                return `${name} - Cartão Digital Devotly`;
+            } else if (contextOrContentId.includes('home')) {
+                return `${name} - Página Inicial Devotly`;
+            }
+        } else if (typeof contextOrContentId === 'object' && contextOrContentId.page) {
+            if (contextOrContentId.page === 'create') {
+                return `${name} - Ferramenta de Criação Devotly`;
+            } else if (contextOrContentId.page === 'view') {
+                return `${name} - Cartão Digital Devotly`;
+            } else if (contextOrContentId.page === 'home') {
+                return `${name} - Página Inicial Devotly`;
+            }
+        }
+        
+        return `${name} - Devotly`;
+    }
+    
+    /**
      * Calcula qualidade EMQ estimada
      */
     calculateEMQScore(eventData) {
@@ -1414,7 +1615,7 @@ class TikTokEventsManager {
             console.log('✅ Listeners de dados pessoais configurados');
         };
         
-        // 4. LISTENER PARA BOTÕES (TRACKING EMQ OTIMIZADO)
+        // 4. LISTENER PARA BOTÕES (TRACKING EMQ OTIMIZADO COM VALUE)
         const setupButtonListeners = () => {
             // Interceptar todos os cliques em botões na página create
             document.addEventListener('click', async (event) => {
@@ -1422,27 +1623,48 @@ class TikTokEventsManager {
                 if (button && button.offsetParent !== null) { // Elemento visível
                     const buttonText = button.textContent?.trim() || button.getAttribute('aria-label') || 'Botão';
                     
-                    // Classificar tipo de botão
+                    // Classificar tipo de botão e definir valor baseado na importância para ROAS
                     let buttonType = 'general';
+                    let buttonValue = 1; // Valor mínimo padrão
+                    
                     if (button.classList.contains('btn-next') || buttonText.includes('Próximo') || buttonText.includes('Continuar')) {
                         buttonType = 'navigation_next';
+                        buttonValue = 3; // Progressão no funil
                     } else if (button.classList.contains('btn-prev') || buttonText.includes('Anterior') || buttonText.includes('Voltar')) {
                         buttonType = 'navigation_prev';
+                        buttonValue = 1; // Menor valor para voltar
                     } else if (buttonText.includes('Finalizar') || buttonText.includes('Criar') || buttonText.includes('Concluir')) {
                         buttonType = 'completion';
+                        buttonValue = 20; // Alto valor para completar criação
                     } else if (buttonText.includes('Plano') || buttonText.includes('Escolher')) {
                         buttonType = 'plan_selection';
+                        buttonValue = 15; // Alto valor para seleção de plano
+                    } else if (buttonText.includes('Upload') || buttonText.includes('Enviar')) {
+                        buttonType = 'content_upload';
+                        buttonValue = 8; // Valor médio para upload de conteúdo
+                    } else if (buttonText.includes('Preview') || buttonText.includes('Visualizar')) {
+                        buttonType = 'preview';
+                        buttonValue = 5; // Valor médio para preview
+                    } else if (buttonText.includes('Versículo') || buttonText.includes('Música')) {
+                        buttonType = 'content_selection';
+                        buttonValue = 6; // Valor médio para seleção de conteúdo
+                    } else if (buttonText.includes('Copiar') || buttonText.includes('Compartilhar')) {
+                        buttonType = 'sharing';
+                        buttonValue = 10; // Valor alto para compartilhamento
+                    } else {
+                        buttonType = 'general';
+                        buttonValue = 2; // Valor baixo para ações gerais
                     }
                     
-                    // Executar coleta dinâmica e tracking
-                    console.log(`🎯 Botão clicado: "${buttonText}" (${buttonType})`);
+                    // Executar coleta dinâmica e tracking COM VALUE OBRIGATÓRIO
+                    console.log(`🎯 Botão clicado: "${buttonText}" (${buttonType}) - Valor: R$ ${buttonValue}`);
                     
                     // Aguardar um pouco para não bloquear o clique
                     setTimeout(async () => {
                         try {
                             await this.performDynamicDataCollection();
                             await this.executePixelIdentify();
-                            await this.trackClickButton(buttonText, buttonType);
+                            await this.trackClickButton(buttonText, buttonType, buttonValue); // VALUE SEMPRE INCLUÍDO
                         } catch (error) {
                             console.error('❌ Erro no tracking do botão:', error);
                         }
@@ -1614,46 +1836,80 @@ class TikTokEventsManager {
     }
     
     /**
-     * ViewContent - Visualização de conteúdo OTIMIZADO para EMQ
+     * ViewContent - Visualização de conteúdo OTIMIZADO para EMQ v2.2
+     * CORREÇÃO: Validação rigorosa para prevenir HTTP 500 e content_id undefined
      */
     async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product') {
-        // Auto-detectar dados se necessário para melhor EMQ
-        if (!this.userCache.validated) {
-            console.log('🔍 Detectando dados antes do evento ViewContent...');
-            this.autoDetectUserData();
-        }
-        
-        // Validar e garantir que content_id não está vazio
-        const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
-        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Conteúdo';
-        
-        const validValue = this.validateValue(value);
-        console.log(`👁️ VIEW CONTENT: ${validContentName} - ${validContentId} (Valor: R$ ${validValue || 0})`);
-        
-        // Detectar contexto da página para melhor categorização
-        const pageContext = this.detectPageContext();
-        const enhancedCategory = this.enhanceContentCategory(category, pageContext);
-        
-        return this.sendEvent('ViewContent', {
-            content_id: validContentId,
-            content_name: validContentName,
-            content_type: String(enhancedCategory),
-            value: validValue,
-            currency: String(currency),
-            // Adicionar dados específicos para melhor segmentação
-            content_category: String(enhancedCategory),
-            content_group_id: String(pageContext.group || 'general'),
-            description: String(this.generateContentDescription(validContentName, pageContext)),
-            contents: [{
-                id: validContentId,
-                name: validContentName,
-                category: String(enhancedCategory),
-                quantity: 1,
-                price: validValue || 0,
+        try {
+            console.log('👁️ Iniciando ViewContent com validação rigorosa...');
+            
+            // 1. COLETA DINÂMICA OBRIGATÓRIA
+            if (!this.userCache.validated) {
+                console.log('🔍 Detectando dados antes do evento ViewContent...');
+                this.autoDetectUserData();
+            }
+            
+            // 2. VALIDAÇÃO RIGOROSA DE DADOS CRÍTICOS - PREVINE HTTP 500
+            const validContentId = this.validateAndGenerateContentId(contentId);
+            const validContentName = this.validateAndGenerateContentName(contentName);
+            const validCategory = this.validateAndGenerateContentType(category);
+            const validCurrency = this.validateCurrency(currency);
+            const validValue = this.validateValue(value);
+            
+            console.log('� Validação completa:', {
+                original: { contentId, contentName, category, value, currency },
+                validated: { 
+                    content_id: validContentId, 
+                    content_name: validContentName,
+                    content_type: validCategory,
+                    value: validValue,
+                    currency: validCurrency
+                }
+            });
+            
+            // 3. GARANTIR QUE CAMPOS CRÍTICOS NÃO SEJAM UNDEFINED/NULL
+            if (!validContentId || !validContentName || !validCategory) {
+                throw new Error('Campos críticos inválidos para ViewContent');
+            }
+            
+            // 4. DETECTAR CONTEXTO DA PÁGINA
+            const pageContext = this.detectPageContext();
+            
+            // 5. CONSTRUIR PAYLOAD SEGURO E VALIDADO
+            const eventData = {
+                content_id: String(validContentId),
+                content_name: String(validContentName),
+                content_type: String(validCategory),
+                currency: String(validCurrency),
+                // Dados enriquecidos para EMQ
+                content_category: String(validCategory),
+                content_group_id: String(pageContext.group || 'general'),
+                description: String(this.generateContentDescription(validContentName, pageContext)),
                 brand: 'Devotly',
-                item_group_id: String(pageContext.group || 'general')
-            }]
-        });
+                contents: [{
+                    id: String(validContentId),
+                    name: String(validContentName),
+                    category: String(validCategory),
+                    quantity: 1,
+                    price: validValue || 0,
+                    brand: 'Devotly',
+                    item_group_id: String(pageContext.group || 'general')
+                }]
+            };
+            
+            // 6. ADICIONAR VALUE APENAS SE VÁLIDO E POSITIVO
+            if (validValue !== null && validValue > 0) {
+                eventData.value = validValue;
+            }
+            
+            console.log(`✅ ViewContent validado: ${validContentName} - EMQ Score estimado:`, this.calculateEMQScore(eventData));
+            
+            return this.sendEvent('ViewContent', eventData);
+            
+        } catch (error) {
+            console.error('❌ Erro em trackViewContent:', error);
+            return { success: false, error: error.message };
+        }
     }
     
     /**
@@ -1815,12 +2071,35 @@ class TikTokEventsManager {
         const coverage = this.calculateCoverageMetrics();
         console.log('� Cobertura EMQ antes do evento ClickButton:', coverage);
         
-        // 4. ENVIAR EVENTO COM DADOS OTIMIZADOS
-        return this.sendEvent('ClickButton', {
-            button_text: String(buttonText || 'Botão'),
-            button_type: String(buttonType),
-            value: value !== null ? this.validateValue(value) : undefined
+        // 4. ENVIAR EVENTO COM DADOS VALIDADOS RIGOROSAMENTE
+        const validButtonText = buttonText && typeof buttonText === 'string' && buttonText.trim() !== '' 
+            ? String(buttonText).trim() 
+            : 'Botão';
+        
+        const validButtonType = buttonType && typeof buttonType === 'string' && buttonType.trim() !== '' 
+            ? String(buttonType).trim() 
+            : 'cta';
+        
+        const validValue = value !== null ? this.validateValue(value) : null;
+        
+        console.log('✅ ClickButton validado:', {
+            button_text: validButtonText,
+            button_type: validButtonType,
+            value: validValue
         });
+        
+        // 5. CONSTRUIR PAYLOAD SEGURO
+        const eventData = {
+            button_text: validButtonText,
+            button_type: validButtonType
+        };
+        
+        // Adicionar value apenas se válido e positivo
+        if (validValue !== null && validValue > 0) {
+            eventData.value = validValue;
+        }
+        
+        return this.sendEvent('ClickButton', eventData);
     }
     
     /**

@@ -304,6 +304,109 @@ class TikTokEventsServiceV3 {
     }
     
     /**
+     * BACKEND: Validação rigorosa de content_id
+     */
+    validateContentIdServer(contentId, context = {}) {
+        try {
+            // 1. Se contentId é válido, usar ele
+            if (contentId && typeof contentId === 'string' && contentId.trim() !== '') {
+                return String(contentId).trim();
+            }
+            
+            // 2. Se contentId é um número válido, converter para string
+            if (typeof contentId === 'number' && !isNaN(contentId)) {
+                return String(contentId);
+            }
+            
+            // 3. Gerar contentId baseado no contexto
+            return this.generateContentIdServer(this.detectPageContextServer(context));
+            
+        } catch (error) {
+            console.error('Erro na validação de content_id no backend:', error);
+            return this.generateFallbackContentIdServer();
+        }
+    }
+    
+    /**
+     * BACKEND: Validação rigorosa de content_name
+     */
+    validateContentNameServer(contentName) {
+        try {
+            // 1. Se contentName é válido, usar ele
+            if (contentName && typeof contentName === 'string' && contentName.trim() !== '') {
+                return String(contentName).trim();
+            }
+            
+            // 2. Fallback padrão
+            return 'Conteúdo Devotly';
+            
+        } catch (error) {
+            console.error('Erro na validação de content_name no backend:', error);
+            return 'Conteúdo Devotly';
+        }
+    }
+    
+    /**
+     * BACKEND: Validação rigorosa de content_type
+     */
+    validateContentTypeServer(category, context = {}) {
+        try {
+            // Lista de content_type válidos aceitos pelo TikTok
+            const validTypes = ['product', 'website'];
+            
+            // 1. Se category é válido e aceito, usar ele
+            if (category && typeof category === 'string') {
+                const normalizedCategory = category.toLowerCase().trim();
+                if (validTypes.includes(normalizedCategory)) {
+                    return normalizedCategory;
+                }
+            }
+            
+            // 2. Determinar baseado no contexto da página
+            const pageContext = this.detectPageContextServer(context);
+            if (pageContext.page === 'create' || pageContext.page === 'view') {
+                return 'product'; // Ferramentas e cartões como produtos digitais
+            }
+            
+            return 'website'; // Default seguro
+            
+        } catch (error) {
+            console.error('Erro na validação de content_type no backend:', error);
+            return 'website'; // Fallback seguro sempre aceito
+        }
+    }
+    
+    /**
+     * BACKEND: Validação rigorosa de currency
+     */
+    validateCurrencyServer(currency) {
+        try {
+            // Lista de moedas válidas comuns
+            const validCurrencies = ['BRL', 'USD', 'EUR', 'GBP'];
+            
+            if (currency && typeof currency === 'string') {
+                const normalizedCurrency = currency.toUpperCase().trim();
+                if (validCurrencies.includes(normalizedCurrency)) {
+                    return normalizedCurrency;
+                }
+            }
+            
+            return 'BRL'; // Default para o Brasil
+            
+        } catch (error) {
+            console.error('Erro na validação de currency no backend:', error);
+            return 'BRL';
+        }
+    }
+    
+    /**
+     * BACKEND: Fallback seguro para content_id
+     */
+    generateFallbackContentIdServer() {
+        return `backend_fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
+    /**
      * Gera ID único para evento
      */
     generateEventId() {
@@ -606,41 +709,70 @@ class TikTokEventsServiceV3 {
      * ViewContent OTIMIZADO para EMQ máximo
      */
     async trackViewContent(contentId, contentName, value = null, currency = 'BRL', category = 'product', context = {}, userData = {}) {
-        const validValue = this.validateValue(value);
-        
-        // Detectar contexto da página para melhor categorização
-        const pageContext = this.detectPageContextServer(context);
-        const enhancedCategory = this.enhanceContentCategoryServer(category, pageContext);
-        
-        const eventData = {
-            content_id: String(contentId || this.generateContentIdServer(pageContext)),
-            content_name: String(contentName || 'Conteúdo'),
-            content_type: String(enhancedCategory),
-            currency: String(currency),
-            // Dados adicionais para melhor EMQ
-            content_category: String(enhancedCategory),
-            content_group_id: String(pageContext.group || 'general'),
-            description: String(this.generateContentDescriptionServer(contentName, pageContext)),
-            brand: 'Devotly',
-            funnel_stage: String(pageContext.funnel_stage || 'consideration'),
-            contents: [{
-                id: String(contentId || this.generateContentIdServer(pageContext)),
-                name: String(contentName || 'Conteúdo'),
-                category: String(enhancedCategory),
-                quantity: 1,
-                price: validValue || 0,
+        try {
+            console.log('👁️ Backend: Validando dados para ViewContent...');
+            
+            // VALIDAÇÃO RIGOROSA PARA PREVENIR ERROS
+            const validContentId = this.validateContentIdServer(contentId, context);
+            const validContentName = this.validateContentNameServer(contentName);
+            const validCategory = this.validateContentTypeServer(category, context);
+            const validCurrency = this.validateCurrencyServer(currency);
+            const validValue = this.validateValue(value);
+            
+            console.log('🔍 Backend - Dados validados:', {
+                original: { contentId, contentName, category, value, currency },
+                validated: {
+                    content_id: validContentId,
+                    content_name: validContentName,
+                    content_type: validCategory,
+                    value: validValue,
+                    currency: validCurrency
+                }
+            });
+            
+            // Garantir que campos críticos não sejam undefined/null
+            if (!validContentId || !validContentName || !validCategory) {
+                throw new Error(`Campos críticos inválidos: content_id=${validContentId}, content_name=${validContentName}, content_type=${validCategory}`);
+            }
+            
+            // Detectar contexto da página para melhor categorização
+            const pageContext = this.detectPageContextServer(context);
+            
+            const eventData = {
+                content_id: String(validContentId),
+                content_name: String(validContentName),
+                content_type: String(validCategory),
+                currency: String(validCurrency),
+                // Dados adicionais para melhor EMQ
+                content_category: String(validCategory),
+                content_group_id: String(pageContext.group || 'general'),
+                description: String(this.generateContentDescriptionServer(validContentName, pageContext)),
                 brand: 'Devotly',
-                item_group_id: String(pageContext.group || 'general')
-            }]
-        };
-        
-        if (validValue !== null && validValue > 0) {
-            eventData.value = validValue;
+                funnel_stage: String(pageContext.funnel_stage || 'consideration'),
+                contents: [{
+                    id: String(validContentId),
+                    name: String(validContentName),
+                    category: String(validCategory),
+                    quantity: 1,
+                    price: validValue || 0,
+                    brand: 'Devotly',
+                    item_group_id: String(pageContext.group || 'general')
+                }]
+            };
+            
+            // Adicionar value apenas se válido e positivo
+            if (validValue !== null && validValue > 0) {
+                eventData.value = validValue;
+            }
+            
+            console.log(`✅ Backend ViewContent preparado: ${validContentName} - EMQ Score estimado: ${this.calculateEMQScore(eventData)}`);
+            
+            return this.sendEvent('ViewContent', eventData, context, userData);
+            
+        } catch (error) {
+            console.error('❌ Erro no backend trackViewContent:', error);
+            throw error; // Re-throw para ser capturado pelo router
         }
-        
-        console.log(`👁️ Backend ViewContent: ${contentName} - EMQ Score estimado: ${this.calculateEMQScore(eventData)}`);
-        
-        return this.sendEvent('ViewContent', eventData, context, userData);
     }
     
     /**
