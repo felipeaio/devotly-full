@@ -245,23 +245,26 @@ async function getAdvancedMatchingDataAsync() {
     };
     
     // EMAIL - Sempre presente para máxima cobertura EMQ (meta: >90%)
+    // Sempre validar formato rigorosamente para evitar avisos do TikTok Pixel
     if (userDataCache.hashedData.email) {
         baseData.email = userDataCache.hashedData.email;
-    } else if (userDataCache.email && userDataCache.email.trim() !== '') {
-        // Hash SHA-256 + Base64 do email
+    } else if (userDataCache.email && validateEmailFormat(userDataCache.email)) {
+        // Email já foi validado anteriormente, podemos usar diretamente
         const hashedEmail = await sha256Base64(userDataCache.email);
         userDataCache.hashedData.email = hashedEmail;
         baseData.email = hashedEmail;
     } else {
         // Tentar encontrar email em formulários da página
         const emailFromForm = findEmailInPage();
-        if (emailFromForm) {
+        if (emailFromForm && validateEmailFormat(emailFromForm)) {
             userDataCache.email = emailFromForm;
             const hashedEmail = await sha256Base64(emailFromForm);
             userDataCache.hashedData.email = hashedEmail;
             baseData.email = hashedEmail;
         } else {
-            baseData.email = ""; // Sempre enviar campo email para cobertura
+            // Não enviar campo email se não for válido para evitar avisos do TikTok
+            baseData.email = ""; // Campo vazio mas presente para compatibilidade
+            console.log('TikTok: Email não disponível ou com formato inválido');
         }
     }
     
@@ -369,21 +372,34 @@ async function getAdvancedMatchingData() {
     return baseData;
 }
 
+// Função para validar formato de e-mail rigorosamente
+function validateEmailFormat(email) {
+    if (!email || typeof email !== 'string') return false;
+    
+    // Validação rigorosa conforme padrão xxx@xxx.com do TikTok
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    return emailRegex.test(email);
+}
+
 // Função para encontrar email em formulários da página atual
 function findEmailInPage() {
     try {
         // Procurar por inputs de email
         const emailInputs = document.querySelectorAll('input[type="email"], input[name*="email"], input[id*="email"]');
         for (const input of emailInputs) {
-            if (input.value && input.value.includes('@')) {
-                return input.value.trim().toLowerCase();
+            const potentialEmail = input.value.trim().toLowerCase();
+            if (potentialEmail && validateEmailFormat(potentialEmail)) {
+                return potentialEmail;
             }
         }
         
         // Procurar por dados salvos em localStorage
         const savedEmail = localStorage.getItem('userEmail') || localStorage.getItem('user_email');
-        if (savedEmail && savedEmail.includes('@')) {
-            return savedEmail.trim().toLowerCase();
+        if (savedEmail) {
+            const potentialEmail = savedEmail.trim().toLowerCase();
+            if (validateEmailFormat(potentialEmail)) {
+                return potentialEmail;
+            }
         }
         
         return null;
@@ -574,15 +590,21 @@ async function identifyUser(email, phone, userId) {
         const hashedData = {};
         let identificationCount = 0;
         
-        // Hash do email (sempre aplicar se disponível)
+        // Hash do email (sempre aplicar se disponível e válido)
         if (email && email.trim() !== '') {
             const normalizedEmail = email.trim().toLowerCase();
-            const hashedEmail = await sha256Base64(normalizedEmail);
-            hashedData.email = hashedEmail;
-            userDataCache.email = normalizedEmail;
-            userDataCache.hashedData.email = hashedEmail;
-            identificationCount++;
-            console.log('TikTok: Email identificado e hasheado');
+            
+            // Validar formato do email antes de usar
+            if (validateEmailFormat(normalizedEmail)) {
+                const hashedEmail = await sha256Base64(normalizedEmail);
+                hashedData.email = hashedEmail;
+                userDataCache.email = normalizedEmail;
+                userDataCache.hashedData.email = hashedEmail;
+                identificationCount++;
+                console.log('TikTok: Email identificado e hasheado');
+            } else {
+                console.warn('TikTok: Email com formato inválido descartado:', normalizedEmail);
+            }
         }
         
         // Hash do telefone (normalizar para E.164 antes)
@@ -660,6 +682,7 @@ async function identifyUser(email, phone, userId) {
 
 async function sendEventToServer(eventName, eventData, userData = {}, eventId = null) {
     try {
+        // Preparar payload
         const payload = {
             eventName,
             eventData,
@@ -671,19 +694,88 @@ async function sendEventToServer(eventName, eventData, userData = {}, eventId = 
             referrer: document.referrer
         };
 
-        const response = await fetch(`${API_BASE_URL}/api/tiktok/track-event`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
+        // URLs para tentar (principal e fallback)
+        const apiUrls = [
+            `${API_BASE_URL}/api/tiktok/track-event`,
+            `${API_BASE_URL}/api/tiktok-v3/track-event`
+        ];
+        
+        let response = null;
+        let error = null;
+        
+        // Tentar URLs em sequência
+        for (const url of apiUrls) {
+            try {
+                console.log(`TikTok Server: Tentando enviar ${eventName} para ${url}`);
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                    // Adicionar timeout para evitar espera infinita
+                    signal: AbortSignal.timeout(5000) // 5 segundos
+                });
+                
+                if (response.ok) {
+                    console.log(`TikTok Server: Evento ${eventName} enviado com sucesso para ${url}`);
+                    break; // Sucesso, sair do loop
+                } else {
+                    console.warn(`TikTok Server: Resposta não-ok de ${url}:`, response.status);
+                }
+            } catch (e) {
+                error = e;
+                console.warn(`TikTok Server: Falha ao enviar para ${url}:`, e.message);
+                continue; // Tentar próxima URL
+            }
+        }
 
-        if (response.ok) {
+        if (response && response.ok) {
             console.log(`TikTok Server: Evento ${eventName} enviado para Events API`);
+            return true;
+        } else {
+            // Adicionar à fila de eventos não enviados para retry posterior
+            console.log(`TikTok Server: Adicionando evento ${eventName} à fila local para retry posterior`);
+            
+            // Obter fila atual
+            let queue = [];
+            try {
+                const storedQueue = localStorage.getItem(TIKTOK_EVENT_QUEUE_KEY);
+                if (storedQueue) {
+                    queue = JSON.parse(storedQueue);
+                }
+            } catch (e) {
+                console.warn('Erro ao recuperar fila de eventos:', e);
+            }
+            
+            // Adicionar evento à fila com informações para retry
+            queue.push({
+                eventType: eventName,
+                eventData: eventData,
+                userData: userData,
+                eventId: eventId || generateEventId(),
+                timestamp: Date.now(),
+                attempts: 0
+            });
+            
+            // Limitar tamanho da fila (manter últimos 50 eventos)
+            if (queue.length > 50) {
+                queue = queue.slice(-50);
+            }
+            
+            // Salvar fila atualizada
+            try {
+                localStorage.setItem(TIKTOK_EVENT_QUEUE_KEY, JSON.stringify(queue));
+                console.log(`TikTok Server: Evento ${eventName} salvo na fila (${queue.length} eventos pendentes)`);
+            } catch (e) {
+                console.warn('Erro ao salvar fila de eventos:', e);
+            }
+            
+            return false;
         }
     } catch (error) {
-        console.error('Erro ao enviar evento para servidor:', error);
+        console.warn('Erro ao enviar evento para servidor:', error);
+        return false;
     }
 }
 
@@ -1299,6 +1391,31 @@ const TikTokEvents = {
         trackPurchase(cardId, `Plano ${planType}`, planValue);
     },
     
+    // Métodos de compatibilidade com v3
+    forceDataDetection() {
+        // Força re-detecção de dados de usuário
+        console.log('🔍 TikTok: Forçando detecção de dados...');
+        const email = findEmailInPage();
+        const phone = findPhoneInPage();
+        if (email || phone) {
+            identifyUser(email, phone, null);
+        }
+    },
+    
+    getCoverage() {
+        // Retorna cobertura de dados para EMQ
+        const hasEmail = userDataCache.email && userDataCache.email !== '';
+        const hasPhone = userDataCache.phone && userDataCache.phone !== '';
+        const hasTtclid = userDataCache.ttclid && userDataCache.ttclid !== '';
+        
+        return {
+            email: hasEmail,
+            phone: hasPhone,
+            ttclid: hasTtclid,
+            score: (hasEmail ? 40 : 0) + (hasPhone ? 35 : 0) + (hasTtclid ? 25 : 0)
+        };
+    },
+    
     // Eventos específicos para página Create
     create: {
         startCreation() {
@@ -1357,6 +1474,19 @@ const TikTokEvents = {
     
     trackEngagement(type, description, value = 1) {
         trackClickButton(description, type, value);
+    },
+    
+    // Função para rastrear visualização de conteúdo específico na página de criação
+    viewCreateContent(contentType, contentName) {
+        console.log(`🔍 TikTok: ViewCreateContent - ${contentType}: ${contentName}`);
+        return trackViewContent(
+            generateContentId(`create_${contentType}`),
+            contentName || `Visualização: ${contentType}`,
+            5,
+            'BRL',
+            'product',
+            'creation_process'
+        );
     }
 };
 

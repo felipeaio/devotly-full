@@ -102,8 +102,11 @@ class DevotlyCreator {
     }
 
     initialize() {
+        console.log('🚀 DevotlyCreator.initialize: Iniciando...');
+        
         // Rastrear visualização da página de criação - EMQ OTIMIZADO
         if (typeof TikTokEvents !== 'undefined') {
+            console.log('✅ TikTokEvents disponível, iniciando rastreamento...');
             // Forçar detecção de dados antes dos eventos
             TikTokEvents.forceDataDetection();
             
@@ -116,22 +119,32 @@ class DevotlyCreator {
                 const coverage = TikTokEvents.getCoverage();
                 console.log('📊 Cobertura EMQ inicial:', coverage);
             }, 1000);
+        } else {
+            console.warn('⚠️ TikTokEvents não está disponível!');
         }
 
         // Inicializar elementos
+        console.log('📋 Inicializando elementos...');
         this.initializeElements();
 
         // Inicializar estado
+        console.log('🔧 Inicializando estado...');
         this.initializeState();
 
         // Setup event listeners
+        console.log('🎯 Configurando event listeners...');
         this.setupEventListeners();
 
         // Outras inicializações
+        console.log('⚙️ Executando outras inicializações...');
         this.init();
+        
+        console.log('✅ DevotlyCreator.initialize: Completo!');
     }
 
     initializeElements() {
+        console.log('📋 initializeElements: Buscando elementos do DOM...');
+        
         this.elements = {
             form: document.getElementById('cardForm'),
             formSteps: document.querySelectorAll('.form-step'),
@@ -151,6 +164,20 @@ class DevotlyCreator {
             finalMessageInput: document.getElementById('cardFinalMessage'),
             finalMessageCounter: document.getElementById('finalMessageCounter'),            finalMessagePreview: document.querySelector('.final-message p') // Used in init and setupEventListeners
         };
+        
+        // Debug: verificar elementos críticos
+        console.log(`🔘 Botões .btn-next encontrados: ${this.elements.nextButtons.length}`);
+        console.log(`🔘 Botões .btn-prev encontrados: ${this.elements.prevButtons.length}`);
+        console.log(`📋 Form encontrado:`, !!this.elements.form);
+        console.log(`📋 Steps encontrados: ${this.elements.formSteps.length}`);
+        
+        if (this.elements.nextButtons.length === 0) {
+            console.error('❌ Nenhum botão .btn-next encontrado no DOM!');
+        }
+        
+        if (this.elements.prevButtons.length === 0) {
+            console.warn('⚠️ Nenhum botão .btn-prev encontrado no DOM!');
+        }
 
         // Verificar se elementos críticos existem
         if (!this.elements.form) {
@@ -417,29 +444,43 @@ class DevotlyCreator {
     // cleanupSectionObserver() was removed
 
     setupEventListeners() {
+        console.log('🔧 setupEventListeners: Iniciando...');
+        
         // Clear any existing listeners to prevent duplicates
         if (this.elements.nextButtons?.length) {
-            this.elements.nextButtons.forEach(button => {
+            console.log(`📋 Configurando ${this.elements.nextButtons.length} botões NEXT`);
+            this.elements.nextButtons.forEach((button, index) => {
+                console.log(`🔘 Configurando botão NEXT ${index + 1}:`, button);
                 const newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
                 newButton.addEventListener('click', (e) => {
+                    console.log(`🔘 Botão NEXT ${index + 1} clicado!`);
                     e.preventDefault();
                     this.handleNextStep();
                 });
             });
             this.elements.nextButtons = document.querySelectorAll('.btn-next'); // Re-assign to new nodes
+            console.log(`✅ ${this.elements.nextButtons.length} botões NEXT configurados`);
+        } else {
+            console.warn('⚠️ Nenhum botão .btn-next encontrado!');
         }
 
         if (this.elements.prevButtons?.length) {
-            this.elements.prevButtons.forEach(button => {
+            console.log(`📋 Configurando ${this.elements.prevButtons.length} botões PREV`);
+            this.elements.prevButtons.forEach((button, index) => {
+                console.log(`🔘 Configurando botão PREV ${index + 1}:`, button);
                 const newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
                 newButton.addEventListener('click', (e) => {
+                    console.log(`🔘 Botão PREV ${index + 1} clicado!`);
                     e.preventDefault();
                     this.prevStep();
                 });
             });
             this.elements.prevButtons = document.querySelectorAll('.btn-prev'); // Re-assign
+            console.log(`✅ ${this.elements.prevButtons.length} botões PREV configurados`);
+        } else {
+            console.warn('⚠️ Nenhum botão .btn-prev encontrado!');
         }
 
         const cardNameInput = document.getElementById('cardName');
@@ -2886,8 +2927,18 @@ scrollToSection(sectionId) {
     // loadFromLocalStorage() was removed
 } // End of DevotlyCreator class
 
-window.addEventListener('load', () => {
+// Aguardar o DOM estar pronto
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM carregado, criando instância DevotlyCreator...');
     window.devotlyCreator = new DevotlyCreator(); // Make instance globally accessible if needed by PreviewModal
+});
+
+// Fallback para compatibilidade
+window.addEventListener('load', () => {
+    if (!window.devotlyCreator) {
+        console.log('🔄 Fallback: Criando instância DevotlyCreator no window.load...');
+        window.devotlyCreator = new DevotlyCreator();
+    }
 });
 
 class PreviewModal {

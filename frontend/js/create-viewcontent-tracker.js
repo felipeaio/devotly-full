@@ -15,6 +15,26 @@ class CreateViewContentTracker {
     init() {
         // Aguardar o TikTok Events estar disponível
         if (typeof TikTokEvents !== 'undefined') {
+            // Verificar se viewCreateContent existe ou criar fallback
+            if (typeof TikTokEvents.viewCreateContent !== 'function') {
+                console.warn('TikTokEvents.viewCreateContent não encontrada, criando fallback');
+                // Criar método de fallback para evitar erros
+                TikTokEvents.viewCreateContent = (contentType, contentName) => {
+                    console.log(`[Fallback] ViewCreateContent: ${contentType} - ${contentName}`);
+                    // Usar trackViewContent como alternativa
+                    if (typeof TikTokEvents.trackViewContent === 'function') {
+                        return TikTokEvents.trackViewContent(
+                            `create_${contentType}`,
+                            contentName || `Visualização: ${contentType}`,
+                            5,
+                            'BRL',
+                            'product',
+                            'creation_process'
+                        );
+                    }
+                    return false;
+                };
+            }
             this.setupTracking();
         } else {
             // Tentar novamente em 1 segundo

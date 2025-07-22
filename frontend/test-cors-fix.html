@@ -128,16 +128,44 @@
                 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3000'
                     : 'https://devotly-full-production.up.railway.app';
+                
+                // URLs de API para tentar
+                const API_URLS = [
+                    `${API_BASE_URL}/api/tiktok/status`,
+                    `${API_BASE_URL}/api/tiktok-v3/status`
+                ];
 
-                const response = await fetch(`${API_BASE_URL}/api/tiktok/status`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
+                let response = null;
+                let data = null;
+                let success = false;
+                let error = null;
+                
+                // Tentar cada URL da API sequencialmente
+                for (const apiUrl of API_URLS) {
+                    try {
+                        resultDiv.innerHTML += `<br>Tentando ${apiUrl}...`;
+                        response = await fetch(apiUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            // Adicionar timeout para evitar espera infinita
+                            signal: AbortSignal.timeout(5000) // 5 segundos
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            success = true;
+                            break; // Sucesso, sair do loop
+                        }
+                    } catch (e) {
+                        error = e;
+                        resultDiv.innerHTML += `<br>Erro em ${apiUrl}: ${e.message}`;
+                        continue; // Tentar próxima URL
                     }
-                });
+                }
 
-                if (response.ok) {
-                    const data = await response.json();
+                if (success) {
                     resultDiv.innerHTML = `✅ CORS funcionando!\nStatus: ${response.status}\nResposta: ${JSON.stringify(data, null, 2)}`;
                     resultDiv.className = 'log success';
                 } else {

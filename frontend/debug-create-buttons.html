@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Botões Create</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .debug-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-button { background: #d4af37; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .log { background: #f8f8f8; padding: 10px; border-left: 4px solid #d4af37; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug - Botões da Página Create</h1>
+    
+    <div class="debug-section">
+        <h2>1. Teste de Botões Simples</h2>
+        <button class="test-button" onclick="alert('Botão funcionando!')">Teste onClick</button>
+        <button class="test-button btn-next" data-next="2">Botão .btn-next (como no create)</button>
+        <button class="test-button btn-prev" data-prev="1">Botão .btn-prev (como no create)</button>
+        <div id="buttonTest" class="log">Aguardando teste...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>2. Carregamento de Scripts</h2>
+        <div id="scriptStatus" class="log">Verificando scripts...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>3. Estado do TikTok Events</h2>
+        <div id="tiktokStatus" class="log">Verificando TikTokEvents...</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>4. Estado do DevotlyCreator</h2>
+        <div id="creatorStatus" class="log">Verificando DevotlyCreator...</div>
+    </div>
+
+    <!-- Carregar os mesmos scripts que create.html -->
+    <script src="../js/core/MediaHandler.js"></script>
+    <script src="../js/tiktok-events-optimized.js"></script>
+    <script src="../js/create-viewcontent-tracker.js"></script>
+    
+    <script>
+        console.log('🔧 Debug page loaded');
+        
+        // Verificar se os scripts carregaram
+        function checkScripts() {
+            const scriptStatus = document.getElementById('scriptStatus');
+            let status = '';
+            
+            status += `MediaHandler: ${typeof MediaHandler !== 'undefined' ? '✅ Carregado' : '❌ Não encontrado'}\n`;
+            status += `TikTokEvents: ${typeof TikTokEvents !== 'undefined' ? '✅ Carregado' : '❌ Não encontrado'}\n`;
+            status += `CreateViewContentTracker: ${typeof CreateViewContentTracker !== 'undefined' ? '✅ Carregado' : '❌ Não encontrado'}\n`;
+            
+            scriptStatus.innerHTML = status;
+        }
+        
+        // Verificar TikTokEvents
+        function checkTikTokEvents() {
+            const tiktokStatus = document.getElementById('tiktokStatus');
+            let status = '';
+            
+            if (typeof TikTokEvents !== 'undefined') {
+                status += '✅ TikTokEvents está disponível\n';
+                status += `create: ${typeof TikTokEvents.create !== 'undefined' ? '✅' : '❌'}\n`;
+                status += `forceDataDetection: ${typeof TikTokEvents.forceDataDetection !== 'undefined' ? '✅' : '❌'}\n`;
+                status += `getCoverage: ${typeof TikTokEvents.getCoverage !== 'undefined' ? '✅' : '❌'}\n`;
+            } else {
+                status += '❌ TikTokEvents não está disponível';
+            }
+            
+            tiktokStatus.innerHTML = status;
+        }
+        
+        // Simular o setup de botões como no create.js
+        function setupTestButtons() {
+            const nextButtons = document.querySelectorAll('.btn-next');
+            const prevButtons = document.querySelectorAll('.btn-prev');
+            const buttonTest = document.getElementById('buttonTest');
+            
+            let status = `Botões encontrados:\n`;
+            status += `btn-next: ${nextButtons.length}\n`;
+            status += `btn-prev: ${prevButtons.length}\n\n`;
+            
+            // Tentar adicionar event listeners
+            try {
+                nextButtons.forEach((button, index) => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        alert(`Botão NEXT ${index + 1} clicado!`);
+                        status += `✅ Event listener NEXT ${index + 1} funcionando\n`;
+                        buttonTest.innerHTML = status;
+                    });
+                });
+                
+                prevButtons.forEach((button, index) => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        alert(`Botão PREV ${index + 1} clicado!`);
+                        status += `✅ Event listener PREV ${index + 1} funcionando\n`;
+                        buttonTest.innerHTML = status;
+                    });
+                });
+                
+                status += '✅ Event listeners adicionados com sucesso';
+            } catch (error) {
+                status += `❌ Erro ao adicionar event listeners: ${error.message}`;
+            }
+            
+            buttonTest.innerHTML = status;
+        }
+        
+        // Executar testes após DOM carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM loaded, running tests...');
+            
+            setTimeout(() => {
+                checkScripts();
+                checkTikTokEvents();
+                setupTestButtons();
+            }, 1000);
+        });
+        
+        // Verificar se DevotlyCreator seria carregado
+        window.addEventListener('load', () => {
+            const creatorStatus = document.getElementById('creatorStatus');
+            
+            // Simular como o create.js tenta carregar
+            try {
+                // Note: não vamos carregar create.js aqui para não interferir
+                creatorStatus.innerHTML = '⚠️ create.js não carregado neste teste (propositalmente)';
+            } catch (error) {
+                creatorStatus.innerHTML = `❌ Erro: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

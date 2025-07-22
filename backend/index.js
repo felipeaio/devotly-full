@@ -92,10 +92,40 @@ app.use(cors({
         'http://localhost:8080',
         'http://127.0.0.1:8080'
     ],
-    methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit', 'Authorization'] 
+    allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
+
+// Middleware adicional para CORS - tratamento explícito para preflight requests
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        process.env.FRONTEND_URL, 
+        'https://devotly.shop',
+        'https://www.devotly.shop', 
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Email, X-Token-Edit, Authorization, Accept, Origin, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
 app.use(helmet());
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
