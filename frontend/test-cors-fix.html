@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Correção CORS e Content ID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #d4af37;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #b8941f;
+        }
+        .log {
+            background: #f8f8f8;
+            padding: 10px;
+            border-left: 4px solid #d4af37;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+    </style>
+    <!-- TikTok Pixel Code Start -->
+    <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+    var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+    ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+      ttq.load('D1QFD0RC77UF6MBM48MG');
+    }(window, document, 'ttq');
+    </script>
+    <!-- TikTok Pixel Code End -->
+</head>
+<body>
+    <h1>🔧 Teste de Correção de Erros</h1>
+    <p>Esta página testa as correções feitas para:</p>
+    <ul>
+        <li>✅ Erros de CORS com servidor local</li>
+        <li>✅ Parâmetro content_id ausente no TikTok Pixel</li>
+    </ul>
+
+    <div class="test-section">
+        <h2>🌐 Teste de CORS</h2>
+        <p>Teste se o servidor está respondendo corretamente às requisições do frontend:</p>
+        <button class="test-button" onclick="testCORS()">Testar Conexão com API</button>
+        <div id="corsResult" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Teste de Content ID</h2>
+        <p>Teste se o content_id está sendo gerado automaticamente quando não fornecido:</p>
+        <button class="test-button" onclick="testContentIdGeneration()">Testar Content ID Automático</button>
+        <button class="test-button" onclick="testContentIdProvided()">Testar Content ID Fornecido</button>
+        <button class="test-button" onclick="testViewContentHome()">ViewContent - Página Home</button>
+        <button class="test-button" onclick="testViewContentCreate()">ViewContent - Página Create</button>
+        <div id="contentIdResult" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Logs do TikTok Pixel</h2>
+        <p>Monitore os eventos sendo enviados ao TikTok Pixel:</p>
+        <div id="tiktokLogs" class="log"></div>
+    </div>
+
+    <script src="js/tiktok-events-optimized.js"></script>
+    <script>
+        // Capturar logs do console para exibir na página
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function logToPage(message, type = 'log') {
+            const logsDiv = document.getElementById('tiktokLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('TikTok')) {
+                logToPage(args.join(' '), 'info');
+            }
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('TikTok')) {
+                logToPage(args.join(' '), 'error');
+            }
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('TikTok')) {
+                logToPage(args.join(' '), 'warn');
+            }
+        };
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('corsResult');
+            resultDiv.innerHTML = 'Testando conexão com API...';
+
+            try {
+                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3000'
+                    : 'https://devotly-full-production.up.railway.app';
+
+                const response = await fetch(`${API_BASE_URL}/api/tiktok/status`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `✅ CORS funcionando!\nStatus: ${response.status}\nResposta: ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'log success';
+                } else {
+                    resultDiv.innerHTML = `⚠️ Resposta não-OK: ${response.status} ${response.statusText}`;
+                    resultDiv.className = 'log error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de CORS:\n${error.message}\n\nVerifique se o servidor está rodando e configurado corretamente.`;
+                resultDiv.className = 'log error';
+            }
+        }
+
+        function testContentIdGeneration() {
+            const resultDiv = document.getElementById('contentIdResult');
+            
+            if (typeof generateContentId !== 'function') {
+                resultDiv.innerHTML = '❌ Função generateContentId não encontrada';
+                resultDiv.className = 'log error';
+                return;
+            }
+
+            const generatedId = generateContentId();
+            const generatedName = generateContentName();
+            
+            resultDiv.innerHTML = `✅ Content ID gerado automaticamente:\nID: ${generatedId}\nName: ${generatedName}`;
+            resultDiv.className = 'log success';
+        }
+
+        function testContentIdProvided() {
+            const resultDiv = document.getElementById('contentIdResult');
+            
+            if (typeof generateContentId !== 'function') {
+                resultDiv.innerHTML = '❌ Função generateContentId não encontrada';
+                resultDiv.className = 'log error';
+                return;
+            }
+
+            const customId = generateContentId('custom_content_123');
+            const customName = generateContentName('Meu Conteúdo Personalizado');
+            
+            resultDiv.innerHTML = `✅ Content ID com parâmetros fornecidos:\nID: ${customId}\nName: ${customName}`;
+            resultDiv.className = 'log success';
+        }
+
+        function testViewContentHome() {
+            if (typeof TikTokEvents === 'undefined' || typeof TikTokEvents.viewHomePage !== 'function') {
+                document.getElementById('contentIdResult').innerHTML = '❌ TikTokEvents.viewHomePage não encontrado';
+                return;
+            }
+
+            TikTokEvents.viewHomePage();
+            document.getElementById('contentIdResult').innerHTML = '✅ Evento ViewContent (Home) disparado - veja os logs abaixo';
+            document.getElementById('contentIdResult').className = 'log success';
+        }
+
+        function testViewContentCreate() {
+            if (typeof TikTokEvents === 'undefined' || typeof TikTokEvents.viewCreatePage !== 'function') {
+                document.getElementById('contentIdResult').innerHTML = '❌ TikTokEvents.viewCreatePage não encontrado';
+                return;
+            }
+
+            TikTokEvents.viewCreatePage();
+            document.getElementById('contentIdResult').innerHTML = '✅ Evento ViewContent (Create) disparado - veja os logs abaixo';
+            document.getElementById('contentIdResult').className = 'log success';
+        }
+
+        // Testar automaticamente ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            logToPage('Página de teste carregada', 'info');
+            
+            // Testar CORS automaticamente após 2 segundos
+            setTimeout(() => {
+                logToPage('Iniciando teste automático de CORS...', 'info');
+                testCORS();
+            }, 2000);
+
+            // Testar content_id automaticamente após 3 segundos
+            setTimeout(() => {
+                logToPage('Testando geração automática de content_id...', 'info');
+                testContentIdGeneration();
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

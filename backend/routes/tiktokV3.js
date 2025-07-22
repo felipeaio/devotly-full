@@ -213,13 +213,22 @@ router.post('/track-event', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Erro ao processar evento TikTok:', error);
+        console.error('❌ Stack trace:', error.stack);
+        console.error('❌ Evento:', eventName);
+        console.error('❌ EventData:', eventData);
+        console.error('❌ UserData:', userData);
         
         res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',
             message: error.message,
             code: 'INTERNAL_ERROR',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            debug: {
+                eventName,
+                error: error.message,
+                stack: error.stack
+            }
         });
     }
 });

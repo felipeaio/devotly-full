@@ -58,6 +58,70 @@ function generateEventId() {
     return `devotly_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 }
 
+// Gera content_id baseado no contexto da página
+function generateContentId(fallbackId = null) {
+    // Tentar extrair ID da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get('id');
+    if (cardId) {
+        return `card_${cardId}`;
+    }
+    
+    // Baseado na página atual
+    const path = window.location.pathname;
+    if (path.includes('/view')) {
+        return 'card_view_page';
+    } else if (path.includes('/create')) {
+        return 'create_tool_page';
+    } else if (path.includes('/home') || path === '/' || path === '/index.html') {
+        return 'home_page';
+    } else if (path.includes('/checkout')) {
+        return 'checkout_page';
+    } else if (path.includes('/success')) {
+        return 'success_page';
+    } else if (path.includes('/failure')) {
+        return 'failure_page';
+    } else if (path.includes('/pending')) {
+        return 'pending_page';
+    }
+    
+    // Se foi fornecido um fallback, usar ele
+    if (fallbackId) {
+        return String(fallbackId);
+    }
+    
+    // Fallback final baseado no título da página
+    const title = document.title.toLowerCase();
+    if (title.includes('devotly')) {
+        return 'devotly_content';
+    }
+    
+    return 'general_content';
+}
+
+// Gera content_name baseado no contexto
+function generateContentName(fallbackName = null) {
+    const path = window.location.pathname;
+    
+    if (path.includes('/view')) {
+        return 'Visualização de Cartão Devotly';
+    } else if (path.includes('/create')) {
+        return 'Ferramenta de Criação Devotly';
+    } else if (path.includes('/home') || path === '/' || path === '/index.html') {
+        return 'Página Inicial Devotly';
+    } else if (path.includes('/checkout')) {
+        return 'Checkout Devotly';
+    } else if (path.includes('/success')) {
+        return 'Página de Sucesso Devotly';
+    }
+    
+    if (fallbackName) {
+        return String(fallbackName);
+    }
+    
+    return document.title || 'Conteúdo Devotly';
+}
+
 // Função para normalizar telefone para formato E.164
 function normalizePhoneNumber(phone) {
     if (!phone || typeof phone !== 'string') return "";
@@ -736,11 +800,15 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
         // Garantir que value seja um número decimal válido
         const validValue = value !== null && !isNaN(value) && value >= 0 ? Number(parseFloat(value).toFixed(2)) : 0.00;
         
+        // Gerar content_id e content_name inteligentes se não fornecidos
+        const smartContentId = contentId || generateContentId();
+        const smartContentName = contentName || generateContentName();
+        
         // Estrutura obrigatória do contents array conforme TikTok API
         const contents = [{
-            content_id: String(contentId || 'unknown'),
+            content_id: String(smartContentId),
             content_type: contentType,
-            content_name: String(contentName || 'Conteúdo Devotly'),
+            content_name: String(smartContentName),
             content_category: contentCategory,
             quantity: 1,
             price: validValue
@@ -759,9 +827,11 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
         // Log detalhado para monitoramento da qualidade EMQ
         console.log('TikTok: ViewContent - Qualidade EMQ otimizada:', {
             event_id: '✓ Presente',
-            content_id: contentId ? '✓ Presente' : '⚠️ Default usado',
+            content_id: contentId ? '✓ Fornecido pelo usuário' : '⚠️ Gerado automaticamente',
+            content_id_value: smartContentId,
             content_type: '✓ Presente',
-            content_name: contentName ? '✓ Presente' : '⚠️ Default usado',
+            content_name: contentName ? '✓ Fornecido pelo usuário' : '⚠️ Gerado automaticamente',
+            content_name_value: smartContentName,
             value: `✓ ${validValue} (número decimal)`,
             currency: `✓ ${currency}`,
             email: eventData.email && eventData.email !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente/vazio',
@@ -788,9 +858,9 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
 
         // Enviar para servidor (Events API) com mesma qualidade EMQ
         sendEventToServer('ViewContent', {
-            content_id: String(contentId || 'unknown'),
+            content_id: String(smartContentId),
             content_type: contentType,
-            content_name: String(contentName || 'Conteúdo Devotly'),
+            content_name: String(smartContentName),
             content_category: contentCategory,
             value: validValue,
             currency: String(currency || 'BRL'),
@@ -806,12 +876,15 @@ function trackViewContent(contentId, contentName, value = null, currency = 'BRL'
         console.error('TikTok: Erro ao rastrear ViewContent:', error);
         // Tentar enfileirar mesmo com erro para não perder o evento
         try {
+            const fallbackContentId = contentId || generateContentId();
+            const fallbackContentName = contentName || generateContentName();
+            
             const fallbackEventData = {
                 event_id: generateEventId(),
                 contents: [{
-                    content_id: String(contentId || 'unknown'),
+                    content_id: String(fallbackContentId),
                     content_type: contentType || 'product',
-                    content_name: String(contentName || 'Conteúdo Devotly')
+                    content_name: String(fallbackContentName)
                 }],
                 value: 0.00,
                 currency: String(currency || 'BRL'),
@@ -975,15 +1048,19 @@ function trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') 
     try {
         const eventId = generateEventId();
         
+        // Gerar content_id e content_name inteligentes se não fornecidos
+        const smartContentId = contentId || generateContentId('checkout_item');
+        const smartContentName = contentName || generateContentName('Produto Devotly');
+        
         // Garantir que value seja um número decimal válido e obrigatório para checkout
         const validValue = value !== null && !isNaN(value) && value > 0 ? Number(parseFloat(value).toFixed(2)) : 0.01;
         
         const eventData = {
             event_id: eventId,
             contents: [{
-                content_id: String(contentId || 'unknown'),
+                content_id: String(smartContentId),
                 content_type: 'product',
-                content_name: String(contentName || 'Produto Devotly'),
+                content_name: String(smartContentName),
                 quantity: 1,
                 price: validValue
             }],
@@ -994,16 +1071,16 @@ function trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') 
 
         if (typeof ttq !== 'undefined') {
             ttq.track('InitiateCheckout', eventData);
-            console.log('TikTok: InitiateCheckout rastreado', {contentId, contentName, value: validValue});
+            console.log('TikTok: InitiateCheckout rastreado', {contentId: smartContentId, contentName: smartContentName, value: validValue});
         } else {
             enqueueEvent('InitiateCheckout', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('InitiateCheckout', {
-            content_id: String(contentId || 'unknown'),
+            content_id: String(smartContentId),
             content_type: 'product',
-            content_name: String(contentName || 'Produto Devotly'),
+            content_name: String(smartContentName),
             content_category: 'digital_product',
             value: validValue,
             currency: String(currency || 'BRL'),
@@ -1030,14 +1107,18 @@ function trackPurchase(contentId, contentName, value, currency = 'BRL') {
             return false;
         }
         
+        // Gerar content_id e content_name inteligentes se não fornecidos
+        const smartContentId = contentId || generateContentId('purchase_item');
+        const smartContentName = contentName || generateContentName('Produto Devotly');
+        
         const validValue = Number(parseFloat(value).toFixed(2));
         
         const eventData = {
             event_id: eventId,
             contents: [{
-                content_id: String(contentId || 'unknown'),
+                content_id: String(smartContentId),
                 content_type: 'product',
-                content_name: String(contentName || 'Produto Devotly'),
+                content_name: String(smartContentName),
                 quantity: 1,
                 price: validValue
             }],
@@ -1050,7 +1131,7 @@ function trackPurchase(contentId, contentName, value, currency = 'BRL') {
             event_id: '✓ Presente',
             value: `✓ ${validValue} (número decimal obrigatório)`,
             currency: `✓ ${currency}`,
-            content_id: contentId ? '✓ Presente' : '⚠️ Default',
+            content_id: contentId ? '✓ Presente' : '⚠️ Gerado automaticamente',
             email: eventData.email && eventData.email !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
             phone_number: eventData.phone_number && eventData.phone_number !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
             external_id: eventData.external_id && eventData.external_id !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente'
@@ -1058,16 +1139,16 @@ function trackPurchase(contentId, contentName, value, currency = 'BRL') {
 
         if (typeof ttq !== 'undefined') {
             ttq.track('Purchase', eventData);
-            console.log('TikTok: Purchase rastreado com EMQ otimizado', {contentId, contentName, value: validValue});
+            console.log('TikTok: Purchase rastreado com EMQ otimizado', {contentId: smartContentId, contentName: smartContentName, value: validValue});
         } else {
             enqueueEvent('Purchase', eventData);
         }
 
         // Enviar para servidor (Events API)
         sendEventToServer('Purchase', {
-            content_id: String(contentId || 'unknown'),
+            content_id: String(smartContentId),
             content_type: 'product',
-            content_name: String(contentName || 'Produto Devotly'),
+            content_name: String(smartContentName),
             content_category: 'digital_product',
             value: validValue,
             currency: String(currency || 'BRL'),

@@ -519,21 +519,24 @@ class TikTokEventsServiceV3 {
             
             const payload = {
                 pixel_code: this.pixelCode,
-                event: eventType,
-                event_id: eventId,
-                timestamp: context.timestamp || Math.floor(Date.now() / 1000),
-                properties: finalEventData,
-                context: {
-                    ad: {},
-                    page: {
-                        url: context.url || '',
-                        referrer: context.referrer || ''
-                    },
-                    user: {
-                        user_agent: context.user_agent || '',
-                        ip: context.ip || ''
+                data: [{
+                    event: eventType,
+                    event_id: eventId,
+                    event_source_id: 'devotly_website_001', // Unique identifier for this event source
+                    timestamp: context.timestamp || Math.floor(Date.now() / 1000),
+                    properties: finalEventData,
+                    context: {
+                        ad: {},
+                        page: {
+                            url: context.url || '',
+                            referrer: context.referrer || ''
+                        },
+                        user: {
+                            user_agent: context.user_agent || '',
+                            ip: context.ip || ''
+                        }
                     }
-                }
+                }]
             };
             
             console.log(`🎯 Enviando ${eventType} para TikTok API (EMQ: ${emqScore})`);

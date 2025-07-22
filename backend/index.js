@@ -86,11 +86,15 @@ app.use(cors({
         'https://devotly.shop',
         'https://www.devotly.shop', 
         'http://localhost:3000',
-        'http://127.0.0.1:3000'
+        'http://127.0.0.1:3000',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
     ],
     methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit'] 
+    allowedHeaders: ['Content-Type', 'X-User-Email', 'X-Token-Edit', 'Authorization'] 
 }));
 app.use(helmet());
 app.use(rateLimit({
@@ -116,6 +120,39 @@ app.use((req, res, next) => {
     if (req.body && Object.keys(req.body).length > 0) {
         console.log(`[${new Date().toISOString()}] Body:`, JSON.stringify(req.body, null, 2));
     }
+    next();
+});
+
+// Middleware adicional para CORS preflight requests
+app.use((req, res, next) => {
+    // Adicionar headers CORS extras para desenvolvimento
+    const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        'https://devotly.shop',
+        'https://www.devotly.shop',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Email, X-Token-Edit');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    // Responder a preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+    
     next();
 });
 
@@ -175,6 +212,13 @@ app.use((req, res, next) => {
     
     next();
 });
+
+// Servir arquivos estáticos do frontend (apenas para desenvolvimento)
+if (process.env.NODE_ENV !== 'production') {
+    const frontendPath = path.resolve(__dirname, '../frontend');
+    app.use(express.static(frontendPath));
+    console.log(`[${new Date().toISOString()}] Servindo arquivos estáticos do frontend: ${frontendPath}`);
+}
 
 // Rotas
 app.use('/cards', supabaseMiddleware);

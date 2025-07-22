@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples TikTok Error</title>
+</head>
+<body>
+    <h1>Teste Simples - TikTok Error 500</h1>
+    <button onclick="testViewContent()">Testar ViewContent (Trigger Error 500)</button>
+    <div id="log"></div>
+
+    <script src="./js/tiktok-events-v3.js"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
+            console.log(message);
+        }
+
+        function testViewContent() {
+            log('Iniciando teste ViewContent...');
+            
+            // Simular dados que poderiam causar o erro 500
+            if (window.TikTokEvents && window.TikTokEvents.viewCreateContent) {
+                log('Chamando TikTokEvents.viewCreateContent...');
+                window.TikTokEvents.viewCreateContent('verse_selection', 'Seleção de Versículo')
+                    .then(result => {
+                        log('Sucesso: ' + JSON.stringify(result));
+                    })
+                    .catch(error => {
+                        log('Erro: ' + error.message);
+                    });
+            } else {
+                log('TikTokEvents.viewCreateContent não encontrado');
+            }
+        }
+
+        // Wait for initialization
+        setTimeout(() => {
+            log('TikTok Events carregado. window.TikTokEvents: ' + (typeof window.TikTokEvents));
+            log('TikTok Manager carregado. window.TikTokManager: ' + (typeof window.TikTokManager));
+        }, 1000);
+    </script>
+</body>
+</html>
