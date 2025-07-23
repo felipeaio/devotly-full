@@ -5,11 +5,11 @@
 
 import express from 'express';
 import EMQMonitoringService from '../services/emqMonitoring.js';
-import TikTokEventsServiceV3 from '../services/tiktokEventsV3.js';
+import tiktokEventsService from '../services/tiktokEventsV3.js';
 
 const router = express.Router();
 const emqMonitoring = new EMQMonitoringService();
-const tiktokEvents = new TikTokEventsServiceV3();
+// tiktokEventsService já é uma instância, não precisa de 'new'
 
 /**
  * GET /api/emq/status - Status geral do EMQ
@@ -101,7 +101,7 @@ router.post('/test-purchase', async (req, res) => {
         };
 
         // Executar Purchase tracking
-        const result = await tiktokEvents.trackPurchase(
+        const result = await tiktokEventsService.trackPurchase(
             contentId,
             contentName,
             parseFloat(value),
