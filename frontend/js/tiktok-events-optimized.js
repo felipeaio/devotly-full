@@ -1200,9 +1200,9 @@ function trackInitiateCheckout(contentId, contentName, value, currency = 'BRL') 
 }
 
 /**
- * 7. PURCHASE - Compra Finalizada (CRÍTICO PARA EMQ)
+ * 7. PURCHASE - Compra Finalizada (CRÍTICO PARA EMQ) - VERSÃO ULTRA-OTIMIZADA
  */
-function trackPurchase(contentId, contentName, value, currency = 'BRL') {
+async function trackPurchase(contentId, contentName, value, currency = 'BRL') {
     try {
         const eventId = generateEventId();
         
@@ -1212,59 +1212,269 @@ function trackPurchase(contentId, contentName, value, currency = 'BRL') {
             return false;
         }
         
+        // Preparar dados ultra-otimizados para máximo EMQ
+        const enhancedUserData = await getUltraOptimizedUserData();
+        
         // Gerar content_id e content_name inteligentes se não fornecidos
         const smartContentId = contentId || generateContentId('purchase_item');
         const smartContentName = contentName || generateContentName('Produto Devotly');
         
         const validValue = Number(parseFloat(value).toFixed(2));
+        const eventTime = Math.floor(Date.now() / 1000);
         
+        // Dados do evento com máxima qualidade EMQ
         const eventData = {
             event_id: eventId,
+            event_time: eventTime,
             contents: [{
                 content_id: String(smartContentId),
                 content_type: 'product',
                 content_name: String(smartContentName),
+                content_category: 'digital_service',
+                brand: 'Devotly',
                 quantity: 1,
                 price: validValue
             }],
             value: validValue, // OBRIGATÓRIO - valor da compra
             currency: String(currency || 'BRL'), // OBRIGATÓRIO - moeda
-            ...getAdvancedMatchingData()
+            order_id: `order_${smartContentId}_${eventTime}`,
+            
+            // Advanced Matching - Dados hasheados
+            email: enhancedUserData.email || '',
+            phone_number: enhancedUserData.phone_number || '',
+            external_id: enhancedUserData.external_id || '',
+            
+            // Dados de localização e dispositivo
+            ip: enhancedUserData.ip || '',
+            user_agent: enhancedUserData.user_agent || navigator.userAgent || '',
+            
+            // Parâmetros do TikTok para better matching
+            ttp: enhancedUserData.ttp || getCookie('_ttp') || '',
+            ttclid: enhancedUserData.ttclid || extractTikTokParams().ttclid || '',
+            
+            // Dados adicionais para EMQ
+            page_url: window.location.href,
+            referrer_url: document.referrer || '',
+            browser_language: navigator.language || 'pt-BR',
+            screen_resolution: `${screen.width}x${screen.height}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ''
         };
 
-        console.log('TikTok: Purchase - Dados de qualidade EMQ:', {
-            event_id: '✓ Presente',
-            value: `✓ ${validValue} (número decimal obrigatório)`,
+        // Adicionar test_event_code se estivermos em ambiente de desenvolvimento
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            eventData.test_event_code = 'test_purchase_devotly_' + Date.now();
+        }
+
+        // Calcular score EMQ estimado
+        const emqScore = calculateEMQScore(eventData);
+
+        console.log('🎯 TikTok: Purchase - ULTRA-OTIMIZADO (EMQ Score: ' + emqScore + '/100):', {
+            event: '✓ Purchase',
+            event_id: '✓ ' + eventId,
+            event_time: '✓ ' + eventTime,
+            value: `✓ ${validValue} BRL (decimal válido)`,
             currency: `✓ ${currency}`,
-            content_id: contentId ? '✓ Presente' : '⚠️ Gerado automaticamente',
-            email: eventData.email && eventData.email !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
-            phone_number: eventData.phone_number && eventData.phone_number !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente',
-            external_id: eventData.external_id && eventData.external_id !== "" ? '✓ Hash SHA-256+Base64' : '✗ Ausente'
+            order_id: `✓ ${eventData.order_id}`,
+            content_id: contentId ? '✓ Real' : '⚠️ Gerado',
+            email: eventData.email ? '✓ Hash SHA-256+Base64' : '❌ Ausente',
+            phone_number: eventData.phone_number ? '✓ Hash SHA-256+Base64' : '❌ Ausente',
+            external_id: eventData.external_id ? '✓ Hash SHA-256+Base64' : '❌ Ausente',
+            ip: eventData.ip ? '✓ Presente' : '❌ Ausente',
+            user_agent: '✓ Presente',
+            ttp: eventData.ttp ? '✓ TikTok Parameter' : '❌ Ausente',
+            ttclid: eventData.ttclid ? '✓ TikTok Click ID' : '❌ Ausente',
+            browser_data: '✓ Completo',
+            emq_score: `${emqScore}/100 ${emqScore >= 80 ? '🟢' : emqScore >= 60 ? '🟡' : '🔴'}`,
+            test_event_code: eventData.test_event_code ? '✓ ' + eventData.test_event_code : '✓ Produção'
         });
 
+        // Enviar via ttq (Pixel JavaScript) com dados ultra-otimizados
         if (typeof ttq !== 'undefined') {
             ttq.track('Purchase', eventData);
-            console.log('TikTok: Purchase rastreado com EMQ otimizado', {contentId: smartContentId, contentName: smartContentName, value: validValue});
+            console.log('✅ TikTok: Purchase disparado via Pixel (EMQ: ' + emqScore + '/100)');
         } else {
             enqueueEvent('Purchase', eventData);
         }
 
-        // Enviar para servidor (Events API)
+        // Enviar para servidor (Events API v1.3) com dados completos
         sendEventToServer('Purchase', {
             content_id: String(smartContentId),
             content_type: 'product',
             content_name: String(smartContentName),
-            content_category: 'digital_product',
+            content_category: 'digital_service',
+            brand: 'Devotly',
             value: validValue,
             currency: String(currency || 'BRL'),
-            quantity: 1
-        }, userDataCache, eventId);
+            quantity: 1,
+            order_id: eventData.order_id,
+            page_url: eventData.page_url,
+            referrer_url: eventData.referrer_url
+        }, enhancedUserData, eventId);
 
+        // Armazenar para deduplicação
+        const purchaseKey = `purchase_${smartContentId}_${validValue}`;
+        localStorage.setItem('last_purchase_tracked', purchaseKey);
+        
         return true;
     } catch (error) {
-        console.error('TikTok: Erro ao rastrear Purchase:', error);
+        console.error('❌ TikTok: Erro ao rastrear Purchase:', error);
         return false;
     }
+}
+
+/**
+ * Obter dados de usuário ultra-otimizados para máximo EMQ
+ */
+async function getUltraOptimizedUserData() {
+    try {
+        // Combinar todas as fontes possíveis de dados do usuário
+        const email = findBestEmail();
+        const phone = findBestPhone();
+        const userAgent = navigator.userAgent || '';
+        const ip = await getClientIP();
+        
+        // Gerar external_id baseado em dados disponíveis
+        let externalId = '';
+        if (email) {
+            externalId = await sha256Base64(`devotly_${email}_${Date.now()}`);
+        } else if (phone) {
+            externalId = await sha256Base64(`devotly_${phone}_${Date.now()}`);
+        } else {
+            // Fallback usando fingerprint do dispositivo
+            const fingerprint = generateDeviceFingerprint();
+            externalId = await sha256Base64(`devotly_${fingerprint}`);
+        }
+        
+        return {
+            email: email ? await sha256Base64(email.toLowerCase().trim()) : '',
+            phone_number: phone ? await sha256Base64(normalizePhoneNumber(phone)) : '',
+            external_id: externalId,
+            ip: ip || '',
+            user_agent: userAgent,
+            ttp: getCookie('_ttp') || '',
+            ttclid: extractTikTokParams().ttclid || ''
+        };
+    } catch (error) {
+        console.warn('⚠️ Erro ao obter dados otimizados:', error);
+        return getAdvancedMatchingData(); // Fallback
+    }
+}
+
+/**
+ * Encontrar o melhor email disponível
+ */
+function findBestEmail() {
+    // Prioridade: input atual > localStorage > formulários na página
+    const sources = [
+        document.getElementById('userEmail')?.value,
+        localStorage.getItem('devotly_user_email'),
+        localStorage.getItem('user_email'),
+        findEmailInPage(),
+        userDataCache.email
+    ];
+    
+    for (const email of sources) {
+        if (email && validateEmailFormat(email)) {
+            return email.toLowerCase().trim();
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Encontrar o melhor telefone disponível
+ */
+function findBestPhone() {
+    const sources = [
+        document.getElementById('userPhone')?.value,
+        localStorage.getItem('user_phone'),
+        findPhoneInPage(),
+        userDataCache.phone
+    ];
+    
+    for (const phone of sources) {
+        if (phone && phone.length >= 8) {
+            return normalizePhoneNumber(phone);
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Gerar fingerprint único do dispositivo
+ */
+function generateDeviceFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('DevotlyFingerprint', 2, 2);
+    
+    const fingerprint = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        new Date().getTimezoneOffset(),
+        canvas.toDataURL()
+    ].join('|');
+    
+    return btoa(fingerprint).substr(0, 32);
+}
+
+/**
+ * Obter IP do cliente via serviço externo
+ */
+async function getClientIP() {
+    try {
+        // Tentar múltiplos serviços para obter IP
+        const services = [
+            'https://api.ipify.org?format=json',
+            'https://ipapi.co/json/',
+            'https://httpbin.org/ip'
+        ];
+        
+        for (const service of services) {
+            try {
+                const response = await fetch(service, { timeout: 2000 });
+                const data = await response.json();
+                return data.ip || data.origin;
+            } catch (e) {
+                continue;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Não foi possível obter IP:', error);
+    }
+    
+    return '';
+}
+
+/**
+ * Calcular score EMQ estimado
+ */
+function calculateEMQScore(eventData) {
+    let score = 0;
+    
+    // Dados de identificação (60% do score)
+    if (eventData.email) score += 25;
+    if (eventData.phone_number) score += 20;
+    if (eventData.external_id) score += 15;
+    
+    // Dados de contexto (25% do score)
+    if (eventData.ip) score += 10;
+    if (eventData.user_agent) score += 8;
+    if (eventData.ttp) score += 4;
+    if (eventData.ttclid) score += 3;
+    
+    // Dados do evento (15% do score)
+    if (eventData.value > 0) score += 5;
+    if (eventData.currency) score += 3;
+    if (eventData.order_id) score += 3;
+    if (eventData.contents && eventData.contents.length > 0) score += 4;
+    
+    return Math.min(score, 100);
 }
 
 // ============================================================================

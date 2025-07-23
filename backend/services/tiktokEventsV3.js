@@ -15,12 +15,16 @@
 
 import crypto from 'crypto';
 import fetch from 'node-fetch';
+import EMQMonitoringService from './emqMonitoring.js';
 
 class TikTokEventsServiceV3 {
     constructor() {
         this.accessToken = process.env.TIKTOK_ACCESS_TOKEN;
         this.pixelCode = process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG';
-        this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
+        this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/pixel/track/';
+        
+        // Inicializar EMQ Monitoring Service
+        this.emqMonitoring = new EMQMonitoringService();
         
         // Cache para deduplicação
         this.eventCache = new Map();
@@ -48,6 +52,7 @@ class TikTokEventsServiceV3 {
         
         console.log('🎯 TikTok Events Service v3.0 inicializado');
         console.log('📊 Target EMQ: 70+ pontos');
+        console.log('🌐 API Endpoint: https://business-api.tiktok.com/open_api/v1.3/pixel/track/');
         console.log('🔑 Pixel Code:', this.pixelCode);
     }
     
@@ -498,7 +503,7 @@ class TikTokEventsServiceV3 {
             // Preparar dados de usuário hasheados
             const hashedUserData = this.prepareUserData(userData);
             
-            // Montar payload final
+            // Montar payload final para TikTok Events API v1.3
             const finalEventData = {
                 ...eventData,
                 ...hashedUserData
@@ -514,52 +519,108 @@ class TikTokEventsServiceV3 {
                 }
             }
             
-            // Calcular EMQ
-            const emqScore = this.calculateEMQScore({ ...finalEventData, ...context });
+            // Usar EMQ Monitoring Service para otimizar payload
+            const optimizedPayload = this.emqMonitoring.optimizePayloadForEMQ(finalEventData, userData, context);
             
+            // Payload conforme TikTok Events API v1.3 - ULTRA-OTIMIZADO PARA EMQ
             const payload = {
                 pixel_code: this.pixelCode,
                 data: [{
                     event: eventType,
                     event_id: eventId,
-                    event_source_id: 'devotly_website_001', // Unique identifier for this event source
-                    timestamp: context.timestamp || Math.floor(Date.now() / 1000),
-                    properties: finalEventData,
-                    context: {
-                        ad: {},
-                        page: {
-                            url: context.url || '',
-                            referrer: context.referrer || ''
-                        },
-                        user: {
-                            user_agent: context.user_agent || '',
-                            ip: context.ip || ''
-                        }
+                    event_time: context.timestamp || Math.floor(Date.now() / 1000),
+                    user: {
+                        // Dados de identificação principais (críticos para EMQ)
+                        email: hashedUserData.email || '',
+                        phone_number: hashedUserData.phone_number || '',
+                        external_id: hashedUserData.external_id || '',
+                        
+                        // Dados de contexto técnico
+                        ip: context.ip || '',
+                        user_agent: context.user_agent || '',
+                        
+                        // Parâmetros específicos do TikTok (melhoram matching)
+                        ttp: hashedUserData.ttp || context.ttp || '',
+                        ttclid: hashedUserData.ttclid || context.ttclid || '',
+                        
+                        // Dados de localização (se disponíveis)
+                        country: context.country || 'BR',
+                        state: context.state || '',
+                        city: context.city || ''
+                    },
+                    properties: {
+                        ...finalEventData,
+                        
+                        // Dados adicionais de contexto para EMQ
+                        page_url: context.url || '',
+                        referrer_url: context.referrer || '',
+                        browser_language: context.browser_language || 'pt-BR',
+                        event_source: 'website',
+                        event_source_url: context.url || '',
+                        
+                        // Para Purchase: dados extras que melhoram EMQ
+                        ...(eventType === 'Purchase' && {
+                            order_id: finalEventData.order_id || `order_${eventId}`,
+                            payment_method: 'mercadopago',
+                            shipping_tier: 'digital',
+                            delivery_category: 'instant'
+                        })
                     }
                 }]
             };
             
-            console.log(`🎯 Enviando ${eventType} para TikTok API (EMQ: ${emqScore})`);
-            console.log('📊 Dados de qualidade:', {
-                email: hashedUserData.email ? '✓ Hash' : '✗ Ausente',
-                phone: hashedUserData.phone_number ? '✓ Hash' : '✗ Ausente',
-                external_id: hashedUserData.external_id ? '✓ Hash' : '✗ Ausente',
-                ip: context.ip ? '✓ Presente' : '✗ Ausente',
-                user_agent: context.user_agent ? '✓ Presente' : '✗ Ausente',
-                emq_score: `${emqScore}/100`
+            // Adicionar test_event_code se estivermos em ambiente de desenvolvimento
+            if (process.env.NODE_ENV !== 'production') {
+                payload.test_event_code = `test_${eventType.toLowerCase()}_devotly_${Date.now()}`;
+            }
+            
+            // Calcular EMQ final
+            const emqResult = this.emqMonitoring.calculateEMQScore(finalEventData, userData, context);
+            
+            console.log(`🎯 Enviando ${eventType} para TikTok API v1.3 (EMQ: ${emqResult.score}/${emqResult.grade})`);
+            console.log('📊 Dados ULTRA-OTIMIZADOS:', {
+                pixel_code: `✓ ${this.pixelCode}`,
+                event: `✓ ${eventType}`,
+                event_id: `✓ ${eventId}`,
+                event_time: `✓ ${payload.data[0].event_time}`,
+                
+                // Dados de identificação (peso máximo no EMQ)
+                email: hashedUserData.email ? '✓ Hash SHA-256+Base64' : '❌ AUSENTE (crítico)',
+                phone: hashedUserData.phone_number ? '✓ Hash SHA-256+Base64' : '❌ AUSENTE (crítico)', 
+                external_id: hashedUserData.external_id ? '✓ Hash SHA-256+Base64' : '❌ AUSENTE (crítico)',
+                
+                // Dados de contexto técnico
+                ip: context.ip ? '✓ Presente' : '❌ Ausente',
+                user_agent: context.user_agent ? '✓ Presente' : '❌ Ausente',
+                
+                // Parâmetros TikTok específicos
+                ttp: payload.data[0].user.ttp ? '✓ TikTok Parameter' : '❌ Ausente',
+                ttclid: payload.data[0].user.ttclid ? '✓ TikTok Click ID' : '❌ Ausente',
+                
+                // Dados de localização
+                country: payload.data[0].user.country ? '✓ Presente' : '❌ Ausente',
+                
+                // Dados do evento
+                page_url: payload.data[0].properties.page_url ? '✓ Presente' : '❌ Ausente',
+                referrer_url: payload.data[0].properties.referrer_url ? '✓ Presente' : '❌ Ausente',
+                order_id: payload.data[0].properties.order_id ? '✓ Presente' : '❌ Ausente',
+                
+                test_event_code: payload.test_event_code ? `✓ ${payload.test_event_code}` : '✓ Produção',
+                emq_score: `${emqResult.score}/100 ${emqResult.score >= 80 ? '🟢 EXCELENTE' : emqResult.score >= 60 ? '🟡 BOM' : '🔴 PRECISA MELHORAR'}`
             });
             
             // Enviar para TikTok
             const response = await this.makeApiRequest(payload, eventType);
             
             // Atualizar métricas
-            this.updateMetrics(true, emqScore);
+            this.updateMetrics(true, emqResult.score);
             
             return {
                 success: true,
                 message: `${eventType} enviado com sucesso`,
                 event_id: eventId,
-                emq_score: emqScore,
+                emq_score: emqResult.score,
+                emq_grade: emqResult.grade,
                 response: response
             };
             
@@ -864,7 +925,7 @@ class TikTokEventsServiceV3 {
     }
     
     /**
-     * Purchase - Compra (DEVE ter value > 0)
+     * Purchase - Compra (DEVE ter value > 0) - VERSÃO ULTRA-OTIMIZADA EMQ
      */
     async trackPurchase(contentId, contentName, value, currency = 'BRL', category = 'product', context = {}, userData = {}) {
         const validValue = this.validateValue(value);
@@ -873,22 +934,88 @@ class TikTokEventsServiceV3 {
             throw new Error('Purchase requer value > 0');
         }
         
+        // Enriquecer dados do usuário usando EMQ Monitoring Service
+        const enrichedUserData = await this.emqMonitoring.enrichUserDataForEMQ(userData, context);
+        
+        // Gerar order_id único se não fornecido
+        const orderId = context.order_id || `order_${contentId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        
         const eventData = {
             content_id: String(contentId || 'unknown'),
             content_name: String(contentName || 'Produto'),
             content_type: String(category),
+            content_category: 'digital_service',
+            brand: 'Devotly',
             value: validValue,
             currency: String(currency),
+            order_id: orderId,
+            
+            // Dados enriquecidos do produto
             contents: [{
                 id: String(contentId || 'unknown'),
                 name: String(contentName || 'Produto'),
                 category: String(category),
+                brand: 'Devotly',
                 quantity: 1,
                 price: validValue
-            }]
+            }],
+            
+            // Dados de contexto para EMQ
+            page_url: context.url || '',
+            referrer_url: context.referrer || '',
+            event_source: 'website',
+            event_source_url: context.url || ''
         };
         
-        return this.sendEvent('Purchase', eventData, context, userData);
+        // Calcular EMQ Score usando o serviço de monitoramento
+        const emqResult = this.emqMonitoring.calculateEMQScore(eventData, enrichedUserData, context);
+        console.log(`🎯 Backend Purchase EMQ Score: ${emqResult.score}/100 (${emqResult.grade}) - Dados:`, {
+            content_id: eventData.content_id ? '✓' : '❌',
+            content_name: eventData.content_name ? '✓' : '❌',
+            value: `✓ ${validValue} BRL`,
+            order_id: `✓ ${orderId}`,
+            email: enrichedUserData.email ? '✓ Hash' : '❌ Ausente',
+            phone: enrichedUserData.phone_number ? '✓ Hash' : '❌ Ausente',
+            external_id: enrichedUserData.external_id ? '✓ Hash' : '❌ Ausente',
+            ip: context.ip ? '✓' : '❌',
+            user_agent: context.user_agent ? '✓' : '❌',
+            emq_score: `${emqResult.score}/100 ${emqResult.score >= 80 ? '🟢' : emqResult.score >= 60 ? '🟡' : '🔴'}`
+        });
+        
+        return this.sendEvent('Purchase', eventData, context, enrichedUserData);
+    }
+    
+    /**
+     * Enriquecer dados do usuário para máximo EMQ
+     */
+    async enrichUserDataForEMQ(userData = {}, context = {}) {
+        const enriched = { ...userData };
+        
+        // Garantir external_id se não existir
+        if (!enriched.external_id && (enriched.email || enriched.phone)) {
+            const baseId = enriched.email || enriched.phone || `fallback_${Date.now()}`;
+            enriched.external_id = this.hashData(`devotly_${baseId}_${context.ip || 'unknown'}`);
+        }
+        
+        // Adicionar dados de contexto se disponíveis
+        if (context.ip && !enriched.ip) {
+            enriched.ip = context.ip;
+        }
+        
+        if (context.user_agent && !enriched.user_agent) {
+            enriched.user_agent = context.user_agent;
+        }
+        
+        // Adicionar parâmetros do TikTok se disponíveis
+        if (context.ttp && !enriched.ttp) {
+            enriched.ttp = context.ttp;
+        }
+        
+        if (context.ttclid && !enriched.ttclid) {
+            enriched.ttclid = context.ttclid;
+        }
+        
+        return enriched;
     }
     
     /**

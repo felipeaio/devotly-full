@@ -595,9 +595,119 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
     <script src="../js/core/MediaHandler.js"></script>
     <script src="../js/core/error-handler.js"></script>
     <script src="../js/tiktok-events-optimized.js"></script>
+    <script src="../js/purchase-tracker.js"></script>
     <script src="../js/create-viewcontent-tracker.js"></script>
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
+
+    <!-- Purchase Detection Script -->
+    <script>
+    // Script para detectar Purchase events na página create
+    document.addEventListener('DOMContentLoaded', function() {
+        // Função para detectar retorno de pagamento aprovado
+        function checkForPurchaseSuccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status') || urlParams.get('collection_status');
+            const paymentId = urlParams.get('payment_id');
+            const paymentType = urlParams.get('payment_type');
+            
+            // Verificar se é um retorno de pagamento aprovado
+            if (status === 'approved' && paymentId) {
+                console.log('✅ Purchase Success: Pagamento aprovado detectado na página create');
+                
+                // Recuperar dados armazenados
+                const paymentData = JSON.parse(localStorage.getItem('devotlyPaymentData') || '{}');
+                const cardData = JSON.parse(localStorage.getItem('devotlyCardData') || '{}');
+                const userData = JSON.parse(localStorage.getItem('devotlyUserData') || '{}');
+                
+                // Valores dos planos
+                const planValues = { 
+                    'para_sempre': 17.99, 
+                    'anual': 8.99,
+                    'Para Sempre': 17.99,
+                    'Anual': 8.99
+                };
+                
+                const planType = paymentData.planType || cardData.planName || 'para_sempre';
+                const value = paymentData.value || cardData.price || planValues[planType] || 17.99;
+                const cardId = paymentData.cardId || cardData.id || paymentId;
+                
+                // Aguardar TikTok Events estar disponível
+                function waitForTikTokAndFire() {
+                    if (typeof TikTokEvents !== 'undefined') {
+                        // Identificar usuário
+                        const email = userData.email || paymentData.userEmail;
+                        const phone = userData.phone || paymentData.userPhone;
+                        
+                        if (email || phone) {
+                            const userId = email ? `purchase_${btoa(email).substr(0, 12)}_${Date.now()}` : null;
+                            TikTokEvents.identifyUser(email, phone, userId);
+                            console.log('🔍 TikTok: Usuário identificado para Purchase');
+                        }
+                        
+                        // Disparar Purchase event
+                        TikTokEvents.trackPurchase(
+                            cardId,
+                            `Plano Devotly ${planType}`,
+                            value,
+                            'BRL'
+                        );
+                        
+                        console.log('🎯 TikTok Purchase disparado:', {
+                            cardId: cardId,
+                            planType: planType,
+                            value: value,
+                            currency: 'BRL'
+                        });
+                        
+                        // Marcar como processado para evitar duplicatas
+                        localStorage.setItem('devotly_purchase_processed', paymentId);
+                        
+                    } else {
+                        // Tentar novamente em 500ms
+                        setTimeout(waitForTikTokAndFire, 500);
+                    }
+                }
+                
+                // Verificar se já foi processado
+                const alreadyProcessed = localStorage.getItem('devotly_purchase_processed');
+                if (alreadyProcessed !== paymentId) {
+                    waitForTikTokAndFire();
+                } else {
+                    console.log('⚠️ Purchase já processado para este payment_id:', paymentId);
+                }
+            }
+        }
+        
+        // Verificar imediatamente
+        checkForPurchaseSuccess();
+        
+        // Também verificar quando a URL muda (SPA behavior)
+        let lastUrl = window.location.href;
+        setInterval(() => {
+            const currentUrl = window.location.href;
+            if (currentUrl !== lastUrl) {
+                lastUrl = currentUrl;
+                setTimeout(checkForPurchaseSuccess, 100);
+            }
+        }, 1000);
+        
+        // Escutar mudanças no localStorage (caso dados sejam atualizados)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'devotlyPaymentData' && e.newValue) {
+                setTimeout(checkForPurchaseSuccess, 100);
+            }
+        });
+        
+        // Escutar mensagens de popup/iframe de pagamento
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'payment_success') {
+                console.log('✅ Mensagem de pagamento recebida:', event.data);
+                setTimeout(checkForPurchaseSuccess, 100);
+            }
+        });
+    });
+    </script>
 
     <script>
         // Solução robusta para o problema do 'undefined'
