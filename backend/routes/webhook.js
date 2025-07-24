@@ -2,7 +2,7 @@ import express from 'express';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { createClient } from '@supabase/supabase-js';
 import { sendPaymentConfirmationEmail } from '../services/emailService.js';
-import tiktokEvents from '../services/tiktokEvents.js';
+import tiktokEventsV3 from '../services/tiktokEventsV3.js';
 import QRCode from 'qrcode';
 const router = express.Router();
 
@@ -117,24 +117,42 @@ router.post('/mercadopago', async (req, res) => {
         }
         console.log('\n7. Dados extraídos:', { cardId, email, plano });
         
-        // Rastrear evento de compra através do TikTok API Events
+        // Rastrear evento de compra através do TikTok API Events V3
         try {
-            console.log('\n7.1. Enviando evento de compra para TikTok API Events...');
+            console.log('\n7.1. Enviando evento de compra para TikTok API Events V3...');
             const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
             const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
             
-            // Enviar evento de compra
-            await tiktokEvents.trackPurchase(
+            // Preparar contexto do request
+            const context = {
+                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
+                user_agent: req.headers['user-agent'] || '',
+                url: `${process.env.FRONTEND_URL}/create`,
+                referrer: '',
+                order_id: `order_${cardId}_${paymentId}`,
+                timestamp: Math.floor(Date.now() / 1000)
+            };
+            
+            // Preparar dados do usuário
+            const userData = {
+                email: email || '',
+                phone: paymentInfo.payer?.phone?.number || '',
+                external_id: email ? `devotly_${email}_${cardId}` : null
+            };
+            
+            // Enviar evento de compra com V3 otimizado
+            await tiktokEventsV3.trackPurchase(
                 cardId,
-                plano,
+                `Plano Devotly ${plano}`,
                 planValue,
-                email,
-                paymentInfo.payer?.phone?.number || null,
-                req
+                'BRL',
+                'digital_service',
+                context,
+                userData
             );
-            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event tracked for card: ${cardId}, plan: ${plano}, value: ${planValue}`);
+            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event V3 tracked for card: ${cardId}, plan: ${plano}, value: ${planValue}`);
         } catch (tikTokError) {
-            console.error(`[${new Date().toISOString()}] ⚠️ Erro ao rastrear TikTok Purchase:`, tikTokError.message);
+            console.error(`[${new Date().toISOString()}] ⚠️ Erro ao rastrear TikTok Purchase V3:`, tikTokError.message);
             // Continuamos o fluxo mesmo se o evento falhar
         }
 

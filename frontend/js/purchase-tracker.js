@@ -16,13 +16,15 @@ class PurchaseTracker {
     
     init() {
         console.log('🛒 PurchaseTracker: Inicializando monitoramento de Purchase events');
+        console.log('🛒 PurchaseTracker: URL atual:', window.location.href);
+        console.log('🛒 PurchaseTracker: Parâmetros da URL:', new URLSearchParams(window.location.search).toString());
         
         // Aguardar TikTok Events estar disponível
         this.waitForTikTokEvents().then(() => {
             this.setupPurchaseMonitoring();
         });
         
-        // Verificar URL parameters na inicialização
+        // Verificar URL parameters na inicialização (alta prioridade)
         this.checkUrlForPurchaseSuccess();
         
         // Monitorar mudanças na URL (caso a página seja SPA)
@@ -33,17 +35,36 @@ class PurchaseTracker {
         
         // Event listener para mensagens do PaymentWindow
         this.setupPaymentWindowListener();
+        
+        // Detectar quando o usuário volta para a página (importante para pagamentos)
+        this.setupWindowFocusListener();
+        
+        // Verificar imediatamente se há dados de pagamento salvos
+        this.checkStorageForPurchaseSuccess();
+        
+        // Debug: Log do localStorage atual
+        console.log('🛒 PurchaseTracker: localStorage atual:', {
+            devotlyPaymentData: localStorage.getItem('devotlyPaymentData'),
+            devotlyPaymentStatus: localStorage.getItem('devotlyPaymentStatus'),
+            devotlyCardData: localStorage.getItem('devotlyCardData'),
+            devotlyUserData: localStorage.getItem('devotlyUserData')
+        });
     }
     
     async waitForTikTokEvents() {
         return new Promise((resolve) => {
-            if (typeof TikTokEvents !== 'undefined') {
+            // Verificar múltiplas formas de disponibilidade do TikTok Events
+            if (typeof TikTokEvents !== 'undefined' || 
+                typeof window.TikTokManager !== 'undefined' || 
+                typeof ttq !== 'undefined') {
                 resolve();
                 return;
             }
             
             const checkInterval = setInterval(() => {
-                if (typeof TikTokEvents !== 'undefined') {
+                if (typeof TikTokEvents !== 'undefined' || 
+                    typeof window.TikTokManager !== 'undefined' || 
+                    typeof ttq !== 'undefined') {
                     clearInterval(checkInterval);
                     resolve();
                 }
@@ -76,12 +97,42 @@ class PurchaseTracker {
         const paymentId = urlParams.get('payment_id');
         const paymentType = urlParams.get('payment_type');
         
+        console.log('🛒 PurchaseTracker: Verificando URL para sucesso de pagamento:', {
+            status: status,
+            paymentId: paymentId,
+            paymentType: paymentType,
+            url: window.location.href
+        });
+        
         if (status === 'approved' && paymentId) {
             console.log('✅ PurchaseTracker: Pagamento aprovado detectado na URL');
+            
+            // Marcar no localStorage que o pagamento foi aprovado
+            localStorage.setItem('devotlyPaymentStatus', 'approved');
+            
             this.processPurchaseSuccess({
                 paymentId,
                 paymentType,
+                status: 'approved',
                 source: 'url_params'
+            });
+        }
+        
+        // Verificar parâmetros extras que podem indicar sucesso
+        const collection_id = urlParams.get('collection_id');
+        const preference_id = urlParams.get('preference_id');
+        
+        if (collection_id && preference_id) {
+            console.log('✅ PurchaseTracker: IDs de coleta detectados, presumindo sucesso');
+            
+            // Marcar no localStorage que o pagamento foi aprovado
+            localStorage.setItem('devotlyPaymentStatus', 'approved');
+            
+            this.processPurchaseSuccess({
+                paymentId: collection_id,
+                preferenceId: preference_id,
+                status: 'approved',
+                source: 'collection_params'
             });
         }
     }
@@ -126,6 +177,33 @@ class PurchaseTracker {
                     source: 'payment_window'
                 });
             }
+        });
+    }
+    
+    setupWindowFocusListener() {
+        // Detectar quando a janela ganha foco (usuário voltou do pagamento)
+        let lastFocusTime = Date.now();
+        
+        window.addEventListener('focus', () => {
+            const currentTime = Date.now();
+            const timeDiff = currentTime - lastFocusTime;
+            
+            // Se passou mais de 30 segundos sem foco, pode ter ido para pagamento
+            if (timeDiff > 30000) {
+                console.log('🔍 PurchaseTracker: Janela ganhou foco após período longo, verificando pagamento');
+                
+                // Aguardar um pouco para garantir que localStorage foi atualizado
+                setTimeout(() => {
+                    this.checkForPurchaseIndicators();
+                    this.checkUrlForPurchaseSuccess();
+                }, 1000);
+            }
+            
+            lastFocusTime = currentTime;
+        });
+        
+        window.addEventListener('blur', () => {
+            lastFocusTime = Date.now();
         });
     }
     
@@ -319,40 +397,64 @@ class PurchaseTracker {
     }
     
     async firePurchaseEvent(data) {
+        console.log('🎯 PurchaseTracker: Iniciando disparo de Purchase event com TikTok V3');
+        
         // Identificar usuário se possível com dados ultra-otimizados
-        if (data.userData.email && typeof TikTokEvents !== 'undefined') {
+        if (data.userData.email) {
             const userId = data.userData.email ? 
                          `purchase_${btoa(data.userData.email).substr(0, 12)}_${Date.now()}` : 
                          null;
             
-            TikTokEvents.identifyUser(
-                data.userData.email, 
-                data.userData.phone, 
-                userId
-            );
-            
-            console.log('🔍 TikTok: Usuário identificado para Purchase ultra-otimizado');
+            // Tentar múltiplas formas de identificação
+            if (typeof window.TikTokManager !== 'undefined' && window.TikTokManager.identifyUser) {
+                window.TikTokManager.identifyUser(
+                    data.userData.email, 
+                    data.userData.phone, 
+                    userId
+                );
+                console.log('🔍 TikTok V3: Usuário identificado via TikTokManager');
+            } else if (typeof TikTokEvents !== 'undefined' && TikTokEvents.identifyUser) {
+                TikTokEvents.identifyUser(
+                    data.userData.email, 
+                    data.userData.phone, 
+                    userId
+                );
+                console.log('🔍 TikTok: Usuário identificado via TikTokEvents');
+            }
         }
         
-        // Disparar Purchase event através do TikTokEvents com método ultra-otimizado
-        if (typeof TikTokEvents !== 'undefined' && TikTokEvents.trackPurchase) {
-            console.log('🎯 PurchaseTracker: Disparando Purchase ULTRA-OTIMIZADO via TikTokEvents');
+        // Disparar Purchase event através do TikTokManager V3 (prioridade)
+        if (typeof window.TikTokManager !== 'undefined' && window.TikTokManager.trackPurchase) {
+            console.log('🎯 PurchaseTracker: Disparando Purchase ULTRA-OTIMIZADO via TikTokManager V3');
             
-            // Usar método assíncrono se disponível
-            if (typeof trackPurchase === 'function') {
-                await trackPurchase(
+            try {
+                await window.TikTokManager.trackPurchase(
                     data.contentId,
                     data.contentName,
                     data.value,
-                    data.currency
+                    data.currency,
+                    data.userData
                 );
-            } else {
+                console.log('✅ Purchase event enviado via TikTokManager V3');
+            } catch (error) {
+                console.error('❌ Erro no TikTokManager V3:', error);
+            }
+        }
+        
+        // Fallback para TikTokEvents se disponível
+        else if (typeof TikTokEvents !== 'undefined' && TikTokEvents.trackPurchase) {
+            console.log('🎯 PurchaseTracker: Disparando Purchase via TikTokEvents (fallback)');
+            
+            try {
                 TikTokEvents.trackPurchase(
                     data.contentId,
                     data.contentName,
                     data.value,
                     data.currency
                 );
+                console.log('✅ Purchase event enviado via TikTokEvents');
+            } catch (error) {
+                console.error('❌ Erro no TikTokEvents:', error);
             }
         }
         
@@ -360,10 +462,15 @@ class PurchaseTracker {
         if (typeof ttq !== 'undefined') {
             console.log('🎯 PurchaseTracker: Disparando Purchase ULTRA-OTIMIZADO via ttq direto');
             
-            // Preparar dados ultra-otimizados
-            const ultraOptimizedData = await this.prepareUltraOptimizedEventData(data);
-            
-            ttq.track('Purchase', ultraOptimizedData);
+            try {
+                // Preparar dados ultra-otimizados
+                const ultraOptimizedData = await this.prepareUltraOptimizedEventData(data);
+                
+                ttq.track('Purchase', ultraOptimizedData);
+                console.log('✅ Purchase event enviado via ttq direto');
+            } catch (error) {
+                console.error('❌ Erro no ttq direto:', error);
+            }
         }
         
         // Enviar para backend (Events API) com dados ultra-otimizados
@@ -411,7 +518,7 @@ class PurchaseTracker {
             
             if (response.ok) {
                 const result = await response.json();
-                console.log('✅ PurchaseTracker: Purchase ULTRA-OTIMIZADO enviado para backend API', result);
+                console.log('✅ PurchaseTracker: Purchase ULTRA-OTIMIZADO enviado para backend API V3', result);
             } else {
                 console.warn('⚠️ PurchaseTracker: Erro ao enviar para backend:', response.status);
             }
@@ -420,7 +527,7 @@ class PurchaseTracker {
         }
         
         // Log de resumo ultra-detalhado
-        console.log('📊 PurchaseTracker: Resumo do Purchase Event ULTRA-OTIMIZADO', {
+        console.log('📊 PurchaseTracker: Resumo do Purchase Event ULTRA-OTIMIZADO V3', {
             contentId: data.contentId,
             contentName: data.contentName,
             value: data.value,
@@ -430,11 +537,13 @@ class PurchaseTracker {
             hasPhone: !!data.userData.phone,
             timestamp: data.timestamp,
             optimizations: {
+                tiktok_manager_v3: typeof window.TikTokManager !== 'undefined' ? '✓ Ativado' : '❌ Não disponível',
+                tiktok_events_fallback: typeof TikTokEvents !== 'undefined' ? '✓ Ativado' : '❌ Não disponível',
+                ttq_direct: typeof ttq !== 'undefined' ? '✓ Ativado' : '❌ Não disponível',
+                backend_api_v3: '✓ Ativado',
                 ultra_optimized_data: '✓ Ativado',
                 advanced_matching: '✓ Ativado', 
-                emq_enhancement: '✓ Ativado',
-                backend_api_v3: '✓ Ativado',
-                device_fingerprint: '✓ Ativado'
+                emq_enhancement: '✓ Ativado'
             }
         });
     }
@@ -498,6 +607,39 @@ class PurchaseTracker {
         };
     }
     
+    /**
+     * Método para simular um pagamento aprovado (apenas para testes)
+     */
+    simulatePaymentSuccess(planType = 'para_sempre', value = 17.99) {
+        console.log('🧪 PurchaseTracker: Simulando pagamento aprovado para teste');
+        
+        const simulatedPaymentData = {
+            paymentId: `test_payment_${Date.now()}`,
+            status: 'approved',
+            planType: planType,
+            value: value,
+            cardId: `test_card_${Date.now()}`,
+            userEmail: 'test@devotly.shop',
+            timestamp: new Date().toISOString(),
+            source: 'simulation'
+        };
+        
+        // Salvar no localStorage
+        localStorage.setItem('devotlyPaymentStatus', 'approved');
+        localStorage.setItem('devotlyPaymentData', JSON.stringify(simulatedPaymentData));
+        
+        // Processar como pagamento real
+        this.processPurchaseSuccess(simulatedPaymentData);
+    }
+    
+    /**
+     * Método para forçar verificação de pagamento
+     */
+    forceCheckPayment() {
+        console.log('🔍 PurchaseTracker: Forçando verificação de pagamento');
+        this.checkForPurchaseIndicators();
+    }
+    
     destroy() {
         console.log('🛒 PurchaseTracker: Destruindo instância');
         this.isActive = false;
@@ -532,3 +674,32 @@ if (window.location.pathname.includes('/create')) {
 
 // Export para uso global
 window.PurchaseTracker = PurchaseTracker;
+
+// Funções globais para teste e debug
+window.testPurchaseEvent = function(planType = 'para_sempre', value = 17.99) {
+    if (window.purchaseTracker) {
+        window.purchaseTracker.simulatePaymentSuccess(planType, value);
+    } else {
+        console.error('PurchaseTracker não está ativo. Certifique-se de estar na página /create');
+    }
+};
+
+window.checkPurchaseStatus = function() {
+    if (window.purchaseTracker) {
+        window.purchaseTracker.forceCheckPayment();
+    } else {
+        console.error('PurchaseTracker não está ativo. Certifique-se de estar na página /create');
+    }
+};
+
+window.debugPurchaseTracker = function() {
+    console.log('🔍 DEBUG PurchaseTracker:');
+    console.log('- PurchaseTracker ativo:', !!window.purchaseTracker);
+    console.log('- TikTokManager V3:', typeof window.TikTokManager);
+    console.log('- TikTokEvents:', typeof TikTokEvents);
+    console.log('- ttq:', typeof ttq);
+    console.log('- localStorage devotlyPaymentData:', localStorage.getItem('devotlyPaymentData'));
+    console.log('- localStorage devotlyPaymentStatus:', localStorage.getItem('devotlyPaymentStatus'));
+    console.log('- URL atual:', window.location.href);
+    console.log('- Parâmetros URL:', new URLSearchParams(window.location.search).toString());
+};

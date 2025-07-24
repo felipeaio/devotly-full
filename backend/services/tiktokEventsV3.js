@@ -520,7 +520,10 @@ class TikTokEventsServiceV3 {
             }
             
             // Usar EMQ Monitoring Service para otimizar payload
-            const optimizedPayload = this.emqMonitoring.optimizePayloadForEMQ(finalEventData, userData, context);
+            const optimizedData = this.emqMonitoring.optimizePayloadForEMQ(finalEventData, userData, context);
+            
+            // Mesclar dados otimizados
+            Object.assign(finalEventData, optimizedData);
             
             // Payload conforme TikTok Events API v1.3 - ULTRA-OTIMIZADO PARA EMQ
             const payload = {

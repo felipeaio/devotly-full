@@ -878,14 +878,17 @@ class DevotlyCreator {
                             window.TikTokEvents.addPaymentInfo(planoPtBr, planValue);
                             
                             // Armazenar dados do pagamento para uso na página de sucesso
-                            localStorage.setItem('devotlyPaymentData', JSON.stringify({
+                            const paymentData = {
                                 value: planValue,
                                 cardId: checkoutData.cardId,
                                 planType: planoPtBr,
                                 userEmail: userEmail,
                                 userPhone: userPhone,
                                 timestamp: new Date().toISOString()
-                            }));
+                            };
+                            
+                            localStorage.setItem('devotlyPaymentData', JSON.stringify(paymentData));
+                            console.log('💾 Dados de pagamento salvos no localStorage:', paymentData);
                             
                             // Log de cobertura antes do checkout
                             const coverage = window.TikTokEvents.getCoverage();
