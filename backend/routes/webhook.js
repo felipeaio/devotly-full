@@ -323,6 +323,13 @@ router.post('/mercadopago', async (req, res) => {
             const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
             const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
             
+            console.log('💰 Valor do plano calculado:', {
+                plano: plano,
+                planValue: planValue,
+                totalAmount: paymentInfo.total_amount,
+                currency: 'BRL'
+            });
+            
             // Preparar contexto do request
             const context = {
                 ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
@@ -333,6 +340,8 @@ router.post('/mercadopago', async (req, res) => {
                 timestamp: Math.floor(Date.now() / 1000)
             };
             
+            console.log('🌐 Contexto preparado:', context);
+            
             // Preparar dados do usuário
             const userData = {
                 email: email || '',
@@ -340,8 +349,15 @@ router.post('/mercadopago', async (req, res) => {
                 external_id: email ? `devotly_${email}_${cardId}` : null
             };
             
+            console.log('👤 Dados do usuário:', {
+                email: userData.email ? 'Presente' : 'Ausente',
+                phone: userData.phone ? 'Presente' : 'Ausente',
+                external_id: userData.external_id ? 'Presente' : 'Ausente'
+            });
+            
             // Enviar evento de compra com V3 otimizado
-            await tiktokEventsV3.trackPurchase(
+            console.log('🎯 Chamando tiktokEventsV3.trackPurchase...');
+            const tiktokResult = await tiktokEventsV3.trackPurchase(
                 cardId,
                 `Plano Devotly ${plano}`,
                 planValue,
@@ -350,9 +366,56 @@ router.post('/mercadopago', async (req, res) => {
                 context,
                 userData
             );
-            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event V3 tracked for card: ${cardId}, plan: ${plano}, value: ${planValue}`);
+            
+            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event V3 resultado:`, tiktokResult);
+            
+            if (tiktokResult.success) {
+                console.log(`✅ TikTok Purchase event enviado com sucesso - EMQ Score: ${tiktokResult.emq_score}`);
+            } else {
+                console.error(`❌ Falha no envio do TikTok Purchase event:`, tiktokResult.error);
+            }
+            
         } catch (tikTokError) {
-            console.error(`[${new Date().toISOString()}] ⚠️ Erro ao rastrear TikTok Purchase V3:`, tikTokError.message);
+            console.error(`[${new Date().toISOString()}] ❌ Erro completo ao rastrear TikTok Purchase V3:`, {
+                message: tikTokError.message,
+                stack: tikTokError.stack,
+                cardId: cardId,
+                plano: plano,
+                email: email
+            });
+            
+            // Tentar novamente com configuração mais simples em caso de timeout
+            if (tikTokError.message && tikTokError.message.includes('timeout')) {
+                console.log('🔄 Tentando reenvio simplificado devido a timeout...');
+                try {
+                    // Dados mais simples para retry
+                    const simpleContext = {
+                        ip: '127.0.0.1',
+                        user_agent: 'Devotly-Webhook',
+                        timestamp: Math.floor(Date.now() / 1000)
+                    };
+                    
+                    const simpleUserData = {
+                        email: email || '',
+                        external_id: `devotly_${cardId}`
+                    };
+                    
+                    const simpleResult = await tiktokEventsV3.trackPurchase(
+                        cardId,
+                        `Devotly ${plano}`,
+                        planValue,
+                        'BRL',
+                        'product',
+                        simpleContext,
+                        simpleUserData
+                    );
+                    
+                    console.log('✅ Reenvio simplificado bem-sucedido:', simpleResult);
+                } catch (retryError) {
+                    console.error('❌ Falha no reenvio simplificado:', retryError.message);
+                }
+            }
+            
             // Continuamos o fluxo mesmo se o evento falhar
         }
 

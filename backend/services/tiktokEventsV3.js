@@ -19,12 +19,33 @@ import EMQMonitoringService from './emqMonitoring.js';
 
 class TikTokEventsServiceV3 {
     constructor() {
+        this.initialized = false;
+        this.initializeService();
+    }
+    
+    initializeService() {
         this.accessToken = process.env.TIKTOK_ACCESS_TOKEN;
         this.pixelCode = process.env.TIKTOK_PIXEL_CODE || 'D1QFD0RC77UF6MBM48MG';
-        this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/pixel/track/';
+        this.apiUrl = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
         
-        // Inicializar EMQ Monitoring Service
-        this.emqMonitoring = new EMQMonitoringService();
+        // Log de configuração para debug
+        console.log('🔧 TikTok API Configuration:');
+        console.log('- Access Token:', this.accessToken ? `${this.accessToken.slice(0, 10)}...` : 'NOT SET');
+        console.log('- Pixel Code:', this.pixelCode);
+        console.log('- API URL:', this.apiUrl);
+        
+        // Só inicializar EMQ se as variáveis estiverem disponíveis
+        if (process.env.SUPABASE_URL) {
+            try {
+                this.emqMonitoring = new EMQMonitoringService();
+            } catch (error) {
+                console.warn('⚠️ EMQ Monitoring não pôde ser inicializado:', error.message);
+                this.emqMonitoring = null;
+            }
+        } else {
+            console.warn('⚠️ SUPABASE_URL não encontrada, EMQ Monitoring desabilitado');
+            this.emqMonitoring = null;
+        }
         
         // Cache para deduplicação
         this.eventCache = new Map();
@@ -36,8 +57,8 @@ class TikTokEventsServiceV3 {
             hashAlgorithm: 'sha256',
             encoding: 'base64',
             minPhoneDigits: 8,
-            maxRetries: 3,
-            timeoutMs: 10000
+            maxRetries: 2, // Reduzir para 2 tentativas para não demorar muito
+            timeoutMs: 15000 // 15 segundos - mais rápido que 30s
         };
         
         // Métricas de qualidade
@@ -57,9 +78,23 @@ class TikTokEventsServiceV3 {
     }
     
     /**
+     * Reinicializa o serviço com novas variáveis de ambiente
+     */
+    reinitialize() {
+        console.log('🔄 Reinicializando TikTok Events Service...');
+        this.initializeService();
+        this.initialized = true;
+    }
+    
+    /**
      * Valida configuração do serviço
      */
     validateConfig() {
+        // Tentar reinicializar se não foi inicializado ainda
+        if (!this.initialized) {
+            this.reinitialize();
+        }
+        
         if (!this.accessToken) {
             throw new Error('TIKTOK_ACCESS_TOKEN não configurado');
         }
@@ -519,11 +554,15 @@ class TikTokEventsServiceV3 {
                 }
             }
             
-            // Usar EMQ Monitoring Service para otimizar payload
-            const optimizedData = this.emqMonitoring.optimizePayloadForEMQ(finalEventData, userData, context);
-            
-            // Mesclar dados otimizados
-            Object.assign(finalEventData, optimizedData);
+            // Usar EMQ Monitoring Service para otimizar payload (se disponível)
+            if (this.emqMonitoring) {
+                try {
+                    const optimizedData = this.emqMonitoring.optimizePayloadForEMQ(finalEventData, userData, context);
+                    Object.assign(finalEventData, optimizedData);
+                } catch (error) {
+                    console.warn('⚠️ Erro na otimização EMQ, continuando sem otimização:', error.message);
+                }
+            }
             
             // Payload conforme TikTok Events API v1.3 - ULTRA-OTIMIZADO PARA EMQ
             const payload = {
@@ -577,8 +616,15 @@ class TikTokEventsServiceV3 {
                 payload.test_event_code = `test_${eventType.toLowerCase()}_devotly_${Date.now()}`;
             }
             
-            // Calcular EMQ final
-            const emqResult = this.emqMonitoring.calculateEMQScore(finalEventData, userData, context);
+            // Calcular EMQ final (se disponível)
+            let emqResult = { score: 70, grade: 'GOOD' }; // Fallback
+            if (this.emqMonitoring) {
+                try {
+                    emqResult = this.emqMonitoring.calculateEMQScore(finalEventData, userData, context);
+                } catch (error) {
+                    console.warn('⚠️ Erro no cálculo EMQ final, usando fallback:', error.message);
+                }
+            }
             
             console.log(`🎯 Enviando ${eventType} para TikTok API v1.3 (EMQ: ${emqResult.score}/${emqResult.grade})`);
             console.log('📊 Dados ULTRA-OTIMIZADOS:', {
@@ -644,6 +690,15 @@ class TikTokEventsServiceV3 {
      */
     async makeApiRequest(payload, eventType, attempt = 1) {
         try {
+            console.log(`🚀 Fazendo requisição para TikTok API (tentativa ${attempt}):`);
+            console.log('📍 URL:', this.apiUrl);
+            console.log('🔑 Access Token:', this.accessToken ? `${this.accessToken.slice(0, 10)}...` : 'NOT SET');
+            console.log('📦 Payload completo:', JSON.stringify(payload, null, 2));
+            
+            // Implementar timeout manualmente
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.emqConfig.timeoutMs);
+            
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
@@ -651,23 +706,42 @@ class TikTokEventsServiceV3 {
                     'Access-Token': this.accessToken
                 },
                 body: JSON.stringify(payload),
-                timeout: this.emqConfig.timeoutMs
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId); // Limpar timeout se sucesso
+            
+            console.log(`📡 Resposta da API - Status: ${response.status} ${response.statusText}`);
+            console.log('📋 Headers da resposta:', Object.fromEntries(response.headers.entries()));
             
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error(`❌ Erro na API TikTok:`, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorBody: errorText,
+                    url: this.apiUrl,
+                    accessToken: this.accessToken ? 'Presente' : 'Ausente'
+                });
                 throw new Error(`API Error ${response.status}: ${errorText}`);
             }
             
             const result = await response.json();
-            console.log(`✅ ${eventType} enviado para TikTok API Events`);
+            console.log(`✅ ${eventType} enviado com sucesso para TikTok API`);
+            console.log('📊 Resposta da API:', JSON.stringify(result, null, 2));
             
             return result;
             
         } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error(`⏱️ Timeout após ${this.emqConfig.timeoutMs / 1000} segundos`);
+                error.message = `Timeout após ${this.emqConfig.timeoutMs / 1000} segundos`;
+            }
+            
             if (attempt < this.emqConfig.maxRetries) {
-                console.log(`🔄 Retry ${attempt}/${this.emqConfig.maxRetries} para ${eventType}`);
-                await this.delay(1000 * attempt); // Backoff exponencial
+                const delayMs = 2000 * attempt; // Backoff exponencial
+                console.log(`🔄 Retry ${attempt}/${this.emqConfig.maxRetries} para ${eventType} em ${delayMs}ms`);
+                await this.delay(delayMs);
                 return this.makeApiRequest(payload, eventType, attempt + 1);
             }
             
@@ -937,8 +1011,16 @@ class TikTokEventsServiceV3 {
             throw new Error('Purchase requer value > 0');
         }
         
-        // Enriquecer dados do usuário usando EMQ Monitoring Service
-        const enrichedUserData = await this.emqMonitoring.enrichUserDataForEMQ(userData, context);
+        // Enriquecer dados do usuário usando EMQ Monitoring Service (se disponível)
+        let enrichedUserData = userData;
+        if (this.emqMonitoring) {
+            try {
+                enrichedUserData = await this.emqMonitoring.enrichUserDataForEMQ(userData, context);
+            } catch (error) {
+                console.warn('⚠️ Erro no EMQ enrichment, usando dados originais:', error.message);
+                enrichedUserData = userData;
+            }
+        }
         
         // Gerar order_id único se não fornecido
         const orderId = context.order_id || `order_${contentId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -970,8 +1052,16 @@ class TikTokEventsServiceV3 {
             event_source_url: context.url || ''
         };
         
-        // Calcular EMQ Score usando o serviço de monitoramento
-        const emqResult = this.emqMonitoring.calculateEMQScore(eventData, enrichedUserData, context);
+        // Calcular EMQ Score usando o serviço de monitoramento (se disponível)
+        let emqResult = { score: 70, grade: 'GOOD' }; // Fallback
+        if (this.emqMonitoring) {
+            try {
+                emqResult = this.emqMonitoring.calculateEMQScore(eventData, enrichedUserData, context);
+            } catch (error) {
+                console.warn('⚠️ Erro no cálculo EMQ, usando fallback:', error.message);
+            }
+        }
+        
         console.log(`🎯 Backend Purchase EMQ Score: ${emqResult.score}/100 (${emqResult.grade}) - Dados:`, {
             content_id: eventData.content_id ? '✓' : '❌',
             content_name: eventData.content_name ? '✓' : '❌',

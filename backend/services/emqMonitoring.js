@@ -141,21 +141,34 @@ class EMQMonitoringService {
         const enrichedData = { ...userData };
 
         try {
-            // IP Address (múltiplas fontes)
-            enrichedData.ip = this.extractClientIP(request);
-
-            // User Agent
-            enrichedData.userAgent = request.headers['user-agent'] || '';
-
-            // Accept Language
-            enrichedData.language = request.headers['accept-language'] || '';
-
-            // TikTok Parameters
-            enrichedData.ttp = request.headers['x-ttp'] || '';
-            enrichedData.ttclid = request.headers['x-ttclid'] || '';
-
-            // Timezone
-            enrichedData.timezone = request.headers['x-timezone'] || '';
+            // Verificar se request é um objeto de contexto ou um objeto de request HTTP
+            const isContextObject = request && !request.headers;
+            
+            if (isContextObject) {
+                // Se for um object de contexto (usado em testes), usar os dados diretamente
+                enrichedData.ip = request.ip || '127.0.0.1';
+                enrichedData.userAgent = request.user_agent || '';
+                enrichedData.language = request.browser_language || 'pt-BR';
+                enrichedData.ttp = request.ttp || '';
+                enrichedData.ttclid = request.ttclid || '';
+                enrichedData.timezone = request.timezone || '';
+            } else if (request && request.headers) {
+                // Se for um objeto de request HTTP real
+                enrichedData.ip = this.extractClientIP(request);
+                enrichedData.userAgent = request.headers['user-agent'] || '';
+                enrichedData.language = request.headers['accept-language'] || '';
+                enrichedData.ttp = request.headers['x-ttp'] || '';
+                enrichedData.ttclid = request.headers['x-ttclid'] || '';
+                enrichedData.timezone = request.headers['x-timezone'] || '';
+            } else {
+                // Fallback se não houver request
+                enrichedData.ip = '127.0.0.1';
+                enrichedData.userAgent = '';
+                enrichedData.language = 'pt-BR';
+                enrichedData.ttp = '';
+                enrichedData.ttclid = '';
+                enrichedData.timezone = '';
+            }
 
             // Hash de dados sensíveis
             if (enrichedData.email) {
