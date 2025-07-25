@@ -6,6 +6,180 @@ import tiktokEventsV3 from '../services/tiktokEventsV3.js';
 import QRCode from 'qrcode';
 const router = express.Router();
 
+// Rota de debug para verificar pagamento específico
+router.get('/debug/payment/:paymentId', async (req, res) => {
+    try {
+        const paymentId = req.params.paymentId;
+        console.log(`🔍 DEBUG: Verificando pagamento ${paymentId}`);
+        
+        // Configurar Mercado Pago
+        const client = new MercadoPagoConfig({
+            accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+            options: { timeout: 10000 }
+        });
+        const payment = new Payment(client);
+        
+        // Buscar dados do pagamento
+        const paymentInfo = await payment.get({ id: paymentId });
+        console.log('Dados do pagamento:', JSON.stringify(paymentInfo, null, 2));
+        
+        // Verificar se existe cartão associado
+        const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY
+        );
+        
+        const externalReference = paymentInfo.external_reference;
+        let cardId = null;
+        if (externalReference) {
+            cardId = externalReference.split('|')[0];
+        }
+        
+        let cardData = null;
+        if (cardId) {
+            const { data } = await supabase
+                .from('cards')
+                .select('*')
+                .eq('id', cardId)
+                .single();
+            cardData = data;
+        }
+        
+        return res.json({
+            success: true,
+            paymentInfo,
+            cardId,
+            cardData,
+            canProcess: paymentInfo.status === 'approved' && cardData
+        });
+        
+    } catch (error) {
+        console.error('Erro no debug:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Rota para processar pagamento manualmente quando webhook falha
+router.post('/manual-process/:paymentId', async (req, res) => {
+    try {
+        const paymentId = req.params.paymentId;
+        console.log(`🔄 PROCESSAMENTO MANUAL: Pagamento ${paymentId}`);
+        
+        // Buscar dados do pagamento
+        const client = new MercadoPagoConfig({
+            accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+            options: { timeout: 10000 }
+        });
+        const payment = new Payment(client);
+        
+        const paymentInfo = await payment.get({ id: paymentId });
+        console.log('Status do pagamento:', paymentInfo.status);
+        
+        if (paymentInfo.status !== 'approved') {
+            return res.json({
+                success: false,
+                message: `Pagamento não aprovado. Status: ${paymentInfo.status}`
+            });
+        }
+        
+        // Processar como se fosse webhook
+        const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY
+        );
+        
+        const externalReference = paymentInfo.external_reference;
+        if (!externalReference) {
+            throw new Error('External reference não encontrada');
+        }
+        
+        const [cardId, email, plano] = externalReference.split('|');
+        console.log('Dados extraídos:', { cardId, email, plano });
+        
+        // Buscar cartão no banco
+        const { data: cardData, error: cardError } = await supabase
+            .from('cards')
+            .select('*')
+            .eq('id', cardId)
+            .single();
+            
+        if (cardError || !cardData) {
+            throw new Error(`Cartão não encontrado: ${cardError?.message}`);
+        }
+        
+        // Atualizar status do pagamento
+        const { error: updateError } = await supabase
+            .from('cards')
+            .update({
+                status_pagamento: 'aprovado',
+                payment_id: paymentId,
+                payment_data: paymentInfo,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', cardId);
+            
+        if (updateError) {
+            throw new Error(`Erro ao atualizar cartão: ${updateError.message}`);
+        }
+        
+        // Enviar email de confirmação
+        try {
+            await sendPaymentConfirmationEmail(email, cardData);
+            console.log('✅ Email de confirmação enviado');
+        } catch (emailError) {
+            console.error('❌ Erro ao enviar email:', emailError);
+        }
+        
+        // Disparar evento TikTok Purchase
+        try {
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
+            
+            const context = {
+                user_agent: req.headers['user-agent'],
+                ip: req.ip || req.connection.remoteAddress,
+                source: 'manual_processing'
+            };
+            
+            const userData = {
+                email: email,
+                external_id: `user_${cardId}`
+            };
+            
+            await tiktokEventsV3.trackPurchase(
+                cardId,
+                `Plano Devotly ${plano}`,
+                planValue,
+                'BRL',
+                'digital_service',
+                context,
+                userData
+            );
+            
+            console.log('✅ Evento TikTok Purchase enviado');
+        } catch (tiktokError) {
+            console.error('❌ Erro ao enviar evento TikTok:', tiktokError);
+        }
+        
+        return res.json({
+            success: true,
+            message: 'Pagamento processado com sucesso',
+            cardId,
+            redirectUrl: `https://devotly.shop/success.html?payment_id=${paymentId}&external_reference=${encodeURIComponent(externalReference)}`
+        });
+        
+    } catch (error) {
+        console.error('Erro no processamento manual:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 router.post('/mercadopago', async (req, res) => {
     console.log('\n=== INÍCIO DO PROCESSAMENTO DO WEBHOOK ===');
     console.log('Timestamp:', new Date().toISOString());

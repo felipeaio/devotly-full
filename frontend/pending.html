@@ -118,6 +118,24 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.5);
         }
+        
+        .btn-warning {
+            background: #ffa502;
+            color: white;
+            border: none;
+        }
+        
+        .btn-warning:hover {
+            background: #ff7f02;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 165, 2, 0.4);
+        }
+        
+        .btn-warning:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
 
         @keyframes slideUp {
             from {
@@ -188,6 +206,16 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
                     <i class="fas fa-plus"></i>
                     Criar Outro Cartão
                 </a>
+                
+                <!-- Botão de emergência para processamento manual -->
+                <button id="manualProcessBtn" class="btn btn-warning" style="background: #ffa502; display: none; margin-top: 1rem;">
+                    <i class="fas fa-tools"></i>
+                    Processar Pagamento Manualmente
+                </button>
+            </div>
+            
+            <!-- Log de debug -->
+            <div id="debugLog" style="display: none; background: rgba(0,0,0,0.8); color: #00ff00; padding: 1rem; border-radius: 5px; margin-top: 1rem; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
             </div>
         </div>
     </div>    <script>
@@ -200,45 +228,167 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
         const paymentId = paymentParams.payment_id;
         const externalReference = paymentParams.external_reference;
         const paymentType = paymentParams.payment_type;
+        
+        // Função para adicionar logs de debug
+        function addDebugLog(message) {
+            const debugLog = document.getElementById('debugLog');
+            debugLog.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        // Função para processar pagamento manualmente
+        async function processPaymentManually() {
+            if (!paymentId) {
+                alert('Payment ID não encontrado');
+                return;
+            }
+            
+            addDebugLog(`Iniciando processamento manual do pagamento ${paymentId}`);
+            const manualBtn = document.getElementById('manualProcessBtn');
+            manualBtn.disabled = true;
+            manualBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            
+            try {
+                let response;
+                try {
+                    response = await fetch(`/webhook/manual-process/${paymentId}`, { method: 'POST' });
+                } catch (proxyError) {
+                    addDebugLog('Erro no proxy, tentando conexão direta...');
+                    response = await fetch(`https://devotly-full-production.up.railway.app/webhook/manual-process/${paymentId}`, { method: 'POST' });
+                }
+                
+                const result = await response.json();
+                addDebugLog(`Resposta: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    addDebugLog('✅ Pagamento processado com sucesso!');
+                    alert('Pagamento processado com sucesso! Você será redirecionado...');
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        window.location.href = '/success.html?' + window.location.search.substring(1);
+                    }
+                } else {
+                    addDebugLog(`❌ Erro: ${result.message || result.error}`);
+                    alert(`Erro: ${result.message || result.error}`);
+                }
+            } catch (error) {
+                addDebugLog(`❌ Erro na requisição: ${error.message}`);
+                alert(`Erro: ${error.message}`);
+            } finally {
+                manualBtn.disabled = false;
+                manualBtn.innerHTML = '<i class="fas fa-tools"></i> Processar Pagamento Manualmente';
+            }
+        }
+        
+        // Configurar botão de processamento manual
+        document.getElementById('manualProcessBtn').addEventListener('click', processPaymentManually);
+        
+        // Logs iniciais
+        addDebugLog('=== PENDING PAGE INICIADA ===');
+        addDebugLog(`Payment ID: ${paymentId}`);
+        addDebugLog(`External Reference: ${externalReference}`);
+        addDebugLog(`Payment Type: ${paymentType}`);
+        addDebugLog(`URL Completa: ${window.location.href}`);
 
         // Função para verificar status do pagamento
+        let failedAttempts = 0;
         async function checkPaymentStatus() {
             if (!paymentId) {
-                console.log('Payment ID não encontrado nos parâmetros');
+                addDebugLog('❌ Payment ID não encontrado nos parâmetros');
                 return;
             }
 
             try {
-                console.log('Verificando status do pagamento:', paymentId);
+                addDebugLog(`🔍 Verificando status do pagamento: ${paymentId} (tentativa ${failedAttempts + 1})`);
                 
                 // Se há external_reference, extrair o cardId
                 let cardId = null;
                 if (externalReference) {
                     const decodedRef = decodeURIComponent(externalReference);
                     cardId = decodedRef.split('|')[0];
+                    addDebugLog(`Card ID extraído: ${cardId}`);
                 }
 
                 if (!cardId) {
-                    console.log('Card ID não encontrado na referência externa');
+                    addDebugLog('❌ Card ID não encontrado na referência externa');
                     return;
                 }
 
-                // Verificar se o cartão foi aprovado
-                const response = await fetch(`/api/cards/${cardId}/status`);
+                // Verificar se o cartão foi aprovado (com fallback para Railway)
+                let response;
+                try {
+                    response = await fetch(`/api/cards/${cardId}/status`);
+                } catch (proxyError) {
+                    addDebugLog(`⚠️ Erro no proxy: ${proxyError.message}`);
+                    addDebugLog('🔄 Tentando conexão direta com Railway...');
+                    try {
+                        response = await fetch(`https://devotly-full-production.up.railway.app/api/cards/${cardId}/status`);
+                    } catch (railwayError) {
+                        addDebugLog(`❌ Erro também no Railway: ${railwayError.message}`);
+                        failedAttempts++;
+                        return;
+                    }
+                }
+                
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Status do cartão:', data);
+                    addDebugLog(`✅ Status do cartão: ${data.status_pagamento}`);
                     
                     if (data.status_pagamento === 'aprovado') {
-                        console.log('Pagamento aprovado! Redirecionando para success...');
+                        addDebugLog('🎉 Pagamento aprovado! Redirecionando para success...');
                         // Redirecionar para a página de sucesso
                         window.location.href = `/success.html?${window.location.search.substring(1)}`;
+                        return;
                     }
+                    
+                    // Reset failed attempts se conseguiu conectar
+                    failedAttempts = 0;
                 } else {
-                    console.log('Erro ao verificar status:', response.status);
+                    addDebugLog(`❌ Erro ao verificar status: ${response.status}`);
+                    failedAttempts++;
+                    
+                    // Se response.status for 502/503/504, pode ser problema de proxy
+                    if (response.status >= 502 && response.status <= 504) {
+                        addDebugLog('🔄 Erro de proxy detectado, tentando conexão direta...');
+                        try {
+                            const directResponse = await fetch(`https://devotly-full-production.up.railway.app/api/cards/${cardId}/status`);
+                            if (directResponse.ok) {
+                                const data = await directResponse.json();
+                                addDebugLog(`✅ Status do cartão (conexão direta): ${data.status_pagamento}`);
+                                
+                                if (data.status_pagamento === 'aprovado') {
+                                    addDebugLog('🎉 Pagamento aprovado! Redirecionando para success...');
+                                    window.location.href = `/success.html?${window.location.search.substring(1)}`;
+                                    return;
+                                }
+                                failedAttempts = 0; // Reset se conexão direta funcionou
+                            }
+                        } catch (directError) {
+                            addDebugLog(`❌ Erro na conexão direta também: ${directError.message}`);
+                            failedAttempts++;
+                        }
+                    }
                 }
+                
+                // Mostrar botão de emergência após 3 tentativas falhadas
+                if (failedAttempts >= 3) {
+                    addDebugLog('⚠️ Muitas tentativas falharam. Mostrando botão de processamento manual.');
+                    document.getElementById('manualProcessBtn').style.display = 'block';
+                }
+                
             } catch (error) {
-                console.error('Erro ao verificar status do pagamento:', error);
+                addDebugLog(`❌ Erro ao verificar status do pagamento: ${error.message}`);
+                failedAttempts++;
+                
+                // Mostrar botão de emergência após 3 tentativas falhadas
+                if (failedAttempts >= 3) {
+                    addDebugLog('⚠️ Muitas tentativas falharam. Mostrando botão de processamento manual.');
+                    document.getElementById('manualProcessBtn').style.display = 'block';
+                }
             }
         }
 
