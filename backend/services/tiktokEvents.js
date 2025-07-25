@@ -574,16 +574,30 @@ class TikTokEventsService {
      * Evento de checkout iniciado - OTIMIZADO
      */
     async trackInitiateCheckout(cardId, planType, value, userEmail, req = null, eventId = null) {
+        console.log(`🎯 [Backend TikTok] INITIATE CHECKOUT RECEBIDO:`, {
+            cardId,
+            planType,
+            value,
+            userEmail,
+            eventId
+        });
+        
         const planName = planType === 'para_sempre' ? 'Plano Para Sempre' : 'Plano Anual';
         
         // Validar value obrigatório
         if (!value || isNaN(value) || value <= 0) {
             console.warn('[TikTok Events] AVISO: Evento InitiateCheckout sem value válido.');
-            value = planType === 'para_sempre' ? 97.00 : 67.00; // Valores padrão como decimal
+            value = planType === 'para_sempre' ? 17.99 : 8.99; // Valores corretos
         }
         
         // Garantir que value seja número decimal válido
         const validValue = Number(parseFloat(value).toFixed(2));
+        
+        console.log(`📊 [Backend TikTok] DADOS PROCESSADOS:`, {
+            planName,
+            validValue,
+            currency: 'BRL'
+        });
         
         const context = req ? {
             ip: this.getUserIP(req),

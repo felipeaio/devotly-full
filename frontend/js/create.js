@@ -746,20 +746,32 @@ class DevotlyCreator {
                     
                     // Rastrear seleção de plano
                     if (typeof TikTokEvents !== 'undefined') {
-                        // Valores corretos dos planos (em reais)
-                        const planValues = { 'para_sempre': 297, 'anual': 97 };
+                        // Valores corretos dos planos (em reais) - CORRIGIDO
+                        const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
                         const planValue = planValues[planoPtBr] || 0;
                         TikTokEvents.create.completeCreation(this.state.cardId);
                         TikTokEvents.selectPlan(planoPtBr, planValue);
                         
                         // 🎯 INITIATE CHECKOUT - Início do processo de checkout
                         console.log(`🛒 INITIATE CHECKOUT: Iniciando checkout para ${planoPtBr} - R$ ${planValue}`);
+                        console.log(`📊 DADOS DO EVENTO: cardId=${this.state.cardId}, planType=${planoPtBr}, value=${planValue}`);
                         TikTokEvents.startCheckout(this.state.cardId, planoPtBr, planValue);
+                        
+                        // 🎯 MÚLTIPLOS PIXELS - Enviar também para serviço de múltiplos pixels
+                        if (typeof TikTokMultiPixel !== 'undefined') {
+                            console.log(`🎯 MÚLTIPLOS PIXELS: Enviando InitiateCheckout`);
+                            TikTokMultiPixel.trackInitiateCheckout(
+                                this.state.cardId,
+                                `Plano ${planoPtBr === 'para_sempre' ? 'Para Sempre' : 'Anual'}`,
+                                planValue,
+                                'BRL'
+                            );
+                        }
                     }
                     
                     // Rastrear evento de seleção de plano para TikTok Pixel (AddToCart e InitiateCheckout)
                     try {
-                        const planValues = { 'para_sempre': 297, 'anual': 97 };
+                        const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
                         const planValue = planValues[planoPtBr] || 0;
                         
                         // Salvar dados para rastreamento posterior

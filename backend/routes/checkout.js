@@ -1,6 +1,7 @@
 import express from 'express';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import tiktokEvents from '../services/tiktokEvents.js';
+import tiktokPixelService from '../services/tiktokPixelService.js';
 const router = express.Router();
 
 router.post('/create-preference', async (req, res) => {
@@ -22,6 +23,7 @@ router.post('/create-preference', async (req, res) => {
             const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
             const planValue = planValues[plano] || 0;
             
+            // Enviar para serviço original
             await tiktokEvents.trackInitiateCheckout(
                 cardId,
                 plano,
@@ -29,7 +31,22 @@ router.post('/create-preference', async (req, res) => {
                 email,
                 req
             );
-            console.log(`[${new Date().toISOString()}] TikTok InitiateCheckout event tracked for plan: ${plano}, value: ${planValue}`);
+            
+            // Enviar também para múltiplos pixels (novo serviço)
+            await tiktokPixelService.trackInitiateCheckout(
+                cardId,
+                `Plano ${plano === 'para_sempre' ? 'Para Sempre' : 'Anual'}`,
+                planValue,
+                'BRL',
+                {
+                    email: email,
+                    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+                    user_agent: req.headers['user-agent'],
+                    page_url: `${req.protocol}://${req.get('host')}${req.originalUrl}`
+                }
+            );
+            
+            console.log(`[${new Date().toISOString()}] TikTok InitiateCheckout events tracked for plan: ${plano}, value: ${planValue}`);
         } catch (tikTokError) {
             console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok InitiateCheckout:`, tikTokError.message);
             // Continuamos o fluxo mesmo se o evento falhar

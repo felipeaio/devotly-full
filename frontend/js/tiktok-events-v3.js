@@ -2033,11 +2033,26 @@ class TikTokEventsManager {
      * InitiateCheckout - Início de checkout
      */
     async trackInitiateCheckout(contentId, contentName, value, currency = 'BRL', category = 'product') {
+        console.log(`🎯 [TikTok] INITIATE CHECKOUT DISPARADO:`, {
+            contentId,
+            contentName,
+            value,
+            currency,
+            category
+        });
+        
         const validValue = this.validateValue(value);
         
         // Validar content_id e content_name
         const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
         const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Produto';
+        
+        console.log(`📊 [TikTok] DADOS VALIDADOS:`, {
+            validContentId,
+            validContentName,
+            validValue,
+            currency: String(currency)
+        });
         
         return this.sendEvent('InitiateCheckout', {
             content_id: validContentId,
@@ -2569,7 +2584,10 @@ window.TikTokEvents = {
     },
     
     selectPlan: (planType, value) => window.TikTokManager.trackAddToCart('plan', `Plano ${planType}`, value),
-    startCheckout: (cardId, planType, value) => window.TikTokManager.trackInitiateCheckout(cardId, `Plano ${planType}`, value),
+    startCheckout: (cardId, planType, value) => {
+        console.log(`🚀 [TikTok] START CHECKOUT CHAMADO:`, { cardId, planType, value });
+        return window.TikTokManager.trackInitiateCheckout(cardId, `Plano ${planType}`, value);
+    },
     completePurchase: (cardId, planType, value) => window.TikTokManager.trackPurchase(cardId, `Plano ${planType}`, value),
     
     // Novos métodos EMQ otimizados

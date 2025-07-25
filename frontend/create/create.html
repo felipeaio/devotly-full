@@ -595,10 +595,55 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
     <script src="../js/core/MediaHandler.js"></script>
     <script src="../js/core/error-handler.js"></script>
     <script src="../js/tiktok-events-v3.js"></script>
+    <script src="../js/tiktok-multi-pixel.js"></script>
     <script src="../js/purchase-tracker.js"></script>
     <script src="../js/create-viewcontent-tracker.js"></script>
     <script src="../js/create.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.2/intersection-observer.min.js"></script>
+    <script>
+        // Função global para testar InitiateCheckout manualmente
+        window.testInitiateCheckout = function(planType = 'para_sempre') {
+            console.log('🧪 TESTE MANUAL: Testando InitiateCheckout para', planType);
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const value = planValues[planType];
+            const cardId = 'test-card-' + Date.now();
+            
+            if (typeof TikTokEvents !== 'undefined' && TikTokEvents.startCheckout) {
+                TikTokEvents.startCheckout(cardId, planType, value);
+                console.log('✅ TESTE: InitiateCheckout disparado!');
+            } else {
+                console.error('❌ TESTE: TikTokEvents não encontrado!');
+            }
+        };
+        
+        // Monitorar cliques nos botões de seleção de plano
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar um pouco para garantir que tudo carregou
+            setTimeout(() => {
+                const planButtons = document.querySelectorAll('.btn-select-plan');
+                console.log(`🔍 MONITORANDO: ${planButtons.length} botões de seleção de plano encontrados`);
+                
+                planButtons.forEach((button, index) => {
+                    const planType = button.dataset.plan;
+                    console.log(`📌 Botão ${index + 1}: data-plan="${planType}"`);
+                    
+                    // Adicionar listener de debug
+                    button.addEventListener('click', function(e) {
+                        console.log(`🎯 CLIQUE DETECTADO no botão: data-plan="${planType}"`);
+                        console.log('📍 Elemento clicado:', button);
+                    });
+                });
+                
+                // Verificar se TikTokEvents está disponível
+                if (typeof TikTokEvents !== 'undefined') {
+                    console.log('✅ TikTokEvents disponível');
+                    console.log('🔧 Métodos disponíveis:', Object.keys(TikTokEvents));
+                } else {
+                    console.error('❌ TikTokEvents não encontrado');
+                }
+            }, 1000);
+        });
+    </script>
 
     <!-- Purchase Detection Script -->
     <script>

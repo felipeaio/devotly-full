@@ -43,6 +43,7 @@ import checkoutRouter from './routes/checkout.js';
 import webhookRouter from './routes/webhook.js';
 import tiktokRouter from './routes/tiktok.js';
 import tiktokV3Router from './routes/tiktokV3.js';
+import tiktokPixelsRouter from './routes/tiktokPixels.js';
 import emqRouter from './routes/emq.js';
 
 // Resolve o caminho do diretório raiz
@@ -291,6 +292,7 @@ app.use('/api/upload', uploadLimiter, supabaseMiddleware, uploadRouter); // Alia
 app.use('/api/checkout', createLimiter, supabaseMiddleware, checkoutRouter);
 app.use('/api/tiktok', tiktokRouter);
 app.use('/api/tiktok-v3', tiktokV3Router);
+app.use('/api/tiktok-pixels', tiktokPixelsRouter);
 app.use('/api/emq', emqRouter);
 app.use('/webhook', supabaseMiddleware);
 app.use('/webhook', webhookRouter);
