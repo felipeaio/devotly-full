@@ -361,6 +361,51 @@ app.get('/', (req, res) => {
     });
 });
 
+// Health check endpoint mais robusto
+app.get('/health', (req, res) => {
+    const health = {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        services: {
+            supabase: {
+                configured: !!process.env.SUPABASE_URL && !!process.env.SUPABASE_ANON_KEY,
+                url: process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing'
+            },
+            mercadoPago: {
+                configured: !!process.env.MERCADO_PAGO_ACCESS_TOKEN,
+                status: process.env.MERCADO_PAGO_ACCESS_TOKEN ? '✅ Set' : '❌ Missing'
+            },
+            tiktok: {
+                configured: !!process.env.TIKTOK_ACCESS_TOKEN && !!process.env.TIKTOK_PIXEL_CODE,
+                status: process.env.TIKTOK_ACCESS_TOKEN ? '✅ Set' : '❌ Missing'
+            },
+            email: {
+                configured: !!process.env.RESEND_API_KEY,
+                status: process.env.RESEND_API_KEY ? '✅ Set' : '❌ Missing'
+            }
+        },
+        routes: {
+            webhook: '✅ /webhook/*',
+            cards: '✅ /api/cards/*',
+            checkout: '✅ /api/checkout/*',
+            tiktok: '✅ /api/tiktok/*'
+        }
+    };
+    
+    res.json(health);
+});
+
+// Status endpoint simples
+app.get('/status', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'devotly-backend'
+    });
+});
+
 // Rotas para páginas de retorno do Mercado Pago
 app.get('/success', (req, res) => {
     // Log dos parâmetros recebidos

@@ -6,6 +6,32 @@ import tiktokEventsV3 from '../services/tiktokEventsV3.js';
 import QRCode from 'qrcode';
 const router = express.Router();
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+    res.json({
+        success: true,
+        status: 'healthy',
+        service: 'Webhook Service',
+        timestamp: new Date().toISOString(),
+        endpoints: [
+            '/webhook/debug/payment/:paymentId',
+            '/webhook/manual-process/:paymentId',
+            '/webhook/mercadopago'
+        ]
+    });
+});
+
+// Status endpoint
+router.get('/status', (req, res) => {
+    res.json({
+        success: true,
+        status: 'operational',
+        service: 'Devotly Webhook',
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Rota de debug para verificar pagamento específico
 router.get('/debug/payment/:paymentId', async (req, res) => {
     try {
