@@ -565,20 +565,21 @@ class TikTokEventsService {
             quantity: 1
         }, {
             email: userEmail || "",
-            phone: userPhone || "",
-            userId: String(cardId || generateExternalId())
+            phone: "", // Corrigido: remover referência à variável inexistente
+            userId: String(cardId || 'user_' + Date.now())
         }, context);
     }
 
     /**
      * Evento de checkout iniciado - OTIMIZADO
      */
-    async trackInitiateCheckout(cardId, planType, value, userEmail, req = null, eventId = null) {
+    async trackInitiateCheckout(cardId, planType, value, userEmail, req = null, eventId = null, userPhone = null) {
         console.log(`🎯 [Backend TikTok] INITIATE CHECKOUT RECEBIDO:`, {
             cardId,
             planType,
             value,
             userEmail,
+            userPhone,
             eventId
         });
         
@@ -617,8 +618,8 @@ class TikTokEventsService {
             quantity: 1
         }, {
             email: userEmail || "",
-            phone: userPhone || "",
-            userId: String(cardId || generateExternalId())
+            phone: userPhone || "", // Agora usando o parâmetro userPhone
+            userId: String(cardId || 'user_' + Date.now())
         }, context);
     }
     

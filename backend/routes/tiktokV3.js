@@ -41,6 +41,16 @@ router.post('/track-event', async (req, res) => {
         } = req.body;
 
         console.log(`🎯 Processando evento: ${eventName}`);
+        console.log(`📋 Dados do evento:`, {
+            eventName,
+            hasValue: eventData.value !== undefined,
+            value: eventData.value,
+            currency: eventData.currency,
+            contentId: eventData.content_id || eventData.contentId,
+            contentName: eventData.content_name || eventData.contentName,
+            userEmail: userData.email || 'não fornecido',
+            userPhone: userData.phone || 'não fornecido'
+        });
         
         // Validar configuração do TikTok antes de processar
         try {
@@ -152,6 +162,18 @@ router.post('/track-event', async (req, res) => {
                     eventData.lead_type || 'lead',
                     eventData.value || 10,
                     eventData.currency || 'BRL',
+                    context,
+                    enhancedUserData
+                );
+                break;
+
+            case 'AddPaymentInfo':
+                result = await tiktokEventsV3.trackAddPaymentInfo(
+                    eventData.content_id || eventData.contentId || 'payment_info',
+                    eventData.content_name || eventData.contentName || 'Informações de Pagamento',
+                    eventData.value || 0,
+                    eventData.currency || 'BRL',
+                    eventData.category || 'subscription',
                     context,
                     enhancedUserData
                 );

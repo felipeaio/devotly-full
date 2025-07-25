@@ -616,6 +616,20 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
             }
         };
         
+        // Função para testar AddPaymentInfo
+        window.testAddPaymentInfo = function(planType = 'para_sempre') {
+            console.log('🧪 TESTE MANUAL: Testando AddPaymentInfo para', planType);
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const value = planValues[planType];
+            
+            if (typeof TikTokEvents !== 'undefined' && TikTokEvents.addPaymentInfo) {
+                TikTokEvents.addPaymentInfo(planType, value);
+                console.log('✅ TESTE: AddPaymentInfo disparado!');
+            } else {
+                console.error('❌ TESTE: TikTokEvents.addPaymentInfo não encontrado!');
+            }
+        };
+        
         // Monitorar cliques nos botões de seleção de plano
         document.addEventListener('DOMContentLoaded', function() {
             // Aguardar um pouco para garantir que tudo carregou
