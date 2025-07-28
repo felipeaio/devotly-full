@@ -199,8 +199,8 @@ class DevotlyViewer {    constructor() {
             console.log('✅ DevotlyViewer: Dados do cartão carregados:', this.state.cardData);
 
             // Verificar se o cartão está pago ou se tem versão de preview
-            if (result.data.payment_status !== 'approved' && !result.data.preview_mode) {
-                console.log('⏳ DevotlyViewer: Pagamento não aprovado');
+            if (result.data.status_pagamento !== 'aprovado' && !result.data.preview_mode) {
+                console.log('⏳ DevotlyViewer: Pagamento não aprovado:', result.data.status_pagamento);
                 this.showState('paymentErrorState');
                 return;
             }
