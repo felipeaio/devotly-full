@@ -1,11 +1,8 @@
-// Enhanced error handling and rate limiting utilities for Devotly
+// Enhanced error handling utilities for Devotly - SEM RATE LIMITING
 class DevotlyErrorHandler {
     constructor() {
         this.retryAttempts = new Map(); // Track retry attempts per request type
-        this.lastRequestTimes = new Map(); // Track last request times
-        this.rateLimitBackoff = 2000; // Aumentado de 1000 para 2000ms
         this.maxRetries = 3;
-        this.minInterval = 3000; // Aumentado de 2000 para 3000ms entre requests
         this.pendingRequests = new Map(); // Track pending requests to avoid duplicates
     }
 
@@ -14,37 +11,14 @@ class DevotlyErrorHandler {
         return `${method}:${url}`;
     }
 
-    // Check if we should allow this request based on rate limiting
-    canMakeRequest(url, method = 'POST') {
-        const key = this.getRequestKey(url, method);
-        const lastTime = this.lastRequestTimes.get(key);
-        
-        if (!lastTime) return true;
-        
-        const timeSince = Date.now() - lastTime;
-        return timeSince >= this.minInterval;
-    }
-
-    // Record that a request was made
-    recordRequest(url, method = 'POST') {
-        const key = this.getRequestKey(url, method);
-        this.lastRequestTimes.set(key, Date.now());
-    }
-
-    // Enhanced fetch with retry logic and error handling
+    // Enhanced fetch with retry logic and error handling - SEM RATE LIMITING
     async enhancedFetch(url, options = {}, requestType = 'generic') {
         const key = this.getRequestKey(url, options.method || 'POST');
         
-        // Check for pending identical request
+        // Check for pending identical request apenas para evitar duplicatas
         if (this.pendingRequests.has(key)) {
             console.log(`[DevotlyErrorHandler] Request já em andamento para ${requestType}, aguardando...`);
             return await this.pendingRequests.get(key);
-        }
-        
-        // Check if we can make this request
-        if (!this.canMakeRequest(url, options.method || 'POST')) {
-            const remaining = this.minInterval - (Date.now() - this.lastRequestTimes.get(key));
-            throw new Error(`Rate limit: Aguarde ${Math.ceil(remaining / 1000)} segundos antes de tentar novamente`);
         }
 
         // Create promise for this request and store it
@@ -62,9 +36,6 @@ class DevotlyErrorHandler {
 
     // Internal method to execute the actual request
     async _executeRequest(url, options, requestType, key) {
-        // Record the request
-        this.recordRequest(url, options.method || 'POST');
-
         // Retry logic
         for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
             try {
@@ -90,21 +61,19 @@ class DevotlyErrorHandler {
                         throw new Error('Resposta vazia do servidor');
                     }
 
-                    // Check for rate limiting before parsing JSON
+                    // Check for rate limiting before parsing JSON - SIMPLIFICADO
                     if (response.status === 429) {
                         console.warn(`[DevotlyErrorHandler] Rate limited (429) na tentativa ${attempt}`);
                         
-                        // Extract backoff time from response if available
-                        const retryAfter = response.headers.get('Retry-After');
-                        const backoffTime = retryAfter ? parseInt(retryAfter) * 1000 : this.rateLimitBackoff * attempt;
+                        // Simple backoff without throwing immediate errors
+                        const backoffTime = 1000 * attempt;
                         
                         if (attempt < this.maxRetries) {
                             console.log(`[DevotlyErrorHandler] Aguardando ${backoffTime}ms antes da próxima tentativa...`);
                             await this.delay(backoffTime);
                             continue; // Retry
-                        } else {
-                            throw new Error(`Muitas requisições. Tente novamente em ${Math.ceil(backoffTime / 1000)} segundos`);
                         }
+                        // Se esgotar tentativas, deixa prosseguir para tentar processar mesmo assim
                     }
 
                     // Check for HTML error pages (like Railway error pages)
@@ -119,14 +88,14 @@ class DevotlyErrorHandler {
                         console.error(`[DevotlyErrorHandler] Resposta:`, responseText.substring(0, 200));
                         
                         if (responseText.includes('Too many requests')) {
-                            const backoffTime = this.rateLimitBackoff * attempt;
+                            // Não bloquear mais por rate limit, apenas tentar novamente
                             if (attempt < this.maxRetries) {
-                                console.log(`[DevotlyErrorHandler] Rate limit detectado no texto, aguardando ${backoffTime}ms...`);
+                                const backoffTime = 500 * attempt; // Backoff reduzido
+                                console.log(`[DevotlyErrorHandler] Rate limit detectado, tentativa ${attempt}, aguardando ${backoffTime}ms...`);
                                 await this.delay(backoffTime);
                                 continue; // Retry
-                            } else {
-                                throw new Error('Muitas requisições. Tente novamente em alguns segundos');
                             }
+                            // Se esgotar tentativas, deixa prosseguir
                         }
                         
                         throw new Error(`Resposta do servidor não é JSON válido: ${responseText.substring(0, 100)}`);

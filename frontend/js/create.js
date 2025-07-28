@@ -118,10 +118,8 @@ class DevotlyCreator {
     initialize() {
         console.log('🚀 DevotlyCreator.initialize: Iniciando...');
         
-        // Initialize submission control properties
+        // Initialize submission control properties - SEM RATE LIMITING
         this.isSubmitting = false;
-        this.lastSubmitTime = 0;
-        this.MIN_SUBMIT_INTERVAL = 2000; // Minimum 2 seconds between submissions
         
         // Initialize enhanced error handler
         if (typeof DevotlyErrorHandler !== 'undefined') {
@@ -942,7 +940,8 @@ class DevotlyCreator {
                         }, 1500);
                     } else {
                         window.location.href = mpData.init_point;
-                    }} catch (error) {
+                    }
+                } catch (error) {
                     console.error('Erro no processo de seleção de plano:', error);
                     
                     // Limpar interval da barra de progresso
@@ -2580,21 +2579,13 @@ scrollToSection(sectionId) {
 
     async submitFormData() { // Called by selectPlan
         try {
-            // Prevent multiple submissions
-            const now = Date.now();
+            // Prevent multiple submissions apenas se já estiver em andamento
             if (this.isSubmitting) {
                 console.log('⚠️ Submissão já em andamento, ignorando...');
                 throw new Error('Submissão já em andamento. Aguarde...');
             }
             
-            if (now - this.lastSubmitTime < this.MIN_SUBMIT_INTERVAL) {
-                const remainingTime = this.MIN_SUBMIT_INTERVAL - (now - this.lastSubmitTime);
-                console.log(`⚠️ Aguarde ${remainingTime}ms antes de tentar novamente`);
-                throw new Error(`Aguarde ${Math.ceil(remainingTime / 1000)} segundos antes de tentar novamente`);
-            }
-            
             this.isSubmitting = true;
-            this.lastSubmitTime = now;
             
             const email = document.getElementById('userEmail')?.value.trim();
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { // Basic email validation
