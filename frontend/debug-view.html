@@ -196,8 +196,8 @@
             document.getElementById('debugCardId').textContent = cardId || 'Nenhum';
         }
 
-        // Forçar um card ID para teste (substitua por um ID válido)
-        const testCardId = 'test-card-123';
+        // Usar um card ID real para teste
+        const testCardId = '6c0d17a8-3af3-428b-b0f7-52e059d0a0d8'; // ID real encontrado no banco
         const testUrl = new URL(window.location);
         testUrl.searchParams.set('id', testCardId);
         window.history.replaceState({}, '', testUrl);

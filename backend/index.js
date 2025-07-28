@@ -271,7 +271,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Rotas
 app.use('/cards', supabaseMiddleware);
-app.use('/cards', createLimiter, cardsRouter);
+app.use('/cards', creationRateLimit, cardsRouter);
 app.use('/api/cards', supabaseMiddleware);
 app.use('/api/cards', creationRateLimit, cardsRouter);
 app.use('/api/upload-image', uploadRateLimit, withCircuitBreaker('upload'), supabaseMiddleware, uploadRouter);

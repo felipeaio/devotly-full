@@ -13,6 +13,13 @@ export const API_CONFIG = {
         search: `${API_BASE_URL}/api/cards/search`,
         get: (id) => `${API_BASE_URL}/api/cards/${id}`,
         edit: (id) => `${API_BASE_URL}/api/cards/${id}/edit`,
-        trackView: (id) => `${API_BASE_URL}/api/cards/${id}/track-view`
+        trackView: (id) => `${API_BASE_URL}/api/cards/${id}/track-view`,
+        debugList: `${API_BASE_URL}/api/cards/debug/list`
     }
 };
+
+console.log('🔧 API Config carregado:', {
+    baseUrl: API_BASE_URL,
+    hostname: window.location.hostname,
+    isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+});
