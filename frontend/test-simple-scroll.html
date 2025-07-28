@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Scroll - Debug Simplificado</title>
+    <style>
+        /* Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+        
+        /* Container de debug */
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Container principal */
+        .scroll-container {
+            height: 100vh;
+            overflow-y: auto;
+            scroll-snap-type: y proximity;
+            scroll-behavior: smooth;
+        }
+        
+        /* Seções */
+        .section {
+            height: 100vh;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .section:nth-child(1) { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
+        .section:nth-child(2) { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .section:nth-child(3) { background: linear-gradient(45deg, #45b7d1, #96c93d); }
+        .section:nth-child(4) { background: linear-gradient(45deg, #f093fb, #f5576c); }
+        .section:nth-child(5) { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+        
+        /* Indicadores */
+        .indicators {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .indicator.active {
+            background: #fff;
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        .indicator:hover {
+            background: rgba(255,255,255,0.7);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <div>🧪 Teste de Scroll</div>
+        <div>Seção Ativa: <span id="activeSection">1</span></div>
+        <div>Scroll Position: <span id="scrollPos">0</span></div>
+        <div>Eventos: <span id="eventCount">0</span></div>
+    </div>
+
+    <div class="scroll-container" id="scrollContainer">
+        <div class="section" id="section1">
+            <div>
+                <h1>SEÇÃO 1</h1>
+                <p>Título</p>
+            </div>
+        </div>
+        
+        <div class="section" id="section2">
+            <div>
+                <h1>SEÇÃO 2</h1>
+                <p>Mensagem</p>
+            </div>
+        </div>
+        
+        <div class="section" id="section3">
+            <div>
+                <h1>SEÇÃO 3</h1>
+                <p>Versículo</p>
+            </div>
+        </div>
+        
+        <div class="section" id="section4">
+            <div>
+                <h1>SEÇÃO 4</h1>
+                <p>Galeria</p>
+            </div>
+        </div>
+        
+        <div class="section" id="section5">
+            <div>
+                <h1>SEÇÃO 5</h1>
+                <p>Final</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="indicators">
+        <div class="indicator active" data-section="section1"></div>
+        <div class="indicator" data-section="section2"></div>
+        <div class="indicator" data-section="section3"></div>
+        <div class="indicator" data-section="section4"></div>
+        <div class="indicator" data-section="section5"></div>
+    </div>
+
+    <script>
+        console.log('🧪 Iniciando teste de scroll...');
+        
+        // Elementos de debug
+        const activeSectionDisplay = document.getElementById('activeSection');
+        const scrollPosDisplay = document.getElementById('scrollPos');
+        const eventCountDisplay = document.getElementById('eventCount');
+        
+        // Elementos funcionais
+        const scrollContainer = document.getElementById('scrollContainer');
+        const indicators = document.querySelectorAll('.indicator');
+        const sections = document.querySelectorAll('.section');
+        
+        let eventCount = 0;
+        let currentSection = 1;
+        
+        // Função para atualizar indicadores
+        function updateIndicators(activeIndex) {
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === activeIndex);
+            });
+            currentSection = activeIndex + 1;
+            activeSectionDisplay.textContent = currentSection;
+        }
+        
+        // Observer para detectar seções visíveis
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                    const sectionIndex = Array.from(sections).indexOf(entry.target);
+                    console.log(`👁️ Seção ${sectionIndex + 1} visível`);
+                    updateIndicators(sectionIndex);
+                    eventCount++;
+                    eventCountDisplay.textContent = eventCount;
+                }
+            });
+        }, {
+            root: scrollContainer,
+            threshold: 0.5
+        });
+        
+        // Observar todas as seções
+        sections.forEach(section => observer.observe(section));
+        
+        // Cliques nos indicadores
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                console.log(`🔘 Clique no indicador ${index + 1}`);
+                sections[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                updateIndicators(index);
+                eventCount++;
+                eventCountDisplay.textContent = eventCount;
+            });
+        });
+        
+        // Monitorar scroll
+        scrollContainer.addEventListener('scroll', () => {
+            scrollPosDisplay.textContent = Math.round(scrollContainer.scrollTop);
+        }, { passive: true });
+        
+        // Navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+                console.log(`⌨️ Tecla: ${e.key}`);
+                
+                const direction = e.key === 'ArrowDown' ? 1 : -1;
+                const newIndex = Math.max(0, Math.min(sections.length - 1, currentSection - 1 + direction));
+                
+                if (newIndex !== currentSection - 1) {
+                    sections[newIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    updateIndicators(newIndex);
+                    eventCount++;
+                    eventCountDisplay.textContent = eventCount;
+                }
+            }
+        });
+        
+        console.log('✅ Teste configurado - Use mouse wheel, setas do teclado ou clique nos indicadores');
+    </script>
+</body>
+</html>

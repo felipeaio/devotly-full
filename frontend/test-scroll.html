@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Scroll e Indicadores</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/view.css">
+    <link rel="stylesheet" href="css/media-responsive-fixes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <div>Estado: <span id="debugState">Carregando</span></div>
+        <div>Seção Ativa: <span id="debugActiveSection">-</span></div>
+        <div>Indicadores: <span id="debugIndicators">-</span></div>
+    </div>
+
+    <main class="view-container">
+        <!-- Conteúdo do cartão simulado -->
+        <div id="cardContent" class="card-preview-container">
+            <div class="card-preview">
+                <div class="preview-theme" id="cardTheme">
+                    <div class="preview-sections">
+                        <!-- Seção 1: Título -->
+                        <section class="preview-section" id="titleSection">
+                            <div class="section-content title-container">
+                                <div class="title-wrapper">
+                                    <h1 class="card-title">Teste de Título</h1>
+                                    <div class="title-decorators">
+                                        <span class="decorator-line left"></span>
+                                        <span class="decorator-icon"><i class="fas fa-cross"></i></span>
+                                        <span class="decorator-line right"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Seção 2: Mensagem -->
+                        <section class="preview-section" id="messageSection">
+                            <div class="section-content">
+                                <div class="message-container">
+                                    <p>Esta é uma mensagem de teste para verificar se o scroll entre seções está funcionando corretamente.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Seção 3: Versículo -->
+                        <section class="preview-section" id="verseSection">
+                            <div class="section-content">
+                                <div class="verse-container">
+                                    <div class="verse-content">
+                                        <i class="fas fa-quote-left quote-icon"></i>
+                                        <p>E sabemos que todas as coisas contribuem juntamente para o bem daqueles que amam a Deus, daqueles que são chamados segundo o seu propósito.</p>
+                                        <span>Romanos 8:28</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Seção 4: Galeria -->
+                        <section class="preview-section" id="gallerySection">
+                            <div class="section-content">
+                                <div class="gallery-container">
+                                    <div class="gallery-inner">
+                                        <div class="no-images">
+                                            <i class="fas fa-image"></i>
+                                            <p>Seção de Galeria de Teste</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Seção 5: Mídia -->
+                        <section class="preview-section" id="mediaSection">
+                            <div class="section-content">
+                                <div class="media-container">
+                                    <div class="no-media">
+                                        <i class="fas fa-music"></i>
+                                        <p>Seção de Mídia de Teste</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Seção 6: Mensagem Final -->
+                        <section class="preview-section" id="finalSection">
+                            <div class="section-content final-section-content">
+                                <div class="final-message">
+                                    <p>Esta é a mensagem final de teste.</p>
+                                    <div class="message-decoration">
+                                        <i class="fas fa-cross"></i>
+                                    </div>
+                                    <div class="card-author">Autor de Teste</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Indicadores de seção -->
+                <div class="section-indicators">
+                    <div class="section-dot active" data-section="titleSection" data-label="Título"></div>
+                    <div class="section-dot" data-section="messageSection" data-label="Mensagem"></div>
+                    <div class="section-dot" data-section="verseSection" data-label="Versículo"></div>
+                    <div class="section-dot" data-section="gallerySection" data-label="Galeria"></div>
+                    <div class="section-dot" data-section="mediaSection" data-label="Mídia"></div>
+                    <div class="section-dot" data-section="finalSection" data-label="Final"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Script de teste simples
+        console.log('🧪 Teste: Iniciando teste de scroll e indicadores...');
+        
+        // Elementos de debug
+        const debugState = document.getElementById('debugState');
+        const debugActiveSection = document.getElementById('debugActiveSection');
+        const debugIndicators = document.getElementById('debugIndicators');
+        
+        // Elementos funcionais
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const previewSections = document.querySelector('.preview-sections');
+        const sections = document.querySelectorAll('.preview-section');
+        
+        debugState.textContent = 'Iniciado';
+        debugIndicators.textContent = `${sectionDots.length} encontrados`;
+        
+        // Configurar cliques nos indicadores
+        sectionDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                console.log(`🔘 Teste: Clique no indicador ${index} (${dot.dataset.section})`);
+                
+                const sectionId = dot.dataset.section;
+                const section = document.getElementById(sectionId);
+                
+                if (section) {
+                    console.log('📍 Teste: Navegando para seção:', sectionId);
+                    section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Atualizar indicadores
+                    sectionDots.forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+                    
+                    debugActiveSection.textContent = sectionId;
+                } else {
+                    console.log('❌ Teste: Seção não encontrada:', sectionId);
+                }
+            });
+        });
+        
+        // Observer para detectar mudanças de seção
+        if (previewSections) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                        const sectionId = entry.target.id;
+                        console.log('👁️ Teste: Seção visível:', sectionId);
+                        debugActiveSection.textContent = sectionId;
+                        
+                        // Atualizar indicador ativo
+                        sectionDots.forEach(dot => {
+                            const isActive = dot.dataset.section === sectionId;
+                            dot.classList.toggle('active', isActive);
+                        });
+                    }
+                });
+            }, {
+                root: previewSections,
+                threshold: 0.5
+            });
+            
+            sections.forEach(section => observer.observe(section));
+            
+            // Testar scroll com roda do mouse
+            previewSections.addEventListener('wheel', (e) => {
+                console.log('🎡 Teste: Evento wheel detectado, deltaY:', e.deltaY);
+            });
+            
+            console.log('✅ Teste: Observer configurado para', sections.length, 'seções');
+        }
+        
+        // Teste de navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+                console.log('⌨️ Teste: Navegação por teclado:', e.key);
+                e.preventDefault();
+                
+                const activeDot = document.querySelector('.section-dot.active');
+                const dots = Array.from(sectionDots);
+                const currentIndex = dots.indexOf(activeDot);
+                
+                const direction = e.key === 'ArrowDown' ? 1 : -1;
+                const newIndex = Math.max(0, Math.min(dots.length - 1, currentIndex + direction));
+                
+                if (newIndex !== currentIndex) {
+                    dots[newIndex].click();
+                }
+            }
+        });
+        
+        console.log('✅ Teste: Configuração concluída');
+    </script>
+</body>
+</html>

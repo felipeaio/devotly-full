@@ -373,7 +373,7 @@ body {
     height: 100%;
     width: 100%;
     overflow-y: auto;
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: y mandatory; /* Volta para mandatory para snap obrigatório */
     scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -384,7 +384,6 @@ body {
     background: #000000;
     -webkit-overflow-scrolling: touch; /* Melhor desempenho para iOS */
     overscroll-behavior: none; /* Evita scroll bounce */
-    background: #000000;
 }
 
 .preview-sections::-webkit-scrollbar {
@@ -395,8 +394,8 @@ body {
     height: 100vh; /* Força a altura exata de 100% da viewport */
     min-height: 100vh;
     max-height: 100vh;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
+    scroll-snap-align: start; /* Mudado para start para snap mais preciso */
+    scroll-snap-stop: always; /* Força parada em cada seção */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -409,7 +408,7 @@ body {
                 opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1);
     overflow: hidden; /* Previne conteúdo ultrapassando os limites */
     will-change: transform, opacity; /* Otimização de desempenho */
-    touch-action: none; /* Melhor controle em dispositivos de toque */
+    touch-action: manipulation; /* Permite gestos de scroll mas com controle */
 }
 
 /* Efeito de transição entre seções */

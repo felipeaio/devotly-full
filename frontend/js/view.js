@@ -214,6 +214,10 @@ class DevotlyViewer {    constructor() {
             this.showState('cardContent');
             console.log('🎮 DevotlyViewer: Configurando event listeners...');
             this.setupEventListeners();
+            console.log('🔍 DevotlyViewer: Configurando observador de seções...');
+            this.setupSectionObserver();
+            console.log('📍 DevotlyViewer: Configurando indicadores de seção...');
+            this.setupSectionIndicators();
             console.log('✅ DevotlyViewer: Cartão carregado com sucesso!');
 
         } catch (error) {
@@ -353,10 +357,15 @@ class DevotlyViewer {    constructor() {
         console.log('📺 DevotlyViewer: Mostrando cartão...');
         this.showState('cardContent');
 
-        // Marcar o primeiro dot como ativo
+        // Marcar o primeiro dot como ativo e garantir posição inicial
         if (this.elements.sectionDots && this.elements.sectionDots.length > 0) {
             this.elements.sectionDots[0].classList.add('active');
             console.log('✅ DevotlyViewer: Primeiro dot marcado como ativo');
+            
+            // Garantir que inicia na primeira seção
+            setTimeout(() => {
+                this.scrollToSection('titleSection');
+            }, 100);
         } else {
             console.log('❌ DevotlyViewer: Section dots não encontrados');
         }
@@ -559,57 +568,226 @@ class DevotlyViewer {    constructor() {
     }
 
     setupEventListeners() {
+        console.log('🎮 DevotlyViewer: Configurando event listeners...');
+        
+        // Verificar se os elementos existem antes de configurar
+        if (!this.elements.sectionDots || this.elements.sectionDots.length === 0) {
+            console.warn('⚠️ DevotlyViewer: Nenhum indicador de seção encontrado, criando indicadores...');
+            this.createSectionIndicators();
+            return;
+        }
+        
         // Configurar os eventos para os indicadores de seção
-        this.elements.sectionDots.forEach(dot => {
+        this.elements.sectionDots.forEach((dot, index) => {
             dot.addEventListener('click', () => {
                 const sectionId = dot.getAttribute('data-section');
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
+                console.log(`🎯 DevotlyViewer: Clique no indicador ${index} (${sectionId})`);
+                this.scrollToSection(sectionId);
                 
-                // Atualiza os dots
-                this.elements.sectionDots.forEach(d => {
-                    d.classList.remove('active');
-                });
-                dot.classList.add('active');
+                // Atualizar indicador ativo
+                this.updateSectionIndicator(sectionId);
             });
         });
+        
+        // Configurar navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(e.key)) {
+                e.preventDefault();
+                console.log('⌨️ DevotlyViewer: Navegação por teclado:', e.key);
+                
+                if (e.key === 'Home') {
+                    // Ir para primeira seção
+                    this.scrollToSection('titleSection');
+                } else if (e.key === 'End') {
+                    // Ir para última seção
+                    this.scrollToSection('finalSection');
+                } else {
+                    // Navegação sequencial
+                    const direction = ['ArrowDown', 'PageDown'].includes(e.key) ? 1 : -1;
+                    this.navigateToSection(direction);
+                }
+            }
+        });
+        
+        console.log('✅ DevotlyViewer: Event listeners configurados');
+    }
+    
+    createSectionIndicators() {
+        console.log('🔧 DevotlyViewer: Criando indicadores de seção...');
+        
+        // Verificar se já existe um container de indicadores
+        let indicatorsContainer = document.querySelector('.section-indicators');
+        if (!indicatorsContainer) {
+            console.log('📍 DevotlyViewer: Criando container de indicadores...');
+            indicatorsContainer = document.createElement('div');
+            indicatorsContainer.className = 'section-indicators';
+            document.body.appendChild(indicatorsContainer);
+        }
+        
+        // Limpar indicadores existentes
+        indicatorsContainer.innerHTML = '';
+        
+        // Definir as seções
+        const sectionConfigs = [
+            { id: 'titleSection', label: 'Título' },
+            { id: 'messageSection', label: 'Mensagem' },
+            { id: 'verseSection', label: 'Versículo' },
+            { id: 'gallerySection', label: 'Galeria' },
+            { id: 'mediaSection', label: 'Mídia' },
+            { id: 'finalSection', label: 'Final' }
+        ];
+        
+        // Criar indicadores
+        sectionConfigs.forEach((config, index) => {
+            const dot = document.createElement('div');
+            dot.className = `section-dot ${index === 0 ? 'active' : ''}`;
+            dot.setAttribute('data-section', config.id);
+            dot.setAttribute('data-label', config.label);
+            indicatorsContainer.appendChild(dot);
+        });
+        
+        // Atualizar referência dos elementos
+        this.elements.sectionDots = document.querySelectorAll('.section-dot');
+        console.log(`✅ DevotlyViewer: ${this.elements.sectionDots.length} indicadores criados`);
+        
+        // Configurar eventos após criação
+        this.setupEventListeners();
     }    setupSectionObserver() {
+        console.log('👁️ DevotlyViewer: Configurando observador de seções...');
+        
         const previewSections = document.querySelector('.preview-sections');
         const sections = document.querySelectorAll('.preview-section');
 
-        if (!previewSections || !sections.length) return;
+        if (!previewSections) {
+            console.warn('⚠️ DevotlyViewer: Container .preview-sections não encontrado');
+            return;
+        }
+        
+        if (!sections || sections.length === 0) {
+            console.warn('⚠️ DevotlyViewer: Nenhuma seção .preview-section encontrada');
+            return;
+        }
+        
+        console.log(`🔍 DevotlyViewer: Observando ${sections.length} seções`);
 
-        // Configurar IntersectionObserver para detectar seções visíveis com maior precisão
+        // Configurar IntersectionObserver para detectar seções visíveis
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.7) {
                     const sectionId = entry.target.id;
+                    console.log('👁️ DevotlyViewer: Seção visível:', sectionId);
                     
-                    // Atualiza o estado
+                    // Atualizar estado
                     this.state.activeSection = sectionId;
                     
-                    // Atualizar classe ativa no indicator
-                    this.elements.sectionDots.forEach(dot => {
-                        const isActive = dot.getAttribute('data-section') === sectionId;
-                        dot.classList.toggle('active', isActive);
-                    });
+                    // Atualizar indicadores
+                    this.updateSectionIndicator(sectionId);
                 }
             });
         }, {
             root: previewSections,
-            threshold: 0.7
+            threshold: [0.7], // Threshold mais alto para detecção precisa
+            rootMargin: '0px' // Sem margem para snap exato
         });
 
         // Observar todas as seções
         sections.forEach(section => {
             observer.observe(section);
+            console.log(`👁️ DevotlyViewer: Observando seção: ${section.id}`);
         });
 
-        // Adicionar evento de rolagem para controlar a navegação entre seções
-        previewSections.addEventListener('wheel', this.handleWheelNavigation.bind(this));
-        previewSections.addEventListener('keydown', this.handleKeyNavigation.bind(this));
+        // Implementar controle de scroll por seções
+        this.setupSectionScrollControl(previewSections, sections);
+        
+        console.log('✅ DevotlyViewer: Observador de seções configurado');
+    }
+    
+    setupSectionScrollControl(container, sections) {
+        console.log('🎮 DevotlyViewer: Configurando controle de scroll por seções...');
+        
+        let isScrolling = false;
+        let scrollTimeout;
+        
+        // Controle por wheel (roda do mouse)
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault(); // Bloquear scroll padrão
+            
+            if (isScrolling) return; // Prevenir scroll múltiplo
+            
+            isScrolling = true;
+            
+            const direction = e.deltaY > 0 ? 1 : -1; // 1 = down, -1 = up
+            this.navigateToSection(direction);
+            
+            // Reset flag após delay
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 800);
+            
+        }, { passive: false });
+        
+        // Controle por toque (mobile)
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isTouching = false;
+        
+        container.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+            isTouching = false;
+        }, { passive: true });
+        
+        container.addEventListener('touchmove', (e) => {
+            isTouching = true;
+        }, { passive: true });
+        
+        container.addEventListener('touchend', (e) => {
+            if (!isTouching || isScrolling) return;
+            
+            touchEndY = e.changedTouches[0].clientY;
+            const touchDistance = touchStartY - touchEndY;
+            const minSwipeDistance = 50;
+            
+            if (Math.abs(touchDistance) > minSwipeDistance) {
+                isScrolling = true;
+                
+                const direction = touchDistance > 0 ? 1 : -1; // swipe up = next, swipe down = prev
+                this.navigateToSection(direction);
+                
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                }, 800);
+            }
+        }, { passive: true });
+        
+        console.log('✅ DevotlyViewer: Controle de scroll configurado');
+    }
+    
+    navigateToSection(direction) {
+        const sections = Array.from(document.querySelectorAll('.preview-section'));
+        const currentIndex = sections.findIndex(section => section.id === this.state.activeSection);
+        
+        if (currentIndex === -1) {
+            console.warn('⚠️ DevotlyViewer: Seção atual não encontrada');
+            return;
+        }
+        
+        const newIndex = currentIndex + direction;
+        
+        // Verificar limites
+        if (newIndex < 0 || newIndex >= sections.length) {
+            console.log('🚫 DevotlyViewer: Limite de seções atingido');
+            return;
+        }
+        
+        const targetSection = sections[newIndex];
+        const sectionId = targetSection.id;
+        
+        console.log(`🎯 DevotlyViewer: Navegando de ${this.state.activeSection} para ${sectionId}`);
+        
+        // Navegar para a seção
+        this.scrollToSection(sectionId);
     }
       // Método para controlar a navegação com a roda do mouse
     handleWheelNavigation(event) {
@@ -674,10 +852,15 @@ class DevotlyViewer {    constructor() {
             dot.classList.toggle('active', isActive);
         });
     }
-      // Scroll para seção específica com efeito de transição aprimorado
+    // Scroll para seção específica com snap obrigatório
     scrollToSection(sectionId) {
         const section = document.getElementById(sectionId);
-        if (!section) return;
+        if (!section) {
+            console.warn('⚠️ DevotlyViewer: Seção não encontrada:', sectionId);
+            return;
+        }
+        
+        console.log(`📍 DevotlyViewer: Scrolling para seção: ${sectionId}`);
         
         // Atualizar estado antes da rolagem
         this.state.activeSection = sectionId;
@@ -688,71 +871,71 @@ class DevotlyViewer {    constructor() {
             // Efeito de transição
             section.classList.add('section-transition');
             
-            // Rolar para a seção
-            section.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
+            // Calcular posição exata da seção
+            const sectionIndex = Array.from(document.querySelectorAll('.preview-section')).indexOf(section);
+            const targetScrollTop = sectionIndex * window.innerHeight;
+            
+            // Scroll suave para posição exata
+            previewSections.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
             });
+            
+            // Atualizar indicadores
+            this.updateSectionIndicator(sectionId);
             
             // Remover classe de transição após animação concluída
             setTimeout(() => {
                 section.classList.remove('section-transition');
             }, 600);
+            
+            console.log(`✅ DevotlyViewer: Navegação para ${sectionId} concluída`);
         }
     }setupSectionIndicators() {
+        console.log('📍 DevotlyViewer: Configurando indicadores de seção...');
+        
         const dots = document.querySelectorAll('.section-dot');
         const sections = document.querySelectorAll('.preview-section');
         
-        // Verifica visibilidade das seções no carregamento
-        this.checkSectionVisibility();
+        if (!dots || dots.length === 0) {
+            console.warn('⚠️ DevotlyViewer: Nenhum indicador encontrado em setupSectionIndicators');
+            return;
+        }
         
-        // Atualiza indicadores quando há rolagem
-        this.elements.previewSections.addEventListener('scroll', () => {
+        if (!sections || sections.length === 0) {
+            console.warn('⚠️ DevotlyViewer: Nenhuma seção encontrada em setupSectionIndicators');
+            return;
+        }
+        
+        console.log(`📍 DevotlyViewer: Configurando ${dots.length} indicadores para ${sections.length} seções`);
+        
+        // Verificar se o container de scroll existe
+        if (this.elements.previewSections) {
+            // Verifica visibilidade das seções no carregamento
             this.checkSectionVisibility();
-        });
-          // Adiciona feedback visual ao clicar e navegação entre seções
-        dots.forEach(dot => {
+            
+            // Atualiza indicadores quando há rolagem
+            this.elements.previewSections.addEventListener('scroll', () => {
+                this.checkSectionVisibility();
+            }, { passive: true });
+        }
+        
+        // Adiciona feedback visual ao clicar e navegação entre seções
+        dots.forEach((dot, index) => {
+            console.log(`📍 DevotlyViewer: Configurando indicador ${index}: ${dot.dataset.section}`);
+            
             dot.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log(`🔘 DevotlyViewer: Clique no indicador ${index} (${dot.dataset.section})`);
                 
-                // Efeito visual de clique adaptado para formato de traço
+                // Efeito visual de clique
                 dot.style.transform = 'scaleX(0.8) scaleY(0.9)';
                 dot.style.opacity = '0.8';
-                
-                // Adicionar efeito de pulsação temporário
-                const flash = document.createElement('div');
-                flash.style.position = 'absolute';
-                flash.style.top = '0';
-                flash.style.left = '0';
-                flash.style.right = '0';
-                flash.style.bottom = '0';
-                flash.style.background = 'var(--color-accent)';
-                flash.style.borderRadius = '1.5px';
-                flash.style.opacity = '0.6';
-                flash.style.animation = 'flash-bar 0.4s ease-out';
-                
-                // Adicionar animação ao CSS se ainda não existir
-                if (!document.querySelector('#flash-bar-animation')) {
-                    const style = document.createElement('style');
-                    style.id = 'flash-bar-animation';
-                    style.textContent = `
-                        @keyframes flash-bar {
-                            0% { opacity: 0.6; }
-                            100% { opacity: 0; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-                
-                dot.appendChild(flash);
                 
                 // Restaurar estado após a animação
                 setTimeout(() => {
                     dot.style.transform = '';
                     dot.style.opacity = '';
-                    if (flash.parentNode) {
-                        flash.parentNode.removeChild(flash);
-                    }
                 }, 300);
                 
                 // Navegação para a seção
@@ -766,7 +949,11 @@ class DevotlyViewer {    constructor() {
         
         // Adicionar suporte a navegação por toque para seções
         this.setupTouchNavigation();
-    }    // Configuração do efeito especial para a mensagem final
+        
+        console.log('✅ DevotlyViewer: Indicadores de seção configurados');
+    }
+    
+    // Configuração do efeito especial para a mensagem final
     setupFinalMessageEffect() {
         const finalSection = document.getElementById('finalSection');
         const finalMessage = document.querySelector('.final-message');
@@ -801,52 +988,13 @@ class DevotlyViewer {    constructor() {
         });
     }
         
-    // Configurar navegação por toque entre seções
+    // Configurar navegação por toque entre seções (simplificado)
     setupTouchNavigation() {
-        const previewSections = document.querySelector('.preview-sections');
-        if (!previewSections) return;
-        
-        let touchStartY = 0;
-        let touchEndY = 0;
-        let isTouchScrolling = false;
-        
-        previewSections.addEventListener('touchstart', (e) => {
-            // Não iniciar nova navegação se já estiver rolando
-            if (this.isScrolling) return;
-            
-            touchStartY = e.touches[0].clientY;
-            isTouchScrolling = false;
-        }, { passive: true });
-        
-        previewSections.addEventListener('touchmove', (e) => {
-            // Marcar que está rolando para evitar navegação indesejada com pequenos toques
-            isTouchScrolling = true;
-        }, { passive: true });
-        
-        previewSections.addEventListener('touchend', (e) => {
-            // Verificar se pode rolar (debounce)
-            if (!isTouchScrolling || this.isScrolling) return;
-            
-            touchEndY = e.changedTouches[0].clientY;
-            const touchDistance = touchEndY - touchStartY;
-            
-            // Garantir que o gesto foi significativo (distância mínima)
-            if (Math.abs(touchDistance) > 70) {
-                // Bloquear novas rolagens
-                this.isScrolling = true;
-                
-                const currentSectionIndex = this.getCurrentSectionIndex();
-                const direction = touchDistance < 0 ? 1 : -1; // Para baixo : Para cima
-                
-                this.navigateToAdjacentSection(currentSectionIndex, direction);
-                
-                // Permitir nova navegação após um período
-                setTimeout(() => {
-                    this.isScrolling = false;
-                }, 800);
-            }
-        }, { passive: true });
-    }checkSectionVisibility() {
+        console.log('👆 DevotlyViewer: Configuração de toque simplificada (já gerenciada pelo scroll control)');
+        // A navegação por toque agora é gerenciada pelo setupSectionScrollControl
+    }
+    
+    checkSectionVisibility() {
         const sections = Array.from(document.querySelectorAll('.preview-section'));
         const dots = document.querySelectorAll('.section-dot');
         const container = this.elements.previewSections;

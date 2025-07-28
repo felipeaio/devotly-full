@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Scroll Snap - Seções Fixas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 9999;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .scroll-container {
+            height: 100vh;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .section {
+            height: 100vh;
+            min-height: 100vh;
+            max-height: 100vh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            position: relative;
+            flex-direction: column;
+            touch-action: manipulation;
+        }
+        
+        .section:nth-child(1) { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .section:nth-child(2) { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .section:nth-child(3) { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+        .section:nth-child(4) { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .section:nth-child(5) { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .section:nth-child(6) { background: linear-gradient(135deg, #667eea, #764ba2); }
+        
+        .section-content {
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        .section-title {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+        
+        .indicators {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            padding: 20px 10px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .indicator.active {
+            background: #fff;
+            transform: scale(1.5);
+            box-shadow: 0 0 15px rgba(255,255,255,0.8);
+        }
+        
+        .indicator:hover {
+            background: rgba(255,255,255,0.7);
+            transform: scale(1.2);
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <div><strong>🎯 Scroll Snap Test</strong></div>
+        <div>Seção Ativa: <span id="activeSection">1</span></div>
+        <div>Posição: <span id="scrollPos">0</span></div>
+        <div>Navegações: <span id="navCount">0</span></div>
+        <div>Método: <span id="navMethod">-</span></div>
+        <hr style="margin: 10px 0; opacity: 0.3;">
+        <div style="font-size: 10px; opacity: 0.7;">
+            Use: Scroll wheel, Setas, Indicadores
+        </div>
+    </div>
+
+    <div class="scroll-container" id="scrollContainer">
+        <div class="section" id="section1">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 1</div>
+                <div class="section-subtitle">Título / Início</div>
+            </div>
+        </div>
+        
+        <div class="section" id="section2">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 2</div>
+                <div class="section-subtitle">Mensagem Principal</div>
+            </div>
+        </div>
+        
+        <div class="section" id="section3">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 3</div>
+                <div class="section-subtitle">Versículo Bíblico</div>
+            </div>
+        </div>
+        
+        <div class="section" id="section4">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 4</div>
+                <div class="section-subtitle">Galeria de Imagens</div>
+            </div>
+        </div>
+        
+        <div class="section" id="section5">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 5</div>
+                <div class="section-subtitle">Mídia / Música</div>
+            </div>
+        </div>
+        
+        <div class="section" id="section6">
+            <div class="section-content">
+                <div class="section-title">SEÇÃO 6</div>
+                <div class="section-subtitle">Mensagem Final</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="indicators">
+        <div class="indicator active" data-section="section1" title="Título"></div>
+        <div class="indicator" data-section="section2" title="Mensagem"></div>
+        <div class="indicator" data-section="section3" title="Versículo"></div>
+        <div class="indicator" data-section="section4" title="Galeria"></div>
+        <div class="indicator" data-section="section5" title="Mídia"></div>
+        <div class="indicator" data-section="section6" title="Final"></div>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn" onclick="goToSection(-1)">↑ Anterior</button>
+        <button class="control-btn" onclick="goToSection(1)">↓ Próximo</button>
+        <button class="control-btn" onclick="goToFirst()">⇈ Início</button>
+        <button class="control-btn" onclick="goToLast()">⇊ Fim</button>
+    </div>
+
+    <script>
+        console.log('🧪 Iniciando teste de scroll snap...');
+        
+        // Elementos
+        const activeSectionDisplay = document.getElementById('activeSection');
+        const scrollPosDisplay = document.getElementById('scrollPos');
+        const navCountDisplay = document.getElementById('navCount');
+        const navMethodDisplay = document.getElementById('navMethod');
+        const scrollContainer = document.getElementById('scrollContainer');
+        const indicators = document.querySelectorAll('.indicator');
+        const sections = document.querySelectorAll('.section');
+        
+        // Estado
+        let currentSection = 1;
+        let navCount = 0;
+        let isNavigating = false;
+        let navTimeout;
+        
+        // Função para atualizar indicadores
+        function updateIndicators(activeIndex, method = 'auto') {
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === activeIndex);
+            });
+            currentSection = activeIndex + 1;
+            activeSectionDisplay.textContent = currentSection;
+            navCount++;
+            navCountDisplay.textContent = navCount;
+            navMethodDisplay.textContent = method;
+            
+            console.log(`🎯 Seção ${currentSection} ativa (${method})`);
+        }
+        
+        // Função para navegar para seção específica
+        function navigateToSection(index, method = 'programatic') {
+            if (index < 0 || index >= sections.length || isNavigating) return;
+            
+            isNavigating = true;
+            const targetScrollTop = index * window.innerHeight;
+            
+            scrollContainer.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
+            });
+            
+            updateIndicators(index, method);
+            
+            clearTimeout(navTimeout);
+            navTimeout = setTimeout(() => {
+                isNavigating = false;
+            }, 800);
+        }
+        
+        // Função para navegar relativamente
+        function goToSection(direction) {
+            const newIndex = Math.max(0, Math.min(sections.length - 1, currentSection - 1 + direction));
+            navigateToSection(newIndex, 'button');
+        }
+        
+        // Ir para primeira/última seção
+        function goToFirst() {
+            navigateToSection(0, 'button');
+        }
+        
+        function goToLast() {
+            navigateToSection(sections.length - 1, 'button');
+        }
+        
+        // Observer para detectar seções visíveis
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.7 && !isNavigating) {
+                    const sectionIndex = Array.from(sections).indexOf(entry.target);
+                    updateIndicators(sectionIndex, 'observer');
+                }
+            });
+        }, {
+            root: scrollContainer,
+            threshold: 0.7
+        });
+        
+        // Observar todas as seções
+        sections.forEach(section => observer.observe(section));
+        
+        // Controle por wheel (scroll snap controlado)
+        scrollContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            if (isNavigating) return;
+            
+            const direction = e.deltaY > 0 ? 1 : -1;
+            goToSection(direction);
+            navMethodDisplay.textContent = 'wheel';
+        }, { passive: false });
+        
+        // Cliques nos indicadores
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                navigateToSection(index, 'indicator');
+            });
+        });
+        
+        // Monitorar posição do scroll
+        scrollContainer.addEventListener('scroll', () => {
+            scrollPosDisplay.textContent = Math.round(scrollContainer.scrollTop);
+        }, { passive: true });
+        
+        // Navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(e.key)) {
+                e.preventDefault();
+                
+                if (e.key === 'Home') {
+                    goToFirst();
+                } else if (e.key === 'End') {
+                    goToLast();
+                } else {
+                    const direction = ['ArrowDown', 'PageDown'].includes(e.key) ? 1 : -1;
+                    goToSection(direction);
+                }
+                navMethodDisplay.textContent = 'keyboard';
+            }
+        });
+        
+        // Controle por toque
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isTouching = false;
+        
+        scrollContainer.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+            isTouching = false;
+        }, { passive: true });
+        
+        scrollContainer.addEventListener('touchmove', (e) => {
+            isTouching = true;
+        }, { passive: true });
+        
+        scrollContainer.addEventListener('touchend', (e) => {
+            if (!isTouching || isNavigating) return;
+            
+            touchEndY = e.changedTouches[0].clientY;
+            const touchDistance = touchStartY - touchEndY;
+            const minSwipeDistance = 50;
+            
+            if (Math.abs(touchDistance) > minSwipeDistance) {
+                const direction = touchDistance > 0 ? 1 : -1;
+                goToSection(direction);
+                navMethodDisplay.textContent = 'touch';
+            }
+        }, { passive: true });
+        
+        console.log('✅ Teste configurado - Sistema de snap por seções ativo');
+        
+        // Expor funções globalmente para os botões
+        window.goToSection = goToSection;
+        window.goToFirst = goToFirst;
+        window.goToLast = goToLast;
+    </script>
+</body>
+</html>

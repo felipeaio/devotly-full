@@ -73,6 +73,10 @@ function preventDefaultScrolling() {
     const container = document.querySelector('.preview-sections');
     if (!container) return;
     
+    // Comentado: estas linhas estavam bloqueando o scroll normal
+    // Remover se o scroll normal estiver funcionando bem
+    
+    /*
     // Impedir rolagem padrão em dispositivos móveis
     container.addEventListener('touchmove', (e) => {
         const isScrollingVertically = Math.abs(e.touches[0].clientY - e.touches[0].startClientY) > 
@@ -87,4 +91,5 @@ function preventDefaultScrolling() {
     container.addEventListener('wheel', (e) => {
         e.preventDefault();
     }, { passive: false });
+    */
 }
