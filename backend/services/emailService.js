@@ -50,9 +50,23 @@ async function generateQRCodeDataURI(url) {
  * @param {string} params.name - Nome do destinatário
  * @param {string} params.title - Título do cartão
  * @param {string} params.cardUrl - URL do cartão para visualização
+ * @param {string} params.planType - Tipo do plano adquirido
+ * @param {number} params.planValue - Valor pago pelo plano
+ * @param {string} params.paymentId - ID do pagamento
+ * @param {string} params.transactionDate - Data da transação
  * @returns {Promise<Object>} - Resposta do serviço de email
  */
-export async function sendPaymentConfirmationEmail({ email, cardId, name, title, cardUrl }) {
+export async function sendPaymentConfirmationEmail({ 
+  email, 
+  cardId, 
+  name, 
+  title, 
+  cardUrl, 
+  planType = 'para_sempre',
+  planValue = 17.99,
+  paymentId = '',
+  transactionDate = new Date().toLocaleDateString('pt-BR')
+}) {
   try {
     // Verificar se o serviço de email está disponível
     if (!resend) {
@@ -68,6 +82,9 @@ export async function sendPaymentConfirmationEmail({ email, cardId, name, title,
     // Formatando o título para usar no assunto do email
     const emailSubject = title ? `Seu cartão "${title}" está pronto! - Devotly` : "Seu cartão Devotly está pronto!";
     
+    // Determinar nome do plano para exibição
+    const planDisplayName = planType === 'para_sempre' ? 'Devotly Lifetime' : 'Devotly Anual';
+    
     // Enviar o email usando Resend
     const emailResponse = await resend.emails.send({
       from: 'Devotly <contato@devotly.shop>',
@@ -77,7 +94,12 @@ export async function sendPaymentConfirmationEmail({ email, cardId, name, title,
         name: name || 'Cliente Devotly',
         title: title || 'Seu Cartão Cristão',
         cardUrl,
-        cardId
+        cardId,
+        planType,
+        planDisplayName,
+        planValue,
+        paymentId,
+        transactionDate
       }),
       attachments: [
         {
@@ -98,135 +120,237 @@ export async function sendPaymentConfirmationEmail({ email, cardId, name, title,
 }
 
 /**
- * Gera o template HTML do email
+ * Gera o template HTML do email - VERSÃO SIMPLES
  * @param {Object} params
  * @returns {string} Template HTML do email
  */
-function getEmailTemplate({ name, title, cardUrl, cardId }) {
+function getEmailTemplate({ 
+  name, 
+  title, 
+  cardUrl, 
+  cardId, 
+  planDisplayName,
+  planValue,
+  paymentId,
+  transactionDate
+}) {
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="pt-BR">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Seu cartão está pronto!</title>
       <style>
         body {
-          font-family: 'Segoe UI', Arial, sans-serif;
+          font-family: Arial, sans-serif;
           line-height: 1.6;
-          color: #333333;
-          background-color: #f9f9f9;
+          color: #333;
+          background-color: #f4f4f4;
           margin: 0;
-          padding: 0;
+          padding: 20px;
         }
-        .container {
+        
+        .email-container {
           max-width: 600px;
           margin: 0 auto;
-          padding: 20px;
           background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
         .header {
-          text-align: center;
-          padding: 20px 0;
           background-color: #1a1a1a;
-        }
-        .logo {
-          color: #d4af37;
-          font-size: 28px;
-          font-weight: bold;
-          text-decoration: none;
-        }
-        .content {
+          color: white;
+          text-align: center;
           padding: 20px;
         }
+        
+        .logo {
+          font-size: 24px;
+          font-weight: bold;
+          color: #d4af37;
+        }
+        
+        .content {
+          padding: 30px;
+        }
+        
+        h1 {
+          color: #1a1a1a;
+          margin-bottom: 20px;
+        }
+        
         .card-info {
+          background-color: #f8f9fa;
+          padding: 20px;
+          border-radius: 6px;
           margin: 20px 0;
-          padding: 15px;
-          background-color: #f7f7f7;
-          border-radius: 5px;
           border-left: 4px solid #d4af37;
         }
-        .button {
-          display: inline-block;
-          padding: 12px 24px;
-          background: linear-gradient(135deg, #d4af37, #ffd700);
-          color: #1a1a1a;
-          text-decoration: none;
-          border-radius: 5px;
+        
+        .card-title {
+          font-size: 20px;
           font-weight: bold;
-          margin-top: 15px;
+          color: #1a1a1a;
+          margin-bottom: 10px;
         }
-        .button:hover {
-          background: linear-gradient(135deg, #ffd700, #d4af37);
+        
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          margin: 10px 0;
+          padding: 10px 0;
+          border-bottom: 1px solid #eee;
         }
-        .qrcode-container {
+        
+        .info-label {
+          font-weight: bold;
+          color: #666;
+        }
+        
+        .info-value {
+          color: #333;
+        }
+        
+        .button-container {
           text-align: center;
           margin: 30px 0;
         }
-        .qrcode-image {
-          max-width: 200px;
-          margin: 0 auto;
+        
+        .main-button {
+          display: inline-block;
+          background-color: #d4af37;
+          color: #1a1a1a !important;
+          text-decoration: none !important;
+          padding: 15px 30px;
+          border-radius: 6px;
+          font-weight: bold;
+          font-size: 16px;
         }
+        
+        .main-button:hover {
+          background-color: #c19d2e;
+        }
+        
+        .qr-section {
+          text-align: center;
+          margin: 30px 0;
+          padding: 20px;
+          background-color: #f8f9fa;
+          border-radius: 6px;
+        }
+        
+        .qr-image {
+          max-width: 150px;
+          margin: 15px 0;
+        }
+        
         .footer {
+          background-color: #1a1a1a;
+          color: white;
           text-align: center;
           padding: 20px;
-          color: #777777;
           font-size: 14px;
-          border-top: 1px solid #eeeeee;
         }
-        .verse {
-          font-style: italic;
-          font-weight: 300;
-          color: #777;
-          text-align: center;
-          margin: 20px 0;
+        
+        .footer a {
+          color: #d4af37;
+          text-decoration: none;
+          margin: 0 10px;
         }
+        
+        /* Mobile */
         @media only screen and (max-width: 600px) {
-          .container {
-            width: 100%;
+          .info-row {
+            flex-direction: column;
           }
-          .content {
-            padding: 10px;
+          
+          .main-button {
+            display: block;
+            width: 100%;
           }
         }
       </style>
     </head>
     <body>
-      <div class="container">
+      <div class="email-container">
+        <!-- Header -->
         <div class="header">
           <div class="logo">✝️ Devotly</div>
         </div>
+        
+        <!-- Content -->
         <div class="content">
-          <h2>Olá, ${name}!</h2>
+          <h1>Olá, ${name}!</h1>
+          <p>Seu pagamento foi aprovado e seu cartão cristão está pronto! ✅</p>
           
-          <p>Seu pagamento foi <strong>aprovado com sucesso</strong> e seu cartão cristão já está disponível para acesso e compartilhamento.</p>
-          
+          <!-- Card Info -->
           <div class="card-info">
-            <h3>${title}</h3>
-            <p>ID do cartão: <strong>${cardId}</strong></p>
+            <div class="card-title">${title}</div>
+            
+            <div class="info-row">
+              <span class="info-label">ID do Cartão:</span>
+              <span class="info-value">${cardId}</span>
+            </div>
+            
+            <div class="info-row">
+              <span class="info-label">Plano:</span>
+              <span class="info-value">${planDisplayName}</span>
+            </div>
+            
+            <div class="info-row">
+              <span class="info-label">Valor:</span>
+              <span class="info-value">R$ ${planValue.toFixed(2).replace('.', ',')}</span>
+            </div>
+            
+            <div class="info-row">
+              <span class="info-label">Data:</span>
+              <span class="info-value">${transactionDate}</span>
+            </div>
+            
+            ${paymentId ? `
+            <div class="info-row">
+              <span class="info-label">ID Pagamento:</span>
+              <span class="info-value">${paymentId}</span>
+            </div>
+            ` : ''}
           </div>
           
-          <p>Você pode acessar seu cartão a qualquer momento através do link abaixo:</p>
-          
-          <div style="text-align: center;">
-            <a href="${cardUrl}" class="button">Ver Meu Cartão</a>
+          <!-- Button -->
+          <div class="button-container">
+            <p><strong>Acesse seu cartão:</strong></p>
+            <a href="${cardUrl}" class="main-button" target="_blank">Ver Meu Cartão</a>
+            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+              Link direto: <a href="${cardUrl}" style="color: #d4af37;">${cardUrl}</a>
+            </p>
           </div>
           
-          <div class="qrcode-container">
-            <h3>QR Code do seu cartão</h3>
-            <p>Escaneie o QR Code para acessar diretamente ou compartilhe com quem quiser!</p>
-            <img src="cid:qrcode-devotly.png" alt="QR Code do seu cartão" class="qrcode-image">
+          <!-- QR Code -->
+          <div class="qr-section">
+            <h3>QR Code do seu cartão:</h3>
+            <p>Escaneie para acessar rapidamente</p>
+            <img src="cid:qrcode-devotly.png" alt="QR Code" class="qr-image">
           </div>
           
-          <p class="verse">"Que a vossa luz brilhe diante dos homens." – Mateus 5:16</p>
+          <p style="text-align: center; font-style: italic; color: #666; margin-top: 30px;">
+            "Que a vossa luz brilhe diante dos homens" - Mateus 5:16
+          </p>
           
-          <p>Dúvidas ou problemas? Responda a este email para entrar em contato com nosso suporte.</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 20px; text-align: center;">
+            <p><strong>Precisa de ajuda?</strong></p>
+            <p>Entre em contato: <a href="mailto:contato@devotly.shop" style="color: #d4af37;">contato@devotly.shop</a></p>
+          </div>
         </div>
+        
+        <!-- Footer -->
         <div class="footer">
           <p>&copy; ${new Date().getFullYear()} Devotly. Todos os direitos reservados.</p>
           <p>
-            <a href="https://devotly.shop/termos">Termos de Serviço</a> | 
-            <a href="https://devotly.shop/privacidade">Política de Privacidade</a>
+            <a href="https://devotly.shop/termos">Termos</a> |
+            <a href="https://devotly.shop/privacidade">Privacidade</a> |
+            <a href="https://devotly.shop">Site</a>
           </p>
         </div>
       </div>

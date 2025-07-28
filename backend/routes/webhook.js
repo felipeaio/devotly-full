@@ -151,10 +151,32 @@ router.post('/manual-process/:paymentId', async (req, res) => {
             throw new Error(`Erro ao atualizar cartão: ${updateError.message}`);
         }
         
-        // Enviar email de confirmação
+        // Enviar email de confirmação com informações completas
         try {
-            await sendPaymentConfirmationEmail(email, cardData);
-            console.log('✅ Email de confirmação enviado');
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
+            const cardUrl = `${process.env.FRONTEND_URL}/view/view.html?id=${cardId}`;
+            const name = email.split('@')[0];
+            const title = cardData.conteudo?.cardTitle || 'Seu Cartão Cristão';
+            
+            await sendPaymentConfirmationEmail({
+                email,
+                cardId,
+                name,
+                title,
+                cardUrl,
+                planType: plano,
+                planValue,
+                paymentId: paymentId,
+                transactionDate: new Date(paymentInfo.date_created || Date.now()).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            });
+            console.log('✅ Email de confirmação enviado com informações completas');
         } catch (emailError) {
             console.error('❌ Erro ao enviar email:', emailError);
         }
@@ -597,13 +619,29 @@ router.post('/mercadopago', async (req, res) => {
             
             console.log(`Enviando email para ${email} com link: ${cardUrl}`);
             
-            // Enviar o email
+            // Preparar dados do pagamento para o email
+            const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
+            const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
+            const planDisplayName = plano === 'para_sempre' ? 'Devotly Lifetime' : 'Devotly Anual';
+            
+            // Enviar o email com informações completas do pagamento
             const emailResult = await sendPaymentConfirmationEmail({
                 email,
                 cardId,
                 name,
                 title,
-                cardUrl            });
+                cardUrl,
+                planType: plano,
+                planValue,
+                paymentId: paymentId,
+                transactionDate: new Date(paymentInfo.date_created || Date.now()).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            });
             
             console.log('\n✅ Email enviado com sucesso:', emailResult);
             
