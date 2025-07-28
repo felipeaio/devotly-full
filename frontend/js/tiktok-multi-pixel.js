@@ -12,11 +12,16 @@ class TikTokMultiPixelClient {
         this.isEnabled = true;
         this.debug = true; // Ativar logs detalhados
         
-        console.log('🎯 TikTok Multi-Pixel Client inicializado');
+        // Rate limiting e deduplicação
+        this.lastSentTimes = new Map();
+        this.minInterval = 3000; // 3 segundos entre eventos do mesmo tipo
+        this.pendingRequests = new Map();
+        
+        console.log('🎯 TikTok Multi-Pixel Client inicializado com rate limiting');
     }
 
     /**
-     * Método genérico para enviar eventos
+     * Método genérico para enviar eventos com rate limiting
      */
     async sendEvent(eventName, eventData = {}) {
         if (!this.isEnabled) {
@@ -25,6 +30,51 @@ class TikTokMultiPixelClient {
         }
 
         try {
+            // Criar chave única para rate limiting
+            const eventKey = `${eventName}_${eventData.content_id || 'default'}`;
+            const now = Date.now();
+            
+            // Verificar rate limiting
+            const lastSent = this.lastSentTimes.get(eventKey);
+            if (lastSent && (now - lastSent) < this.minInterval) {
+                const remaining = this.minInterval - (now - lastSent);
+                console.log(`⏰ Rate limiting ${eventName}: aguardando ${remaining}ms`);
+                
+                // Se já existe request pendente, ignorar duplicata
+                if (this.pendingRequests.has(eventKey)) {
+                    console.log(`🔄 Request ${eventName} já pendente, ignorando duplicata`);
+                    return { success: true, duplicated: true };
+                }
+                
+                // Agendar para depois
+                return new Promise((resolve) => {
+                    const timeoutId = setTimeout(async () => {
+                        this.pendingRequests.delete(eventKey);
+                        const result = await this._executeSendEvent(eventName, eventData, eventKey);
+                        resolve(result);
+                    }, remaining);
+                    
+                    this.pendingRequests.set(eventKey, timeoutId);
+                });
+            }
+            
+            // Executar imediatamente
+            return await this._executeSendEvent(eventName, eventData, eventKey);
+
+        } catch (error) {
+            console.error(`❌ Erro ao enviar ${eventName}:`, error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    /**
+     * Executa o envio real do evento
+     */
+    async _executeSendEvent(eventName, eventData, eventKey) {
+        try {
+            // Marcar como enviado
+            this.lastSentTimes.set(eventKey, Date.now());
+            
             if (this.debug) {
                 console.log(`📡 Enviando ${eventName} para múltiplos pixels:`, eventData);
             }
@@ -42,6 +92,14 @@ class TikTokMultiPixelClient {
                 })
             });
 
+            if (!response.ok) {
+                if (response.status === 429) {
+                    console.error(`❌ Rate limit na API: ${response.status}`);
+                    throw new Error('Too many requests, please try again later.');
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const result = await response.json();
             
             if (result.success) {
@@ -53,7 +111,7 @@ class TikTokMultiPixelClient {
             return result;
 
         } catch (error) {
-            console.error(`❌ Erro ao enviar ${eventName}:`, error);
+            console.error(`❌ Erro ao executar envio ${eventName}:`, error);
             return { success: false, error: error.message };
         }
     }

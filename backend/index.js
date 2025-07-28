@@ -2,6 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { 
+    generalRateLimit, 
+    uploadRateLimit, 
+    trackingRateLimit, 
+    creationRateLimit 
+} from './middleware/smartRateLimit.js';
+import { 
+    withCircuitBreaker, 
+    getCircuitBreakerStatus, 
+    resetCircuitBreakers 
+} from './middleware/circuitBreaker.js';
+import {
+    metricsCollector,
+    serveDashboard,
+    getMetrics,
+    resetMetrics
+} from './middleware/monitoring.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -130,41 +147,11 @@ app.use((req, res, next) => {
 });
 app.use(helmet());
 
-// General rate limiter
-app.use(rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-        error: 'Too many requests, please try again later.',
-        status: 429
-    }
-}));
+// Smart rate limiting system
+app.use(generalRateLimit);
 
-// Stricter rate limiter for creation endpoints
-const createLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 5, // limit each IP to 5 creation requests per minute
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-        error: 'Too many creation requests, please wait before trying again.',
-        status: 429
-    }
-});
-
-// Stricter rate limiter for upload endpoints
-const uploadLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // limit each IP to 10 upload requests per minute
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-        error: 'Too many upload requests, please wait before trying again.',
-        status: 429
-    }
-});
+// Coletor de métricas (deve vir após rate limiting)
+app.use(metricsCollector);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -286,14 +273,23 @@ if (process.env.NODE_ENV !== 'production') {
 app.use('/cards', supabaseMiddleware);
 app.use('/cards', createLimiter, cardsRouter);
 app.use('/api/cards', supabaseMiddleware);
-app.use('/api/cards', createLimiter, cardsRouter);
-app.use('/api/upload-image', uploadLimiter, supabaseMiddleware, uploadRouter);
-app.use('/api/upload', uploadLimiter, supabaseMiddleware, uploadRouter); // Alias para compatibilidade
-app.use('/api/checkout', createLimiter, supabaseMiddleware, checkoutRouter);
-app.use('/api/tiktok', tiktokRouter);
-app.use('/api/tiktok-v3', tiktokV3Router);
-app.use('/api/tiktok-pixels', tiktokPixelsRouter);
+app.use('/api/cards', creationRateLimit, cardsRouter);
+app.use('/api/upload-image', uploadRateLimit, withCircuitBreaker('upload'), supabaseMiddleware, uploadRouter);
+app.use('/api/upload', uploadRateLimit, withCircuitBreaker('upload'), supabaseMiddleware, uploadRouter); // Alias para compatibilidade
+app.use('/api/checkout', creationRateLimit, supabaseMiddleware, checkoutRouter);
+app.use('/api/tiktok', trackingRateLimit, withCircuitBreaker('tracking'), tiktokRouter);
+app.use('/api/tiktok-v3', trackingRateLimit, withCircuitBreaker('tiktokEvents'), tiktokV3Router);
+app.use('/api/tiktok-pixels', trackingRateLimit, withCircuitBreaker('tracking'), tiktokPixelsRouter);
 app.use('/api/emq', emqRouter);
+
+// Endpoints de monitoramento
+app.get('/api/health/circuit-breakers', getCircuitBreakerStatus);
+app.post('/api/admin/reset-circuit-breakers', resetCircuitBreakers);
+
+// Dashboard de monitoramento
+app.get('/admin/rate-limiting', serveDashboard);
+app.get('/api/monitoring/metrics', getMetrics);
+app.post('/api/admin/reset-metrics', resetMetrics);
 app.use('/webhook', supabaseMiddleware);
 app.use('/webhook', webhookRouter);
 

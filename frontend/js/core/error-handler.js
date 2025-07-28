@@ -3,9 +3,10 @@ class DevotlyErrorHandler {
     constructor() {
         this.retryAttempts = new Map(); // Track retry attempts per request type
         this.lastRequestTimes = new Map(); // Track last request times
-        this.rateLimitBackoff = 1000; // Start with 1 second backoff
+        this.rateLimitBackoff = 2000; // Aumentado de 1000 para 2000ms
         this.maxRetries = 3;
-        this.minInterval = 2000; // Minimum 2 seconds between requests
+        this.minInterval = 3000; // Aumentado de 2000 para 3000ms entre requests
+        this.pendingRequests = new Map(); // Track pending requests to avoid duplicates
     }
 
     // Create a unique key for the request type
@@ -34,12 +35,33 @@ class DevotlyErrorHandler {
     async enhancedFetch(url, options = {}, requestType = 'generic') {
         const key = this.getRequestKey(url, options.method || 'POST');
         
+        // Check for pending identical request
+        if (this.pendingRequests.has(key)) {
+            console.log(`[DevotlyErrorHandler] Request já em andamento para ${requestType}, aguardando...`);
+            return await this.pendingRequests.get(key);
+        }
+        
         // Check if we can make this request
         if (!this.canMakeRequest(url, options.method || 'POST')) {
             const remaining = this.minInterval - (Date.now() - this.lastRequestTimes.get(key));
             throw new Error(`Rate limit: Aguarde ${Math.ceil(remaining / 1000)} segundos antes de tentar novamente`);
         }
 
+        // Create promise for this request and store it
+        const requestPromise = this._executeRequest(url, options, requestType, key);
+        this.pendingRequests.set(key, requestPromise);
+        
+        try {
+            const result = await requestPromise;
+            return result;
+        } finally {
+            // Clean up pending request
+            this.pendingRequests.delete(key);
+        }
+    }
+
+    // Internal method to execute the actual request
+    async _executeRequest(url, options, requestType, key) {
         // Record the request
         this.recordRequest(url, options.method || 'POST');
 

@@ -597,7 +597,7 @@ class TikTokEventsServiceV3 {
                         page_url: context.url || '',
                         referrer_url: context.referrer || '',
                         browser_language: context.browser_language || 'pt-BR',
-                        event_source: 'website',
+                        event_source_id: this.pixelCode, // TikTok requer pixel_code como event_source_id
                         event_source_url: context.url || '',
                         
                         // Para Purchase: dados extras que melhoram EMQ
@@ -1048,7 +1048,7 @@ class TikTokEventsServiceV3 {
             // Dados de contexto para EMQ
             page_url: context.url || '',
             referrer_url: context.referrer || '',
-            event_source: 'website',
+            event_source_id: this.pixelCode, // TikTok requer pixel_code como event_source_id
             event_source_url: context.url || ''
         };
         

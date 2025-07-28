@@ -42,13 +42,21 @@ class TikTokEventsManager {
         this.eventQueue = [];
         this.isProcessingQueue = false;
         
+        // Throttling para evitar spam de requests
+        this.requestThrottle = {
+            lastSentTimes: new Map(),
+            minInterval: 2000, // Mínimo 2 segundos entre envios do mesmo tipo
+            pendingRequests: new Map()
+        };
+        
         // Métricas de qualidade
         this.qualityMetrics = {
             emailHashSuccess: 0,
             phoneHashSuccess: 0,
             eventsSent: 0,
             eventsSuccess: 0,
-            averageEMQ: 0
+            averageEMQ: 0,
+            rateLimitHits: 0
         };
         
         this.init();
@@ -1294,10 +1302,23 @@ class TikTokEventsManager {
     }
     
     /**
-     * Envia evento para TikTok Pixel e API
+     * Envia evento para TikTok Pixel e API com deduplicação
      */
     async sendEvent(eventName, eventData = {}, options = {}) {
         try {
+            // Criar chave única para deduplicação
+            const dedupeKey = this.createDedupeKey(eventName, eventData);
+            const now = Date.now();
+            
+            // Verificar se evento similar foi enviado recentemente (últimos 5 segundos)
+            const recentEvents = this.requestThrottle.lastSentTimes;
+            const lastSentTime = recentEvents.get(dedupeKey);
+            
+            if (lastSentTime && (now - lastSentTime) < 5000) {
+                console.log(`🔄 Evento ${eventName} duplicado ignorado (enviado há ${now - lastSentTime}ms)`);
+                return { success: true, eventId: 'deduplicated', emqScore: 0, duplicated: true };
+            }
+            
             const eventId = this.generateEventId();
             const advancedMatching = await this.prepareAdvancedMatching();
             
@@ -1317,6 +1338,9 @@ class TikTokEventsManager {
             if (finalEventData.currency === undefined) {
                 finalEventData.currency = 'BRL';
             }
+            
+            // Marcar como enviado para deduplicação
+            recentEvents.set(dedupeKey, now);
             
             // Calcular EMQ
             const emqScore = this.calculateEMQScore(finalEventData);
@@ -1340,12 +1364,11 @@ class TikTokEventsManager {
                 this.addToQueue(eventName, finalEventData);
             }
             
-            // Enviar para API Events (server-side)
+            // Enviar para API Events (server-side) com throttling
             await this.sendToServer(eventName, finalEventData, eventId);
             
             // Atualizar métricas
             this.qualityMetrics.eventsSent++;
-            this.qualityMetrics.eventsSuccess++;
             this.qualityMetrics.averageEMQ = 
                 (this.qualityMetrics.averageEMQ * (this.qualityMetrics.eventsSent - 1) + emqScore) / 
                 this.qualityMetrics.eventsSent;
@@ -1359,9 +1382,62 @@ class TikTokEventsManager {
     }
     
     /**
-     * Envia evento para servidor (API Events)
+     * Cria chave única para deduplicação de eventos
+     */
+    createDedupeKey(eventName, eventData) {
+        const keyParts = [
+            eventName,
+            eventData.content_id || 'no_content_id',
+            eventData.value || 'no_value'
+        ];
+        return keyParts.join('_');
+    }
+    
+    /**
+     * Envia evento para servidor (API Events) com throttling
      */
     async sendToServer(eventName, eventData, eventId) {
+        try {
+            // Check throttling
+            const throttleKey = `${eventName}_${eventData.content_id || 'default'}`;
+            const lastSent = this.requestThrottle.lastSentTimes.get(throttleKey);
+            const now = Date.now();
+            
+            if (lastSent && (now - lastSent) < this.requestThrottle.minInterval) {
+                const remainingTime = this.requestThrottle.minInterval - (now - lastSent);
+                console.log(`⏰ Throttling ${eventName}: aguardando ${remainingTime}ms`);
+                
+                // Se já existe uma requisição pendente para este tipo, não criar outra
+                if (this.requestThrottle.pendingRequests.has(throttleKey)) {
+                    console.log(`🔄 Request ${eventName} já pendente, ignorando duplicata`);
+                    return;
+                }
+                
+                // Agendar para o momento certo
+                const timeoutId = setTimeout(async () => {
+                    this.requestThrottle.pendingRequests.delete(throttleKey);
+                    await this._executeSendToServer(eventName, eventData, eventId);
+                }, remainingTime);
+                
+                this.requestThrottle.pendingRequests.set(throttleKey, timeoutId);
+                return;
+            }
+            
+            // Executar imediatamente
+            this.requestThrottle.lastSentTimes.set(throttleKey, now);
+            await this._executeSendToServer(eventName, eventData, eventId);
+            
+        } catch (error) {
+            console.error('❌ Erro no throttling:', error);
+            // Fallback: tentar enviar sem throttling
+            await this._executeSendToServer(eventName, eventData, eventId);
+        }
+    }
+    
+    /**
+     * Executa o envio real para o servidor
+     */
+    async _executeSendToServer(eventName, eventData, eventId) {
         try {
             const payload = {
                 eventName,
@@ -1388,11 +1464,20 @@ class TikTokEventsManager {
             
             if (response.ok) {
                 console.log(`✅ ${eventName} enviado para API Events`);
+                this.qualityMetrics.eventsSuccess++;
+            } else if (response.status === 429) {
+                console.error(`❌ Rate limit na API Events: ${response.status}`);
+                this.qualityMetrics.rateLimitHits++;
+                
+                // Add to queue for retry later
+                this.addToQueue(eventName, eventData);
             } else {
                 console.error(`❌ Erro na API Events: ${response.status}`);
             }
         } catch (error) {
             console.error('❌ Erro ao enviar para servidor:', error);
+            // Add to queue for retry later
+            this.addToQueue(eventName, eventData);
         }
     }
     
