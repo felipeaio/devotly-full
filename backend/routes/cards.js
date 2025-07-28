@@ -2,7 +2,7 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 import { z } from 'zod';
-import tiktokEvents from '../services/tiktokEvents.js';
+// import tiktokEvents from '../services/tiktokEvents.js'; // Removido para página view
 
 const router = express.Router();
 
@@ -121,14 +121,15 @@ router.post('/', async (req, res) => {
       throw new Error(`Falha ao criar cartão: ${error.message}`);
     }
     
-    // Rastrear evento de criação de cartão (AddToCart) via TikTok API Events
-    try {
-      await tiktokEvents.trackAddToCart(cardId, email, req);
-      console.log(`[${new Date().toISOString()}] TikTok AddToCart event tracked for card: ${cardId}`);
-    } catch (tikTokError) {
-      console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok AddToCart:`, tikTokError.message);
-      // Não falha a criação do cartão por erro no tracking
-    }
+    // Rastreamento do TikTok Events removido conforme solicitado
+    // // Rastrear evento de criação de cartão (AddToCart) via TikTok API Events
+    // try {
+    //   await tiktokEvents.trackAddToCart(cardId, email, req);
+    //   console.log(`[${new Date().toISOString()}] TikTok AddToCart event tracked for card: ${cardId}`);
+    // } catch (tikTokError) {
+    //   console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok AddToCart:`, tikTokError.message);
+    //   // Não falha a criação do cartão por erro no tracking
+    // }
 
     res.status(201).json({
       status: 'success',
@@ -362,20 +363,6 @@ router.get('/:id', async (req, res) => {
     // Adicionar URL do QR Code aos dados
     data.qr_code_url = qrCodeData?.publicUrl;
     
-    // Rastrear evento de visualização de cartão via TikTok API Events
-    try {
-      await tiktokEvents.trackViewContent(
-        cardId, 
-        'product',
-        data.conteudo?.cardTitle || 'Cartão Cristão Digital',
-        data.email
-      );
-      console.log(`Evento ViewContent enviado para TikTok API Events para cartão ${cardId}`);
-    } catch (tikTokError) {
-      console.error('Erro ao enviar evento para TikTok API:', tikTokError);
-      // Continuamos o fluxo mesmo se o evento falhar
-    }
-    
     // Retornar os dados do cartão
     res.json({
       status: 'success',
@@ -508,19 +495,8 @@ router.get('/:id/track-view', async (req, res) => {
       });
     }
 
-    // Rastrear visualização via TikTok API Events
-    try {
-      await tiktokEvents.trackViewContent(
-        id,
-        'card',
-        card.conteudo?.cardTitle || 'Cartão Devocional',
-        userEmail,
-        req
-      );
-      console.log(`[${new Date().toISOString()}] TikTok ViewContent event tracked for card: ${id}`);
-    } catch (tikTokError) {
-      console.error(`[${new Date().toISOString()}] Erro ao rastrear TikTok ViewContent:`, tikTokError.message);
-    }
+    // Log da visualização para analytics internos
+    console.log(`[${new Date().toISOString()}] Visualização rastreada para cartão: ${id}`);
 
     res.status(200).json({
       status: 'success',

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devotly | Mensagem de Fé</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .debug {
+      background: #000;
+      color: #0f0;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .state {
+      display: none;
+      text-align: center;
+      padding: 40px;
+    }
+    .state.active {
+      display: block;
+    }
+    .loading {
+      color: #007bff;
+    }
+    .error {
+      color: #dc3545;
+    }
+    .success {
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Debug View - Devotly</h1>
+    
+    <div id="debug" class="debug"></div>
+    
+    <div id="loadingState" class="state active loading">
+      <h2>🔄 Carregando...</h2>
+      <p>Aguarde enquanto buscamos o cartão</p>
+    </div>
+    
+    <div id="errorState" class="state error">
+      <h2>❌ Erro</h2>
+      <p>Não foi possível carregar o cartão</p>
+    </div>
+    
+    <div id="cardContent" class="state success">
+      <h2>✅ Cartão Carregado</h2>
+      <div id="cardData"></div>
+    </div>
+  </div>
+
+  <script>
+    function log(message) {
+      const debug = document.getElementById('debug');
+      debug.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+      console.log(message);
+    }
+
+    function showState(stateId) {
+      document.querySelectorAll('.state').forEach(el => el.classList.remove('active'));
+      document.getElementById(stateId).classList.add('active');
+    }
+
+    async function loadCard() {
+      try {
+        log('🚀 Iniciando carregamento do cartão...');
+        
+        // Extrair ID da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardId = urlParams.get('id');
+        
+        if (!cardId) {
+          log('❌ ID do cartão não encontrado na URL');
+          showState('errorState');
+          return;
+        }
+        
+        log('🆔 ID do cartão: ' + cardId);
+        
+        // Determinar URL da API
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isLocal ? 'http://localhost:3000' : 'https://devotly-full-production.up.railway.app';
+        const apiUrl = baseUrl + '/api/cards/' + cardId;
+        
+        log('🌐 URL da API: ' + apiUrl);
+        log('🏠 Ambiente: ' + (isLocal ? 'Local' : 'Produção'));
+        
+        // Fazer requisição
+        log('📡 Fazendo requisição...');
+        const response = await fetch(apiUrl);
+        
+        log('📥 Resposta recebida - Status: ' + response.status);
+        
+        if (!response.ok) {
+          log('❌ Erro HTTP: ' + response.status + ' ' + response.statusText);
+          showState('errorState');
+          return;
+        }
+        
+        const result = await response.json();
+        log('📦 Dados parseados: ' + JSON.stringify(result, null, 2).substring(0, 200) + '...');
+        
+        if (result.status === 'success' && result.data) {
+          log('✅ Cartão carregado com sucesso!');
+          
+          // Mostrar dados básicos
+          const cardData = document.getElementById('cardData');
+          cardData.innerHTML = `
+            <h3>📋 Dados do Cartão:</h3>
+            <p><strong>ID:</strong> ${result.data.id}</p>
+            <p><strong>Email:</strong> ${result.data.email}</p>
+            <p><strong>Plano:</strong> ${result.data.plano}</p>
+            <p><strong>Status Pagamento:</strong> ${result.data.status_pagamento}</p>
+            <p><strong>Título:</strong> ${result.data.conteudo?.cardTitle || 'N/A'}</p>
+            <p><strong>Mensagem:</strong> ${result.data.conteudo?.cardMessage?.substring(0, 100) || 'N/A'}...</p>
+          `;
+          
+          showState('cardContent');
+        } else {
+          log('❌ Resposta inválida da API: ' + JSON.stringify(result));
+          showState('errorState');
+        }
+        
+      } catch (error) {
+        log('💥 Erro na requisição: ' + error.message);
+        log('🔍 Stack trace: ' + error.stack);
+        showState('errorState');
+      }
+    }
+
+    // Inicializar quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      log('📄 Página carregada, iniciando debug...');
+      loadCard();
+    });
+  </script>
+</body>
+</html>
