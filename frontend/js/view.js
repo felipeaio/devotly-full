@@ -7,6 +7,8 @@
 import { API_BASE_URL, API_CONFIG } from './core/api-config.js';
 
 class DevotlyViewer {    constructor() {
+        console.log('🚀 DevotlyViewer: Iniciando constructor...');
+        
         // Estado inicial
         this.state = {
             cardId: null,
@@ -52,16 +54,34 @@ class DevotlyViewer {    constructor() {
             imageCounter: document.querySelector('.image-counter')
         };
 
+        // Log dos elementos encontrados/não encontrados
+        console.log('🔍 DevotlyViewer: Verificando elementos do DOM...');
+        Object.entries(this.elements).forEach(([key, element]) => {
+            if (element) {
+                if (element.length !== undefined) {
+                    console.log(`✅ ${key}: ${element.length} elementos encontrados`);
+                } else {
+                    console.log(`✅ ${key}: elemento encontrado`);
+                }
+            } else {
+                console.log(`❌ ${key}: elemento NÃO encontrado`);
+            }
+        });
+
         this.initialize();
     }
 
     initialize() {
+        console.log('⚙️ DevotlyViewer: Inicializando...');
+        
         // Mostrar tela inicial primeiro
         this.showState('startViewState');
         
         // Adicionar evento de clique no botão
         if (this.elements.startViewBtn) {
+            console.log('🔘 DevotlyViewer: Configurando botão de início...');
             this.elements.startViewBtn.addEventListener('click', () => {
+                console.log('🔘 DevotlyViewer: Botão "Abrir Devocional" clicado');
                 // Adicionar fade-out suave
                 const startScreen = this.elements.startViewState;
                 startScreen.style.opacity = '0';
@@ -73,15 +93,23 @@ class DevotlyViewer {    constructor() {
                     this.loadCard();
                 }, 300);
             });
+        } else {
+            console.log('❌ DevotlyViewer: Botão de início não encontrado!');
         }
 
         // Adicionar eventos para botões
         if (this.elements.retryBtn) {
-            this.elements.retryBtn.addEventListener('click', () => this.loadCard());
+            this.elements.retryBtn.addEventListener('click', () => {
+                console.log('🔄 DevotlyViewer: Botão "Tentar novamente" clicado');
+                this.loadCard();
+            });
         }
 
         if (this.elements.checkAgainBtn) {
-            this.elements.checkAgainBtn.addEventListener('click', () => this.loadCard());
+            this.elements.checkAgainBtn.addEventListener('click', () => {
+                console.log('🔄 DevotlyViewer: Botão "Verificar novamente" clicado');
+                this.loadCard();
+            });
         }
 
         // Setup carousel control events
@@ -97,11 +125,16 @@ class DevotlyViewer {    constructor() {
         const urlParams = new URLSearchParams(window.location.search);
         const autoload = urlParams.get('autoload');
         if (autoload === 'true') {
+            console.log('🚀 DevotlyViewer: Auto-carregamento ativado');
             this.loadCard();
         }
+        
+        console.log('✅ DevotlyViewer: Inicialização concluída');
     }
 
     async loadCard() {
+        console.log('🔄 DevotlyViewer: Iniciando carregamento do cartão...');
+        
         // Adicionar fade-out suave
         if (this.elements.startViewState) {
             this.elements.startViewState.style.opacity = '0';
@@ -112,29 +145,39 @@ class DevotlyViewer {    constructor() {
         // Extract ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         let cardId = urlParams.get('id');
+        console.log('🔍 DevotlyViewer: ID da URL (query):', cardId);
 
         // Check pathname for ID
         if (!cardId) {
             const pathParts = window.location.pathname.split('/');
             cardId = pathParts[pathParts.length - 1];
+            console.log('🔍 DevotlyViewer: ID do path:', cardId);
 
             if (!cardId || cardId === 'view' || cardId === 'view.html') {
+                console.log('❌ DevotlyViewer: ID não encontrado na URL');
                 this.showState('notFoundState');
                 return;
             }
         }
 
         this.state.cardId = cardId;
+        console.log('✅ DevotlyViewer: Card ID definido:', cardId);
         await this.fetchCardData();
     }
 
     async fetchCardData() {
+        console.log('🌐 DevotlyViewer: Iniciando requisição para API...');
         this.showState('loadingState');
 
         try {
-            const response = await fetch(API_CONFIG.cards.get(this.state.cardId));
+            const apiUrl = API_CONFIG.cards.get(this.state.cardId);
+            console.log('🔗 DevotlyViewer: URL da API:', apiUrl);
+            
+            const response = await fetch(apiUrl);
+            console.log('📡 DevotlyViewer: Resposta da API:', response.status, response.statusText);
 
             if (!response.ok) {
+                console.log('❌ DevotlyViewer: Erro na resposta da API:', response.status);
                 if (response.status === 404) {
                     this.showState('notFoundState');
                 } else {
@@ -144,17 +187,21 @@ class DevotlyViewer {    constructor() {
             }
 
             const result = await response.json();
+            console.log('📦 DevotlyViewer: Dados recebidos:', result);
 
             if (result.status !== 'success' || !result.data) {
+                console.log('❌ DevotlyViewer: Estrutura de dados inválida:', result);
                 this.showState('errorState');
                 return;
             }
 
             this.state.cardData = result.data;
+            console.log('✅ DevotlyViewer: Dados do cartão carregados:', this.state.cardData);
 
             // Verificar se o cartão está pago ou se tem versão de preview
             if (result.data.payment_status !== 'approved' && !result.data.preview_mode) {
-                this.showState('paymentPendingState');
+                console.log('⏳ DevotlyViewer: Pagamento não aprovado');
+                this.showState('paymentErrorState');
                 return;
             }
 
@@ -184,22 +231,31 @@ class DevotlyViewer {    constructor() {
                 }
             }
 
+            console.log('🎨 DevotlyViewer: Renderizando cartão...');
             this.renderCard();
-            this.showState('cardViewState');
+            console.log('👀 DevotlyViewer: Mostrando cartão...');
+            this.showState('cardContent');
+            console.log('🎮 DevotlyViewer: Configurando event listeners...');
             this.setupEventListeners();
+            console.log('✅ DevotlyViewer: Cartão carregado com sucesso!');
 
         } catch (error) {
-            console.error('Erro ao carregar cartão:', error);
+            console.error('❌ DevotlyViewer: Erro ao carregar cartão:', error);
             this.showState('errorState');
         }
     }
 
     showState(stateId) {
+        console.log(`🎭 DevotlyViewer: Mudando para estado: ${stateId}`);
+        
         // Ocultar todos os estados
         ['startViewState', 'loadingState', 'errorState', 'notFoundState', 'paymentErrorState', 'cardContent'].forEach(state => {
             const element = this.elements[state];
             if (element) {
                 element.style.display = 'none';
+                console.log(`🙈 DevotlyViewer: Ocultando estado: ${state}`);
+            } else {
+                console.log(`⚠️ DevotlyViewer: Elemento não encontrado: ${state}`);
             }
         });
 
@@ -207,16 +263,23 @@ class DevotlyViewer {    constructor() {
         const stateElement = this.elements[stateId];
         if (stateElement) {
             stateElement.style.display = 'flex';
+            console.log(`👁️ DevotlyViewer: Mostrando estado: ${stateId}`);
+        } else {
+            console.log(`❌ DevotlyViewer: Estado não encontrado: ${stateId}`);
         }
     }
 
     renderCard() {
+        console.log('🎨 DevotlyViewer: Iniciando renderização do cartão...');
+        
         if (!this.state.cardData || !this.state.cardData.conteudo) {
+            console.log('❌ DevotlyViewer: Dados do cartão inválidos:', this.state.cardData);
             this.showState('errorState');
             return;
         }
 
         const { conteudo } = this.state.cardData;
+        console.log('📦 DevotlyViewer: Conteúdo do cartão:', conteudo);
 
         // Atualizar título da página
         document.title = `${conteudo.cardTitle || 'Mensagem de Fé'} | Devotly`;
@@ -224,15 +287,26 @@ class DevotlyViewer {    constructor() {
         // Verificar e atualizar cada elemento
         if (this.elements.cardTitle) {
             this.elements.cardTitle.textContent = conteudo.cardTitle || 'Mensagem de Fé';
+            console.log('✅ DevotlyViewer: Título definido:', conteudo.cardTitle);
+        } else {
+            console.log('❌ DevotlyViewer: Elemento cardTitle não encontrado');
         }
 
         if (this.elements.cardMessage) {
             this.elements.cardMessage.textContent = conteudo.cardMessage || '';
-        }        if (this.elements.finalMessage) {
+            console.log('✅ DevotlyViewer: Mensagem definida:', conteudo.cardMessage);
+        } else {
+            console.log('❌ DevotlyViewer: Elemento cardMessage não encontrado');
+        }
+        
+        if (this.elements.finalMessage) {
             this.elements.finalMessage.textContent = conteudo.finalMessage || '';
+            console.log('✅ DevotlyViewer: Mensagem final definida:', conteudo.finalMessage);
             
             // Adicionar efeito de fade-in na mensagem final quando for visível
             this.setupFinalMessageEffect();
+        } else {
+            console.log('❌ DevotlyViewer: Elemento finalMessage não encontrado');
         }
 
         // Autor
@@ -240,6 +314,7 @@ class DevotlyViewer {    constructor() {
             if (conteudo.userName) {
                 this.elements.cardAuthor.textContent = conteudo.userName;
                 this.elements.cardAuthor.style.display = 'block';
+                console.log('✅ DevotlyViewer: Autor definido:', conteudo.userName);
                 
                 // Formatar nome do autor se necessário
                 if (conteudo.userName.includes('-')) {
@@ -248,10 +323,14 @@ class DevotlyViewer {    constructor() {
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ');
                     this.elements.cardAuthor.textContent = formattedName;
+                    console.log('✅ DevotlyViewer: Nome do autor formatado:', formattedName);
                 }
             } else {
                 this.elements.cardAuthor.style.display = 'none';
+                console.log('ℹ️ DevotlyViewer: Sem autor para exibir');
             }
+        } else {
+            console.log('❌ DevotlyViewer: Elemento cardAuthor não encontrado');
         }
 
         // Versículo
@@ -260,38 +339,60 @@ class DevotlyViewer {    constructor() {
                 this.elements.verseText.textContent = conteudo.bibleVerse.text;
                 this.elements.verseRef.textContent = conteudo.bibleVerse.reference;
                 this.elements.verseSection.style.display = 'flex';
+                console.log('✅ DevotlyViewer: Versículo definido:', conteudo.bibleVerse.text);
             } else {
                 this.elements.verseSection.style.display = 'none';
+                console.log('ℹ️ DevotlyViewer: Sem versículo para exibir');
             }
+        } else {
+            console.log('❌ DevotlyViewer: Elementos do versículo não encontrados');
         }
 
         // Galeria
         if (this.elements.galleryInner) {
+            console.log('🖼️ DevotlyViewer: Renderizando galeria...');
             this.renderGallery(conteudo.images);
+        } else {
+            console.log('❌ DevotlyViewer: Elemento galleryInner não encontrado');
         }
 
         // Mídia
         if (this.elements.cardMedia) {
+            console.log('🎵 DevotlyViewer: Renderizando mídia...');
             this.renderMedia(conteudo.musicLink);
+        } else {
+            console.log('❌ DevotlyViewer: Elemento cardMedia não encontrado');
         }
 
         // QR Code (oculto)
         if (this.elements.qrCodeImage && this.state.cardData.qr_code_url) {
             this.elements.qrCodeImage.src = this.state.cardData.qr_code_url;
+            console.log('✅ DevotlyViewer: QR Code definido');
+        } else {
+            console.log('❌ DevotlyViewer: QR Code não encontrado ou não disponível');
         }
 
         // Mostrar o cartão
+        console.log('📺 DevotlyViewer: Mostrando cartão...');
         this.showState('cardContent');
 
         // Marcar o primeiro dot como ativo
         if (this.elements.sectionDots && this.elements.sectionDots.length > 0) {
             this.elements.sectionDots[0].classList.add('active');
+            console.log('✅ DevotlyViewer: Primeiro dot marcado como ativo');
+        } else {
+            console.log('❌ DevotlyViewer: Section dots não encontrados');
         }
         
         // Rolagem suave entre seções
         if (this.elements.previewSections) {
             this.elements.previewSections.style.scrollBehavior = 'smooth';
+            console.log('✅ DevotlyViewer: Rolagem suave configurada');
+        } else {
+            console.log('❌ DevotlyViewer: Preview sections não encontrado');
         }
+        
+        console.log('✅ DevotlyViewer: Renderização do cartão concluída!');
     }
 
     renderGallery(images) {
@@ -913,8 +1014,38 @@ class DevotlyViewer {    constructor() {
 
 // Inicializar quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
-    new DevotlyViewer();
+    console.log('🎯 DevotlyViewer: DOM carregado, inicializando...');
+    
+    try {
+        window.devotlyViewer = new DevotlyViewer();
+        console.log('✅ DevotlyViewer: Inicializado com sucesso');
+    } catch (error) {
+        console.error('❌ DevotlyViewer: Erro na inicialização:', error);
+        
+        // Fallback: mostrar estado de erro
+        const errorState = document.getElementById('errorState');
+        if (errorState) {
+            // Ocultar outros estados
+            document.querySelectorAll('[id$="State"]').forEach(el => {
+                el.style.display = 'none';
+            });
+            errorState.style.display = 'flex';
+        }
+    }
 });
+
+// Fallback para garantir que inicialize mesmo se DOMContentLoaded já passou
+if (document.readyState === 'loading') {
+    console.log('🔄 DevotlyViewer: DOM ainda carregando, aguardando...');
+} else {
+    console.log('🚀 DevotlyViewer: DOM já carregado, inicializando imediatamente...');
+    try {
+        window.devotlyViewer = new DevotlyViewer();
+        console.log('✅ DevotlyViewer: Inicializado com sucesso (fallback)');
+    } catch (error) {
+        console.error('❌ DevotlyViewer: Erro na inicialização (fallback):', error);
+    }
+}
 
 function setupMediaContainer() {
   const mediaContainers = document.querySelectorAll('.media-container');

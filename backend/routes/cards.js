@@ -157,6 +157,46 @@ router.post('/', async (req, res) => {
 });
 
 // Adicionar nova rota para busca por email
+// Rota temporária para DEBUG - listar alguns cartões para teste
+router.get('/debug/list', async (req, res) => {
+  try {
+    if (!req.supabase) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro de configuração do servidor'
+      });
+    }
+
+    // Buscar alguns cartões para teste
+    const { data, error } = await req.supabase
+      .from('cards')
+      .select('id, email, plano, conteudo, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+      
+    if (error) {
+      console.error('Erro ao buscar cartões para debug:', error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Erro ao buscar cartões'
+      });
+    }
+    
+    res.json({
+      status: 'success',
+      data: data || [],
+      count: data?.length || 0
+    });
+    
+  } catch (error) {
+    console.error('Erro no endpoint debug/list:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro interno no servidor'
+    });
+  }
+});
+
 router.get('/search', async (req, res) => {
   try {
     if (!req.supabase) {
