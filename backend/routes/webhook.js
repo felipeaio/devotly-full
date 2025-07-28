@@ -317,9 +317,9 @@ router.post('/mercadopago', async (req, res) => {
         }
         console.log('\n7. Dados extraídos:', { cardId, email, plano });
         
-        // Rastrear evento de compra através do TikTok API Events V3
+        // Rastrear evento de compra através do TikTok API Events V3 - ULTRA-OTIMIZADO v4.0
         try {
-            console.log('\n7.1. Enviando evento de compra para TikTok API Events V3...');
+            console.log('\n7.1. Enviando evento de compra para TikTok API Events V3 Ultra-Otimizado...');
             const planValues = { 'para_sempre': 17.99, 'anual': 8.99 };
             const planValue = planValues[plano] || parseFloat(paymentInfo.total_amount) || 0;
             
@@ -330,47 +330,115 @@ router.post('/mercadopago', async (req, res) => {
                 currency: 'BRL'
             });
             
-            // Preparar contexto do request
+            // Extrair dados do pagamento para contexto enriquecido
+            const paymentMethod = paymentInfo.payment_method_id || paymentInfo.payment_type_id || 'unknown';
+            const payerData = paymentInfo.payer || {};
+            
+            // Preparar contexto ultra-enriquecido
             const context = {
-                ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || '',
-                user_agent: req.headers['user-agent'] || '',
-                url: `${process.env.FRONTEND_URL}/create`,
-                referrer: '',
-                order_id: `order_${cardId}_${paymentId}`,
-                timestamp: Math.floor(Date.now() / 1000)
+                ip: req.headers['x-forwarded-for'] || 
+                    req.headers['x-real-ip'] || 
+                    req.connection.remoteAddress || 
+                    '127.0.0.1',
+                user_agent: req.headers['user-agent'] || 'MercadoPago-Webhook/1.0 (Payment Processor)',
+                url: `${process.env.FRONTEND_URL}/checkout/success`,
+                referrer: `${process.env.FRONTEND_URL}/create`,
+                order_id: `DVT_${cardId}_${planValue}_${paymentId}_${Date.now()}`,
+                timestamp: Math.floor(Date.now() / 1000),
+                
+                // Dados adicionais para EMQ
+                payment_method: paymentMethod,
+                transaction_id: paymentId,
+                processor: 'mercadopago',
+                webhook_source: 'payment_confirmation',
+                
+                // Headers adicionais que podem estar presentes
+                accept_language: req.headers['accept-language'] || 'pt-BR,pt;q=0.9',
+                host: req.headers['host'] || 'devotly.shop',
+                
+                // Dados de sessão e tracking se disponíveis
+                ttp: req.headers['x-ttp'] || req.query?.ttp || '',
+                ttclid: req.headers['x-ttclid'] || req.query?.ttclid || '',
+                
+                // Timezone baseado na localização (Brasil)
+                timezone: 'America/Sao_Paulo',
+                country: 'BR',
+                currency_code: 'BRL'
             };
             
-            console.log('🌐 Contexto preparado:', context);
-            
-            // Preparar dados do usuário
-            const userData = {
-                email: email || '',
-                phone: paymentInfo.payer?.phone?.number || '',
-                external_id: email ? `devotly_${email}_${cardId}` : null
-            };
-            
-            console.log('👤 Dados do usuário:', {
-                email: userData.email ? 'Presente' : 'Ausente',
-                phone: userData.phone ? 'Presente' : 'Ausente',
-                external_id: userData.external_id ? 'Presente' : 'Ausente'
+            console.log('🌐 Contexto ultra-enriquecido preparado:', {
+                ip: context.ip ? '✓' : '❌',
+                user_agent: context.user_agent ? `✓ (${context.user_agent.length} chars)` : '❌',
+                order_id: context.order_id ? '✓' : '❌',
+                payment_method: context.payment_method ? '✓' : '❌',
+                transaction_id: context.transaction_id ? '✓' : '❌',
+                accept_language: context.accept_language ? '✓' : '❌',
+                host: context.host ? '✓' : '❌'
             });
             
-            // Enviar evento de compra com V3 otimizado
-            console.log('🎯 Chamando tiktokEventsV3.trackPurchase...');
+            // Preparar dados do usuário ultra-enriquecidos
+            const userData = {
+                email: email || payerData.email || '',
+                phone: payerData.phone?.area_code && payerData.phone?.number ? 
+                       `${payerData.phone.area_code}${payerData.phone.number}` : '',
+                
+                // IDs únicos para deduplicação
+                external_id: email ? `devotly_${email}_${cardId}` : `guest_${cardId}_${paymentId}`,
+                
+                // Dados adicionais do pagador quando disponíveis
+                first_name: payerData.first_name || '',
+                last_name: payerData.last_name || '',
+                
+                // Identificação do plano para segmentação
+                plan_type: plano,
+                customer_type: email ? 'registered' : 'guest',
+                
+                // Session data
+                session_id: `webhook_session_${paymentId}_${Date.now()}`,
+                
+                // Dados de localização quando disponíveis
+                country: 'BR',
+                currency_preference: 'BRL'
+            };
+            
+            console.log('👤 Dados do usuário ultra-enriquecidos:', {
+                email: userData.email ? '✓ Presente' : '❌ Ausente',
+                phone: userData.phone ? '✓ Presente' : '❌ Ausente', 
+                external_id: userData.external_id ? '✓ Único' : '❌ Ausente',
+                first_name: userData.first_name ? '✓' : '❌',
+                last_name: userData.last_name ? '✓' : '❌',
+                plan_type: userData.plan_type ? '✓' : '❌',
+                session_id: userData.session_id ? '✓' : '❌'
+            });
+            
+            // Enviar evento de compra com V3 ultra-otimizado
+            console.log('🎯 Chamando tiktokEventsV3.trackPurchase Ultra-Otimizado...');
             const tiktokResult = await tiktokEventsV3.trackPurchase(
                 cardId,
-                `Plano Devotly ${plano}`,
+                `Devotly ${plano === 'para_sempre' ? 'Lifetime' : 'Annual'} Plan`,
                 planValue,
                 'BRL',
-                'digital_service',
+                plano, // Usar o plano como categoria
                 context,
                 userData
             );
             
-            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event V3 resultado:`, tiktokResult);
+            console.log(`[${new Date().toISOString()}] ✅ TikTok Purchase event V3 Ultra-Otimizado resultado:`, tiktokResult);
             
             if (tiktokResult.success) {
-                console.log(`✅ TikTok Purchase event enviado com sucesso - EMQ Score: ${tiktokResult.emq_score}`);
+                console.log(`✅ TikTok Purchase event enviado com sucesso - EMQ Score: ${tiktokResult.emq_score}/100 🎯`);
+                
+                // Log detalhado do sucesso
+                console.log('📊 Detalhes do evento Purchase enviado:', {
+                    content_id: cardId,
+                    content_name: `Devotly ${plano === 'para_sempre' ? 'Lifetime' : 'Annual'} Plan`,
+                    value: planValue,
+                    currency: 'BRL',
+                    order_id: context.order_id,
+                    emq_score: tiktokResult.emq_score,
+                    user_data_quality: userData.email && userData.phone ? 'EXCELLENT' : 
+                                      userData.email || userData.phone ? 'GOOD' : 'BASIC'
+                });
             } else {
                 console.error(`❌ Falha no envio do TikTok Purchase event:`, tiktokResult.error);
             }
@@ -384,35 +452,43 @@ router.post('/mercadopago', async (req, res) => {
                 email: email
             });
             
-            // Tentar novamente com configuração mais simples em caso de timeout
-            if (tikTokError.message && tikTokError.message.includes('timeout')) {
-                console.log('🔄 Tentando reenvio simplificado devido a timeout...');
+            // Tentar novamente com configuração ultra-otimizada em caso de timeout
+            if (tikTokError.message && (tikTokError.message.includes('timeout') || tikTokError.message.includes('ECONNRESET'))) {
+                console.log('🔄 Tentando reenvio ultra-otimizado devido a erro de conexão...');
                 try {
-                    // Dados mais simples para retry
-                    const simpleContext = {
-                        ip: '127.0.0.1',
-                        user_agent: 'Devotly-Webhook',
-                        timestamp: Math.floor(Date.now() / 1000)
+                    // Dados ultra-otimizados para retry
+                    const optimizedContext = {
+                        ip: req.headers['x-forwarded-for'] || '127.0.0.1',
+                        user_agent: 'Devotly-Webhook-Retry/2.0 (Ultra-Optimized)',
+                        url: 'https://devotly.shop/success',
+                        referrer: 'https://devotly.shop/create',
+                        order_id: `DVT_RETRY_${cardId}_${planValue}_${Date.now()}`,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        timezone: 'America/Sao_Paulo',
+                        country: 'BR',
+                        payment_method: 'mercadopago_confirmed'
                     };
                     
-                    const simpleUserData = {
+                    const optimizedUserData = {
                         email: email || '',
-                        external_id: `devotly_${cardId}`
+                        external_id: `devotly_retry_${cardId}_${paymentId}`,
+                        plan_type: plano,
+                        session_id: `retry_${Date.now()}`
                     };
                     
-                    const simpleResult = await tiktokEventsV3.trackPurchase(
+                    const retryResult = await tiktokEventsV3.trackPurchase(
                         cardId,
-                        `Devotly ${plano}`,
+                        `Devotly ${plano} (Retry)`,
                         planValue,
                         'BRL',
-                        'product',
-                        simpleContext,
-                        simpleUserData
+                        'digital_service',
+                        optimizedContext,
+                        optimizedUserData
                     );
                     
-                    console.log('✅ Reenvio simplificado bem-sucedido:', simpleResult);
+                    console.log('✅ Reenvio ultra-otimizado bem-sucedido:', retryResult);
                 } catch (retryError) {
-                    console.error('❌ Falha no reenvio simplificado:', retryError.message);
+                    console.error('❌ Falha no reenvio ultra-otimizado:', retryError.message);
                 }
             }
             

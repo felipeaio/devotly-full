@@ -104,20 +104,49 @@ class TikTokEventsManager {
     }
     
     /**
-     * Extrai parâmetros importantes da URL
+     * Extrai parâmetros importantes da URL - VERSÃO ULTRA-OTIMIZADA v4.0
      */
     extractUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Parâmetros do TikTok
-        this.userCache.ttclid = urlParams.get('ttclid') || this.getCookie('ttclid');
-        this.userCache.ttp = urlParams.get('ttp') || this.getCookie('ttp');
+        // Parâmetros do TikTok (essenciais para EMQ)
+        this.userCache.ttclid = urlParams.get('ttclid') || this.getCookie('ttclid') || 
+                                localStorage.getItem('devotly_ttclid') || null;
+        this.userCache.ttp = urlParams.get('ttp') || this.getCookie('ttp') || 
+                            localStorage.getItem('devotly_ttp') || null;
         
         // Parâmetros do Facebook (para cross-platform matching)
-        this.userCache.fbp = this.getCookie('_fbp');
-        this.userCache.fbc = this.getCookie('_fbc');
+        this.userCache.fbp = this.getCookie('_fbp') || null;
+        this.userCache.fbc = this.getCookie('_fbc') || null;
         
-        // Armazenar parâmetros importantes
+        // Parâmetros UTM para contexto adicional
+        this.userCache.utm_source = urlParams.get('utm_source') || null;
+        this.userCache.utm_medium = urlParams.get('utm_medium') || null;
+        this.userCache.utm_campaign = urlParams.get('utm_campaign') || null;
+        this.userCache.utm_content = urlParams.get('utm_content') || null;
+        this.userCache.utm_term = urlParams.get('utm_term') || null;
+        
+        // Dados do navegador e dispositivo (críticos para EMQ)
+        this.userCache.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+        this.userCache.language = navigator.language || 'pt-BR';
+        this.userCache.platform = navigator.platform || 'unknown';
+        this.userCache.user_agent = navigator.userAgent || '';
+        
+        // Dados de tela e dispositivo para fingerprinting
+        this.userCache.screen_resolution = `${screen.width}x${screen.height}`;
+        this.userCache.color_depth = screen.colorDepth || 24;
+        this.userCache.pixel_ratio = window.devicePixelRatio || 1;
+        
+        // Informações de conexão se disponíveis
+        if (navigator.connection) {
+            this.userCache.connection_type = navigator.connection.effectiveType || 'unknown';
+            this.userCache.downlink = navigator.connection.downlink || null;
+        }
+        
+        // Gerar fingerprint único do dispositivo
+        this.userCache.device_fingerprint = this.generateDeviceFingerprint();
+        
+        // Armazenar parâmetros importantes para persistência
         if (this.userCache.ttclid) {
             this.setCookie('ttclid', this.userCache.ttclid, 30);
             localStorage.setItem('devotly_ttclid', this.userCache.ttclid);
@@ -125,6 +154,58 @@ class TikTokEventsManager {
         if (this.userCache.ttp) {
             this.setCookie('ttp', this.userCache.ttp, 30);
             localStorage.setItem('devotly_ttp', this.userCache.ttp);
+        }
+        
+        // Salvar dados do dispositivo
+        localStorage.setItem('devotly_device_fingerprint', this.userCache.device_fingerprint);
+        localStorage.setItem('devotly_timezone', this.userCache.timezone);
+        
+        console.log('🔍 Parâmetros ultra-otimizados extraídos (EMQ v4.0):', {
+            ttclid: this.userCache.ttclid ? '✓ Presente' : '❌ Ausente',
+            ttp: this.userCache.ttp ? '✓ Presente' : '❌ Ausente',
+            fbp: this.userCache.fbp ? '✓ Presente' : '❌ Ausente',
+            timezone: this.userCache.timezone ? '✓ Presente' : '❌ Ausente',
+            language: this.userCache.language ? '✓ Presente' : '❌ Ausente',
+            user_agent: this.userCache.user_agent ? `✓ ${this.userCache.user_agent.length} chars` : '❌ Ausente',
+            screen_resolution: this.userCache.screen_resolution ? '✓ Presente' : '❌ Ausente',
+            device_fingerprint: this.userCache.device_fingerprint ? '✓ Gerado' : '❌ Falhou',
+            utm_source: this.userCache.utm_source ? '✓ Presente' : '❌ Ausente',
+            connection_type: this.userCache.connection_type ? '✓ Presente' : '❌ Ausente'
+        });
+    }
+    
+    /**
+     * Gera fingerprint único do dispositivo para EMQ
+     */
+    generateDeviceFingerprint() {
+        try {
+            const components = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                screen.colorDepth,
+                new Date().getTimezoneOffset(),
+                navigator.platform,
+                navigator.cookieEnabled ? '1' : '0',
+                typeof navigator.doNotTrack !== 'undefined' ? navigator.doNotTrack : 'unknown'
+            ];
+            
+            // Adicionar dados de canvas se disponível
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('Devotly EMQ Test', 2, 2);
+                components.push(canvas.toDataURL().slice(0, 50));
+            }
+            
+            // Criar hash simples dos componentes
+            const fingerprint = components.join('|');
+            return btoa(fingerprint).substr(0, 32);
+        } catch (error) {
+            console.warn('Erro ao gerar fingerprint:', error);
+            return 'fallback_' + Date.now().toString(36);
         }
     }
     
@@ -2084,7 +2165,8 @@ class TikTokEventsManager {
     }
     
     /**
-     * Purchase - Compra finalizada
+     * Purchase - Compra finalizada - VERSÃO ULTRA-OTIMIZADA v4.0
+     * Implementa todos os campos necessários para máximo EMQ Score
      */
     async trackPurchase(contentId, contentName, value, currency = 'BRL', category = 'product') {
         // Purchase DEVE ter valor > 0
@@ -2094,24 +2176,170 @@ class TikTokEventsManager {
             return { success: false, error: 'Value must be > 0' };
         }
         
-        // Validar content_id e content_name
+        // Validar e otimizar dados do conteúdo
         const validContentId = contentId && contentId.trim() ? String(contentId).trim() : this.generateContentId();
-        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Produto';
+        const validContentName = contentName && contentName.trim() ? String(contentName).trim() : 'Devotly Product';
         
-        return this.sendEvent('Purchase', {
+        // Detectar contexto da página para dados enriquecidos
+        const pageContext = this.detectPageContext();
+        
+        // Gerar order_id único e rastreável
+        const orderId = `DVT_FRONTEND_${validContentId}_${validValue}_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+        
+        // Preparar dados ultra-enriquecidos do evento
+        const eventData = {
             content_id: validContentId,
             content_name: validContentName,
             content_type: String(category),
+            content_category: 'digital_service',
+            brand: 'Devotly',
             value: validValue,
             currency: String(currency),
+            order_id: orderId,
+            
+            // Dados do produto enriquecidos
             contents: [{
                 id: validContentId,
                 name: validContentName,
                 category: String(category),
+                brand: 'Devotly',
                 quantity: 1,
-                price: validValue
-            }]
+                price: validValue,
+                content_type: 'product'
+            }],
+            
+            // Dados de contexto para EMQ
+            page_url: window.location.href,
+            referrer_url: document.referrer || 'https://devotly.shop',
+            
+            // Metadados para melhorar matching
+            description: this.generateContentDescription(validContentName, pageContext),
+            shop_id: 'devotly_frontend',
+            
+            // Dados de segmentação
+            custom_data: {
+                source: 'frontend_pixel',
+                page_type: pageContext.page,
+                funnel_stage: pageContext.funnel_stage,
+                plan_type: category,
+                device_type: this.getDeviceType(),
+                browser_type: this.getBrowserType(),
+                purchase_method: 'online_payment'
+            },
+            
+            // Dados do usuário enriquecidos automaticamente
+            user_data: await this.prepareUltraOptimizedUserData(),
+            
+            // Timestamp ultra-preciso
+            event_time: Math.floor(Date.now() / 1000),
+            
+            // Session tracking
+            session_id: this.userCache.session_id || `frontend_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`
+        };
+        
+        console.log('🎯 Frontend Purchase Ultra-Otimizado (EMQ v4.0):', {
+            content_id: eventData.content_id ? '✓' : '❌',
+            content_name: eventData.content_name ? '✓' : '❌',
+            value: `✓ ${validValue} BRL`,
+            order_id: eventData.order_id ? '✓' : '❌',
+            user_data_fields: Object.keys(eventData.user_data).length,
+            custom_data_fields: Object.keys(eventData.custom_data).length,
+            page_context: `✓ ${pageContext.page}`,
+            session_id: eventData.session_id ? '✓' : '❌',
+            timestamp_precision: '✓ Ultra-preciso'
         });
+        
+        return this.sendEvent('Purchase', eventData);
+    }
+    
+    /**
+     * Prepara dados do usuário ultra-otimizados para máximo EMQ
+     */
+    async prepareUltraOptimizedUserData() {
+        const userData = {};
+        
+        // Email hasheado se disponível
+        if (this.userCache.email) {
+            userData.email = await this.hashData(this.userCache.email);
+        }
+        
+        // Telefone hasheado se disponível
+        if (this.userCache.phone) {
+            userData.phone_number = await this.hashData(this.normalizePhoneNumber(this.userCache.phone));
+        }
+        
+        // External ID único
+        if (this.userCache.email || this.userCache.phone) {
+            const baseId = this.userCache.email || this.userCache.phone;
+            userData.external_id = await this.hashData(`devotly_frontend_${baseId}`);
+        } else {
+            userData.external_id = await this.hashData(`devotly_guest_${this.userCache.device_fingerprint}`);
+        }
+        
+        // Parâmetros TikTok se disponíveis
+        if (this.userCache.ttp) userData.ttp = this.userCache.ttp;
+        if (this.userCache.ttclid) userData.ttclid = this.userCache.ttclid;
+        
+        // Dados de localização
+        if (this.userCache.timezone) userData.timezone = this.userCache.timezone;
+        if (this.userCache.language) userData.language = this.userCache.language;
+        
+        // Device fingerprint
+        if (this.userCache.device_fingerprint) userData.device_fingerprint = this.userCache.device_fingerprint;
+        
+        return userData;
+    }
+    
+    /**
+     * Detecta tipo de dispositivo
+     */
+    getDeviceType() {
+        const ua = navigator.userAgent.toLowerCase();
+        if (/mobile|android|iphone|ipad|phone/i.test(ua)) {
+            return 'mobile';
+        } else if (/tablet|ipad/i.test(ua)) {
+            return 'tablet';
+        }
+        return 'desktop';
+    }
+    
+    /**
+     * Detecta tipo de navegador
+     */
+    getBrowserType() {
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes('chrome')) return 'chrome';
+        if (ua.includes('firefox')) return 'firefox';
+        if (ua.includes('safari')) return 'safari';
+        if (ua.includes('edge')) return 'edge';
+        return 'other';
+    }
+    
+    /**
+     * Normaliza número de telefone para formato E.164
+     */
+    normalizePhoneNumber(phone) {
+        if (!phone) return '';
+        
+        // Remove todos os caracteres não numéricos
+        const cleaned = phone.replace(/\D/g, '');
+        
+        // Se já começa com código do país, mantém
+        if (cleaned.startsWith('55') && cleaned.length >= 12) {
+            return `+${cleaned}`;
+        }
+        
+        // Se começa com 0, remove e adiciona código do Brasil
+        if (cleaned.startsWith('0')) {
+            return `+55${cleaned.substr(1)}`;
+        }
+        
+        // Adiciona código do Brasil se necessário
+        if (cleaned.length >= 10) {
+            return `+55${cleaned}`;
+        }
+        
+        return cleaned;
     }
     
     /**
